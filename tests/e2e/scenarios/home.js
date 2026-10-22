@@ -29,8 +29,8 @@ export default [
       t.eq(folder.children.length, 0, 'no links');
       t.eq(Object.keys(t.store.homeIcons || {}).length, 0, 'no icon overrides');
       t.eq(t.$$('#home .tile[data-id]').length, 0, 'no tiles');
-      t.ok(t.$('#home .tile.add'), 'Add link tile');
-      t.ok(t.$('#home .home-empty')?.textContent.startsWith('Add the sites you use most.'), 'help text on an empty Home');
+      t.ok(!t.$('#home .tile.add'), 'no Add link tile');
+      t.ok(t.$('#home .home-empty')?.textContent.startsWith('Add the sites you use most in Settings › Home page.'), 'help text points to settings');
       t.eq(t.settings().rootName, '', 'no company root folder name');
       await t.reload();
       t.eq(t.node('2').children.filter((c) => c.title === 'Home').length, 1, 'still one Home folder after reload');
@@ -43,9 +43,11 @@ export default [
     page: 'newtab',
     fixture: () => base({ home: false }),
     async run(t) {
-      t.answer('example.org', 'Example');
-      t.click(t.$('#home .tile.add'));
+      await openHomeSettings(t);
+      t.type(panelInput(t, 'New link URL'), 'example.org');
+      t.click(t.$('.home-add button[type="submit"]'));
       await t.settle();
+      await done(t);
       t.eq(homeKids(t).length, 1, 'link added');
       t.ok(!t.$('#home .home-empty'), 'help text gone');
     },
@@ -86,7 +88,7 @@ export default [
       const id = t.settings().home.folderId;
       t.ok(id && id !== '70', 'new folder id');
       t.eq(t.kids(id).length, 0, 'empty');
-      t.ok(t.$('#home .tile.add'), 'Add link tile still shown');
+      t.ok(t.$('#home .home-empty'), 'help text shown');
     },
   },
   {
@@ -144,42 +146,39 @@ export default [
   },
   {
     area,
-    name: 'drag a tile to reorder; drop on Add link moves it to the end',
+    name: 'drag a tile to reorder; drop on empty grid space moves it to the end',
     page: 'newtab',
     fixture: () => base(),
     async run(t) {
       t.drag(tile(t, '73'), tile(t, '71'));
       await t.settle();
       t.eq(t.kids('70'), ['73', '71', '72'], 'moved to front');
-      t.drag(tile(t, '73'), t.$('#home .tile.add'));
+      t.drag(tile(t, '73'), t.$('#home .home-tiles'));
       await t.settle();
       t.eq(t.kids('70'), ['71', '72', '73'], 'moved to end');
     },
   },
   {
     area,
-    name: 'Add link adds https and uses the given name',
+    name: 'Home has no Add link tile; links are added in settings',
     page: 'newtab',
     fixture: () => base(),
     async run(t) {
-      t.answer('news.ycombinator.com', 'HN');
-      t.click(t.$('#home .tile.add'));
-      await t.settle();
-      const last = t.node('70').children.at(-1);
-      t.eq([last.title, last.url], ['HN', 'https://news.ycombinator.com'], 'created');
-      t.ok(tile(t, last.id), 'tile rendered');
+      t.ok(!t.$('#home .tile.add'), 'no Add link tile');
+      t.eq(t.$$('#home .tile').length, 3, 'only link tiles');
     },
   },
   {
     area,
-    name: 'Add link: cancel creates nothing',
+    name: 'a missing favicon tries the site root, then shows the letter icon',
     page: 'newtab',
-    fixture: () => base(),
+    fixture: () => base({ other: [F('70', 'Home', [L('74', 'Chess', 'https://www.chess.com/home')])], settings: { home: { folderId: '70' } } }),
     async run(t) {
-      t.answer(null);
-      t.click(t.$('#home .tile.add'));
-      await t.settle();
-      t.eq(t.kids('70').length, 3, 'unchanged');
+      const ic = tile(t, '74')?.querySelector('.ic');
+      for (let i = 0; i < 20 && ic?.querySelector('img'); i++) await t.sleep(25);
+      t.ok(ic && !ic.querySelector('img'), 'no broken image left');
+      t.ok(ic?.classList.contains('letter'), 'letter icon');
+      t.eq(ic?.textContent, 'Ch', 'letter from the name');
     },
   },
   {
@@ -252,11 +251,18 @@ export default [
       size.value = '100';
       size.dispatchEvent(new t.w.Event('input', { bubbles: true }));
       t.eq(pv.style.getPropertyValue('--clock'), '100px', 'clock size in preview');
+      const gap = panelInput(t, 'Space above tiles');
+      t.eq(gap?.value, '80', 'space above tiles defaults to 80');
+      gap.value = '120';
+      gap.dispatchEvent(new t.w.Event('input', { bubbles: true }));
+      t.eq(pv.style.getPropertyValue('--tiles-gap'), '120px', 'space above tiles in preview');
       await t.sleep(450);
-      t.eq([t.settings().home.dark, t.settings().home.clockSize], [30, 100], 'saved');
+      t.eq([t.settings().home.dark, t.settings().home.clockSize, t.settings().home.tilesGap], [30, 100, 120], 'saved');
       t.eq(t.$('.set-status').textContent, 'Saved', 'status says Saved');
       await done(t);
       t.eq(t.$('#home').style.getPropertyValue('--dark'), '0.3', 'Home uses the new value');
+      t.eq(t.$('#home').style.getPropertyValue('--tiles-gap'), '120px', 'Home uses the new space above tiles');
+      t.eq(t.w.getComputedStyle(t.$('#home .home-date')).marginBottom, '120px', 'date margin follows the setting');
       await t.reload();
       t.eq(t.$('#home').style.getPropertyValue('--dark'), '0.3', 'survives reload');
     },

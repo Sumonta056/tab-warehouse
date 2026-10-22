@@ -21,7 +21,7 @@ trap 'kill $SERVER 2>/dev/null' EXIT
 for _ in $(seq 1 50); do curl -s "http://127.0.0.1:$PORT/tests/e2e/runner.html" >/dev/null && break; sleep 0.1; done
 PROFILE="$(mktemp -d)"
 URL="http://127.0.0.1:$PORT/tests/e2e/runner.html${ONLY:+?only=$ONLY}"
-OUT="$("$CHROME" --headless=new --disable-gpu --no-first-run --no-default-browser-check --user-data-dir="$PROFILE" \
+OUT="$("$CHROME" --headless=new --disable-gpu --host-resolver-rules="MAP * ~NOTFOUND, EXCLUDE 127.0.0.1, EXCLUDE ssl.gstatic.com" --no-first-run --no-default-browser-check --user-data-dir="$PROFILE" \
   --window-size=1920,1000 --virtual-time-budget=180000 --run-all-compositor-stages-before-draw --dump-dom "$URL" 2>/dev/null)"
 rm -rf "$PROFILE"
 LINE="$(printf '%s' "$OUT" | grep -o 'E2E_RESULT {.*}' | head -1 | sed 's/&quot;/"/g; s/&gt;/>/g; s/&lt;/</g; s/&amp;/\&/g')"

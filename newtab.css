@@ -460,7 +460,7 @@ body.resizing {
   color: #fff;
   font-size: max(15px, calc(min(var(--clock, 170px), 17cqi) * 0.15));
   opacity: 0.92;
-  margin-bottom: 44px;
+  margin-bottom: var(--tiles-gap, 80px);
   min-height: 1em;
 }
 .home-tiles {
@@ -524,15 +524,8 @@ body.resizing {
 .home .tile:focus-visible .ic {
   transform: translateY(-2px);
 }
-.home .tile.add .ic {
-  background: rgba(255, 255, 255, 0.12);
-  border: 2px dashed rgba(255, 255, 255, 0.6);
-  box-shadow: none;
-  color: #fff;
-}
-.home .tile.add .ic svg {
-  width: 22px;
-  height: 22px;
+img.wait {
+  opacity: 0;
 }
 .home .tile.dragging {
   opacity: 0.4;
@@ -1564,7 +1557,7 @@ body.resizing {
 .pv-date {
   font-size: 12px;
   opacity: 0.92;
-  margin: 6px 0 18px;
+  margin: 6px 0 calc(var(--tiles-gap, 80px) / 4);
   min-height: 1em;
 }
 .pv-tiles {

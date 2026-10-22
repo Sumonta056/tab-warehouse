@@ -331,6 +331,7 @@ describe('Home helpers', () => {
     assert.equal(DEFAULT_HOME.color, '#185a63');
     assert.equal(DEFAULT_HOME.dark, 65);
     assert.equal(DEFAULT_HOME.perRow, 12);
+    assert.equal(DEFAULT_HOME.tilesGap, 80);
     assert.equal(DEFAULT_HOME.seconds, true);
     assert.equal(DEFAULT_HOME.h24, false);
     assert.equal(DEFAULT_HOME.newTab, false);
@@ -475,5 +476,39 @@ describe('brandName', () => {
   });
   test('uses the trimmed name', () => {
     assert.equal(brandName({ userName: ' Sumonta ' }), "Sumonta's Warehouse");
+  });
+});
+
+describe('tileIconSrcs', () => {
+  beforeEach(() => {
+    globalThis.chrome = { runtime: { getURL: (p) => `chrome-extension://x${p}` } };
+  });
+  const fav = (u) => `chrome-extension://x/_favicon/?pageUrl=${encodeURIComponent(u)}&size=64`;
+  const web = (host) => `https://www.google.com/s2/favicons?domain=${host}&sz=64`;
+  test('page favicon, then the site root favicon, then the web icon', async () => {
+    const { tileIconSrcs } = await import('../../lib/core.js');
+    assert.deepEqual(tileIconSrcs({ id: '1', url: 'https://www.chess.com/home' }, {}), [
+      fav('https://www.chess.com/home'),
+      fav('https://www.chess.com/'),
+      web('www.chess.com'),
+      web('chess.com'),
+    ]);
+  });
+  test('no duplicate when the link is the site root', async () => {
+    const { tileIconSrcs } = await import('../../lib/core.js');
+    assert.deepEqual(tileIconSrcs({ id: '1', url: 'https://github.com/' }, {}), [fav('https://github.com/'), web('github.com')]);
+  });
+  test('local, IP and non-web links never go to the web icon service', async () => {
+    const { webIconUrls } = await import('../../lib/core.js');
+    assert.deepEqual(webIconUrls('http://localhost:3000/'), []);
+    assert.deepEqual(webIconUrls('http://192.168.1.4/x'), []);
+    assert.deepEqual(webIconUrls('chrome://extensions'), []);
+    assert.deepEqual(webIconUrls('not a url'), []);
+    assert.deepEqual(webIconUrls('https://daily.dev/'), [web('daily.dev')]);
+  });
+  test('custom and Google icons come first', async () => {
+    const { tileIconSrcs } = await import('../../lib/core.js');
+    assert.equal(tileIconSrcs({ id: '1', url: 'https://x.com/' }, { 1: 'data:a' })[0], 'data:a');
+    assert.match(tileIconSrcs({ id: '2', url: 'https://mail.google.com/' }, {})[0], /gmail/);
   });
 });

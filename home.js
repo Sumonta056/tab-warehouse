@@ -2,7 +2,8 @@ import {
   imageSaveError,
   saveSettings,
   findById,
-  googleIcon,
+  tileIconSrcs,
+  WEB_ICON,
   faviconUrl,
   letterIcon,
   normalizeUrl,
@@ -62,8 +63,48 @@ export async function ensureHomeFolder(tree, settings) {
   return { settings, created: !existing };
 }
 
-export function tileIconSrc(bm, iconMap) {
-  return iconMap[bm.id] || googleIcon(bm.url) || faviconUrl(bm.url, 64);
+let globe = null;
+
+function pixels(img) {
+  const c = document.createElement('canvas');
+  c.width = c.height = 16;
+  const g = c.getContext('2d', { willReadFrequently: true });
+  g.drawImage(img, 0, 0, 16, 16);
+  return g.getImageData(0, 0, 16, 16).data.join();
+}
+
+function globePixels() {
+  globe ||= new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve(pixels(img));
+    img.onerror = () => resolve('');
+    img.src = faviconUrl('https://favicon.invalid/', 64);
+  });
+  return globe;
+}
+
+export function homeIconImg(bm, box, iconMap = icons) {
+  const srcs = tileIconSrcs(bm, iconMap);
+  const favicon = faviconUrl('', 64).split('?')[0];
+  const img = h('img', { class: 'wait', src: srcs.shift(), alt: '', loading: 'lazy', decoding: 'async' });
+  const next = () => {
+    const src = srcs.shift();
+    if (src) {
+      img.src = src;
+      return;
+    }
+    img.remove();
+    box.classList.add('letter');
+    box.textContent = letterIcon(bm);
+  };
+  img.addEventListener('error', next);
+  img.addEventListener('load', async () => {
+    if (img.src.startsWith(WEB_ICON) && img.naturalWidth <= 16) return next();
+    if (img.src.startsWith(favicon) && pixels(img) === (await globePixels())) return next();
+    img.classList.remove('wait');
+  });
+  box.append(img);
+  return box;
 }
 
 export function applyHomeVars(el, o) {
@@ -74,6 +115,7 @@ export function applyHomeVars(el, o) {
   el.style.setProperty('--clock', `${o.clockSize}px`);
   el.style.setProperty('--tile', `${o.tileSize}px`);
   el.style.setProperty('--per-row', String(o.perRow));
+  el.style.setProperty('--tiles-gap', `${o.tilesGap}px`);
   el.classList.toggle('no-labels', !o.labels);
 }
 
@@ -110,7 +152,11 @@ export function renderHome(page, ctx) {
       renderTiles(links, folder, ctx),
       links.length
         ? null
-        : h('p', { class: 'home-empty' }, 'Add the sites you use most. They are saved in the bookmark folder “Home”, so you can also edit them in Chrome.'),
+        : h(
+            'p',
+            { class: 'home-empty' },
+            'Add the sites you use most in Settings › Home page. They are saved in the bookmark folder “Home”, so you can also edit them in Chrome.',
+          ),
     ),
   );
   applyHomeVars(home, o);
@@ -122,19 +168,7 @@ function renderTiles(links, folder, ctx) {
   const o = ctx.settings.home;
   const grid = h('div', { class: 'home-tiles' });
   for (const bm of links) {
-    const ic = h('span', { class: `ic ${icons[bm.id]?.startsWith('data:') ? 'custom' : ''}` });
-    const img = h('img', { src: tileIconSrc(bm, icons), alt: '', loading: 'lazy', decoding: 'async' });
-    img.addEventListener('error', () => {
-      if (!img.dataset.fallback && img.src !== faviconUrl(bm.url, 64)) {
-        img.dataset.fallback = '1';
-        img.src = faviconUrl(bm.url, 64);
-        return;
-      }
-      img.remove();
-      ic.classList.add('letter');
-      ic.textContent = letterIcon(bm);
-    });
-    ic.append(img);
+    const ic = homeIconImg(bm, h('span', { class: `ic ${icons[bm.id]?.startsWith('data:') ? 'custom' : ''}` }));
     const a = h(
       'a',
       {
@@ -180,33 +214,18 @@ function renderTiles(links, folder, ctx) {
     });
     grid.append(a);
   }
-  const add = h(
-    'button',
-    { class: 'tile add', onClick: () => addTile(folder) },
-    h('span', { class: 'ic' }, svgIcon('plus')),
-    h('span', { class: 'lbl' }, 'Add link'),
-  );
-  add.addEventListener('dragover', (e) => {
-    if (!dragId) return;
+  grid.addEventListener('dragover', (e) => {
+    if (!dragId || e.target !== grid) return;
     e.preventDefault();
   });
-  add.addEventListener('drop', async (e) => {
-    if (!dragId) return;
+  grid.addEventListener('drop', async (e) => {
+    if (!dragId || e.target !== grid) return;
     e.preventDefault();
     const id = dragId;
     dragId = null;
     await chrome.bookmarks.move(id, { parentId: folder.id });
   });
-  grid.append(add);
   return grid;
-}
-
-async function addTile(folder) {
-  if (!folder) return;
-  const url = normalizeUrl(prompt('Link URL', 'https://'));
-  if (!url || url === 'https://') return;
-  const title = prompt('Name', hostOf(url).replace(/^www\./, ''))?.trim() || hostOf(url) || url;
-  await chrome.bookmarks.create({ parentId: folder.id, title, url });
 }
 
 async function saveIcons() {
@@ -282,13 +301,7 @@ export function homeLinksList(links, folder, ctx) {
   const list = h('div', { class: 'home-links', role: 'list' });
   for (const bm of links) {
     const name = bm.title || hostOf(bm.url);
-    const mini = h('span', { class: 'mini' });
-    const img = h('img', { src: tileIconSrc(bm, icons), alt: '', loading: 'lazy', decoding: 'async' });
-    img.addEventListener('error', () => {
-      img.remove();
-      mini.textContent = letterIcon(bm);
-    });
-    mini.append(img);
+    const mini = homeIconImg(bm, h('span', { class: 'mini' }));
     const row = h(
       'div',
       { class: 'home-link', role: 'listitem', draggable: true, dataset: { id: bm.id }, title: bm.url },

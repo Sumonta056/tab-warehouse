@@ -49,7 +49,7 @@ Developers keep the same page open in many versions: live, test, staging and `lo
 - Opens on every new tab: a large clock, the date and your link tiles.
 - Tiles are a normal bookmark folder called _Home_ in _Other bookmarks_, created empty on first start. Add your own links with _Add link_.
 - Drag tiles to reorder. Right-click a tile to change its icon (upload or URL), edit it, open it in a new tab or remove it (with undo).
-- Official icons for Google apps (Gmail, Drive, Calendar, Keep, Meet, Docs, Sheets, Slides, Forms); Chrome's favicon for everything else.
+- Official icons for Google apps (Gmail, Drive, Calendar, Keep, Meet, Docs, Sheets, Slides, Forms); Chrome's favicon for everything else; on Home, Google's favicon service when Chrome has none, then a letter.
 - Background image, darkness, blur, color, clock size, 12/24-hour, seconds, icon size and icons per row — all with a live preview.
 
 ### Sidebar
@@ -132,7 +132,7 @@ Tab Warehouse has no server, no account, no analytics and no tracking. It does n
 
 - Links, titles and folders stay in **Chrome's bookmarks**.
 - Preferences (sidebar order, categories, env rules, Home look) stay in **`chrome.storage.local`** on your machine.
-- The only images loaded from the network are the official Google app icons (from `ssl.gstatic.com`) and any icon URL you add yourself.
+- The only images loaded from the network are the official Google app icons (from `ssl.gstatic.com`), any icon URL you add yourself, and the icon of a Home link that Chrome has no icon for. For that last case the extension asks Google's favicon service (`www.google.com/s2/favicons`) and sends it only the host name of that link. Local addresses (localhost, IP addresses) are never sent.
 
 | Permission  | Why it is needed                                                        |
 | ----------- | ----------------------------------------------------------------------- |

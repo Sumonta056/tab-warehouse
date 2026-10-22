@@ -5,7 +5,6 @@ import {
   applyTheme,
   folderList,
   clockText,
-  letterIcon,
   hostOf,
   normalizeUrl,
   deriveUrl,
@@ -16,7 +15,7 @@ import {
   ENV_NAMES,
   imageSaveError,
 } from './lib/core.js';
-import { homeBgUrl, homeIconMap, homeLinks, homeLinksList, setHomeBg, applyHomeVars, tileIconSrc } from './home.js';
+import { homeBgUrl, homeIconMap, homeLinks, homeLinksList, setHomeBg, applyHomeVars, homeIconImg } from './home.js';
 import { exportJson, exportHtml, importFile } from './lib/transfer.js';
 
 export const TABS = [
@@ -325,18 +324,7 @@ const VIEWS = {
           { class: 'pv-tiles' },
           ...links
             .slice(0, 6)
-            .map((bm) =>
-              h(
-                'span',
-                { class: 'pv-tile' },
-                h(
-                  'span',
-                  { class: 'ic' },
-                  h('img', { src: tileIconSrc(bm, icons), alt: '', loading: 'lazy', decoding: 'async', onError: (e) => e.target.replaceWith(letterIcon(bm)) }),
-                ),
-                h('span', { class: 'lbl' }, bm.title),
-              ),
-            ),
+            .map((bm) => h('span', { class: 'pv-tile' }, homeIconImg(bm, h('span', { class: 'ic' }), icons), h('span', { class: 'lbl' }, bm.title))),
         ),
       ),
     );
@@ -422,6 +410,7 @@ const VIEWS = {
           toggle('Open in new tab', o.newTab, set('newTab')),
           range('Icon size', o.tileSize, 40, 88, '', set('tileSize')),
           range('Per row', o.perRow, 4, 16, '', set('perRow')),
+          range('Space above tiles', o.tilesGap, 0, 240, 'px', set('tilesGap')),
         ),
       ),
       h('div', { class: 'set-col set-aside' }, h('p', { class: 'set-label' }, 'Preview'), preview),
