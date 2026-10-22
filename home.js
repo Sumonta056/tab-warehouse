@@ -11,7 +11,11 @@ export const DEFAULT_HOME_LINKS = [
   ['ChatGPT', 'https://chatgpt.com/'],
   ['Gemini', 'https://gemini.google.com/app'],
   ['GitBook', 'https://app.gitbook.com/'],
-  ['NotebookLM', 'https://notebook.google.com/?pli=1', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTfL6jF6qs0JbJO3W0RKJIRO_fuxBvcsm91B9MvDP-Z-w&s=10'],
+  [
+    'NotebookLM',
+    'https://notebook.google.com/?pli=1',
+    'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTfL6jF6qs0JbJO3W0RKJIRO_fuxBvcsm91B9MvDP-Z-w&s=10',
+  ],
   ['Excalidraw', 'https://excalidraw.com/', 'https://excalidraw.com/apple-touch-icon.png'],
   ['Chess', 'https://www.chess.com/home'],
   ['Example', 'https://www.example.org/index.php', 'https://www.example.org/favicon.ico'],
@@ -26,7 +30,7 @@ export const DEFAULT_HOME_LINKS = [
   ['Keep', 'https://keep.google.com/u/0/#home', `${G}keep_2020q4_48dp.png`],
   ['Overleaf', 'https://www.overleaf.com/project'],
   ['Imgflip', 'https://imgflip.com/'],
-  ['Portfolio', 'https://sumonta056.vercel.app/']
+  ['Portfolio', 'https://sumonta056.vercel.app/'],
 ];
 
 let icons = null;
@@ -42,13 +46,17 @@ export async function loadHomeAssets() {
   bg = r.homeBg || '';
 }
 
-export function homeBgUrl() { return bg || ''; }
+export function homeBgUrl() {
+  return bg || '';
+}
 
-export function homeIconMap() { return icons || {}; }
+export function homeIconMap() {
+  return icons || {};
+}
 
 export function homeLinks(tree, settings) {
   const folder = findById(tree, settings.home.folderId);
-  return { folder, links: (folder?.children || []).filter(c => c.url) };
+  return { folder, links: (folder?.children || []).filter((c) => c.url) };
 }
 
 export async function setHomeBg(file) {
@@ -67,8 +75,8 @@ export async function ensureHomeFolder(tree, settings) {
   if (home.folderId && findById(tree, home.folderId)) return { settings, created: false };
   const parentId = homeFolderParent(tree).id;
   const kids = await chrome.bookmarks.getChildren(parentId);
-  const existing = kids.find(c => !c.url && c.title === 'Home');
-  const folder = existing || await chrome.bookmarks.create({ parentId, title: 'Home' });
+  const existing = kids.find((c) => !c.url && c.title === 'Home');
+  const folder = existing || (await chrome.bookmarks.create({ parentId, title: 'Home' }));
   const empty = !existing || !(await chrome.bookmarks.getChildren(folder.id)).length;
   const seed = !home.seeded && empty;
   settings = await saveSettings({ home: { ...home, seeded: true, folderId: folder.id } });
@@ -118,13 +126,19 @@ export function renderHome(page, ctx) {
 
   const bgEl = h('div', { class: 'home-bg' });
   if (bg) bgEl.style.backgroundImage = `url("${bg}")`;
-  const home = h('section', { class: 'home', id: 'home', 'aria-label': 'Home' },
+  const home = h(
+    'section',
+    { class: 'home', id: 'home', 'aria-label': 'Home' },
     bgEl,
     h('div', { class: 'home-shade' }),
-    h('div', { class: 'home-content' },
+    h(
+      'div',
+      { class: 'home-content' },
       h('div', { class: 'home-clock', id: 'homeClock' }),
       h('div', { class: 'home-date', id: 'homeDate' }),
-      renderTiles(links, folder, ctx)));
+      renderTiles(links, folder, ctx),
+    ),
+  );
   applyHomeVars(home, o);
   page.append(home);
   startClock(o);
@@ -137,37 +151,76 @@ function renderTiles(links, folder, ctx) {
     const ic = h('span', { class: `ic ${icons[bm.id]?.startsWith('data:') ? 'custom' : ''}` });
     const img = h('img', { src: tileIconSrc(bm, icons), alt: '', loading: 'lazy', decoding: 'async' });
     img.addEventListener('error', () => {
-      if (!img.dataset.fallback && img.src !== faviconUrl(bm.url, 64)) { img.dataset.fallback = '1'; img.src = faviconUrl(bm.url, 64); return; }
-      img.remove(); ic.classList.add('letter'); ic.textContent = letterIcon(bm);
+      if (!img.dataset.fallback && img.src !== faviconUrl(bm.url, 64)) {
+        img.dataset.fallback = '1';
+        img.src = faviconUrl(bm.url, 64);
+        return;
+      }
+      img.remove();
+      ic.classList.add('letter');
+      ic.textContent = letterIcon(bm);
     });
     ic.append(img);
-    const a = h('a', { class: 'tile', href: bm.url, title: `${bm.title}\n${bm.url}`, draggable: true, dataset: { id: bm.id },
-      target: o.newTab ? '_blank' : null, rel: o.newTab ? 'noopener' : null },
-      ic, h('span', { class: 'lbl' }, bm.title || hostOf(bm.url)));
-    a.addEventListener('contextmenu', (e) => { e.preventDefault(); tileMenu(e, bm, ctx); });
-    a.addEventListener('dragstart', (e) => { dragId = bm.id; e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', bm.url); a.classList.add('dragging'); });
-    a.addEventListener('dragend', () => { dragId = null; a.classList.remove('dragging'); grid.querySelectorAll('.drop-before').forEach(n => n.classList.remove('drop-before')); });
+    const a = h(
+      'a',
+      {
+        class: 'tile',
+        href: bm.url,
+        title: `${bm.title}\n${bm.url}`,
+        draggable: true,
+        dataset: { id: bm.id },
+        target: o.newTab ? '_blank' : null,
+        rel: o.newTab ? 'noopener' : null,
+      },
+      ic,
+      h('span', { class: 'lbl' }, bm.title || hostOf(bm.url)),
+    );
+    a.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      tileMenu(e, bm, ctx);
+    });
+    a.addEventListener('dragstart', (e) => {
+      dragId = bm.id;
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', bm.url);
+      a.classList.add('dragging');
+    });
+    a.addEventListener('dragend', () => {
+      dragId = null;
+      a.classList.remove('dragging');
+      grid.querySelectorAll('.drop-before').forEach((n) => n.classList.remove('drop-before'));
+    });
     a.addEventListener('dragover', (e) => {
       if (!dragId || dragId === bm.id) return;
-      e.preventDefault(); e.dataTransfer.dropEffect = 'move';
-      grid.querySelectorAll('.drop-before').forEach(n => n.classList.remove('drop-before'));
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      grid.querySelectorAll('.drop-before').forEach((n) => n.classList.remove('drop-before'));
       a.classList.add('drop-before');
     });
     a.addEventListener('drop', async (e) => {
       if (!dragId || dragId === bm.id) return;
       e.preventDefault();
-      const id = dragId; dragId = null;
+      const id = dragId;
+      dragId = null;
       await chrome.bookmarks.move(id, { parentId: folder.id, index: bm.index });
     });
     grid.append(a);
   }
-  const add = h('button', { class: 'tile add', onClick: () => addTile(folder) },
-    h('span', { class: 'ic' }, svgIcon('plus')), h('span', { class: 'lbl' }, 'Add link'));
-  add.addEventListener('dragover', (e) => { if (!dragId) return; e.preventDefault(); });
+  const add = h(
+    'button',
+    { class: 'tile add', onClick: () => addTile(folder) },
+    h('span', { class: 'ic' }, svgIcon('plus')),
+    h('span', { class: 'lbl' }, 'Add link'),
+  );
+  add.addEventListener('dragover', (e) => {
+    if (!dragId) return;
+    e.preventDefault();
+  });
   add.addEventListener('drop', async (e) => {
     if (!dragId) return;
     e.preventDefault();
-    const id = dragId; dragId = null;
+    const id = dragId;
+    dragId = null;
     await chrome.bookmarks.move(id, { parentId: folder.id });
   });
   grid.append(add);
@@ -182,32 +235,73 @@ async function addTile(folder) {
   await chrome.bookmarks.create({ parentId: folder.id, title, url });
 }
 
-async function saveIcons() { await chrome.storage.local.set({ homeIcons: icons }); }
+async function saveIcons() {
+  await chrome.storage.local.set({ homeIcons: icons });
+}
 
 function tileMenu(e, bm, ctx) {
   ctx.showMenu(e, [
     { label: 'Change icon…', icon: 'pencil', run: () => pickIcon(bm, ctx) },
-    { label: 'Icon from URL…', run: async () => { const u = normalizeUrl(prompt('Icon image URL', icons[bm.id]?.startsWith('data:') ? '' : icons[bm.id] || '')); if (!u) return; icons[bm.id] = u; await saveIcons(); ctx.rerender(); } },
-    ...(icons[bm.id] ? [{ label: 'Use site icon', run: async () => { delete icons[bm.id]; await saveIcons(); ctx.rerender(); } }] : []),
-    { label: 'Edit name / URL', icon: 'pencil', run: async () => {
-      const title = prompt('Name', bm.title); if (title == null) return;
-      const url = normalizeUrl(prompt('URL', bm.url)); if (!url) return;
-      try { await chrome.bookmarks.update(bm.id, { title: title.trim() || hostOf(url), url }); } catch (err) { ctx.toast(`Couldn't save: ${err.message}`); }
-    } },
+    {
+      label: 'Icon from URL…',
+      run: async () => {
+        const u = normalizeUrl(prompt('Icon image URL', icons[bm.id]?.startsWith('data:') ? '' : icons[bm.id] || ''));
+        if (!u) return;
+        icons[bm.id] = u;
+        await saveIcons();
+        ctx.rerender();
+      },
+    },
+    ...(icons[bm.id]
+      ? [
+          {
+            label: 'Use site icon',
+            run: async () => {
+              delete icons[bm.id];
+              await saveIcons();
+              ctx.rerender();
+            },
+          },
+        ]
+      : []),
+    {
+      label: 'Edit name / URL',
+      icon: 'pencil',
+      run: async () => {
+        const title = prompt('Name', bm.title);
+        if (title == null) return;
+        const url = normalizeUrl(prompt('URL', bm.url));
+        if (!url) return;
+        try {
+          await chrome.bookmarks.update(bm.id, { title: title.trim() || hostOf(url), url });
+        } catch (err) {
+          ctx.toast(`Couldn't save: ${err.message}`);
+        }
+      },
+    },
     { label: 'Open in new tab', icon: 'external', run: () => chrome.tabs.create({ url: bm.url }) },
     '-',
-    { label: 'Remove', icon: 'x', danger: true, run: () => removeTile(bm, ctx) }
+    { label: 'Remove', icon: 'x', danger: true, run: () => removeTile(bm, ctx) },
   ]);
 }
 
 export async function removeTile(bm, ctx) {
   const icon = icons[bm.id];
   await chrome.bookmarks.remove(bm.id);
-  ctx.toast(`Removed “${bm.title || hostOf(bm.url)}”`, { label: 'Undo', run: async () => {
-    const back = await chrome.bookmarks.create({ parentId: bm.parentId, index: bm.index, title: bm.title, url: bm.url });
-    if (icon) { icons[back.id] = icon; await saveIcons(); }
-  } });
-  if (icon) { delete icons[bm.id]; await saveIcons(); }
+  ctx.toast(`Removed “${bm.title || hostOf(bm.url)}”`, {
+    label: 'Undo',
+    run: async () => {
+      const back = await chrome.bookmarks.create({ parentId: bm.parentId, index: bm.index, title: bm.title, url: bm.url });
+      if (icon) {
+        icons[back.id] = icon;
+        await saveIcons();
+      }
+    },
+  });
+  if (icon) {
+    delete icons[bm.id];
+    await saveIcons();
+  }
 }
 
 export function homeLinksList(links, folder, ctx) {
@@ -216,25 +310,45 @@ export function homeLinksList(links, folder, ctx) {
     const name = bm.title || hostOf(bm.url);
     const mini = h('span', { class: 'mini' });
     const img = h('img', { src: tileIconSrc(bm, icons), alt: '', loading: 'lazy', decoding: 'async' });
-    img.addEventListener('error', () => { img.remove(); mini.textContent = letterIcon(bm); });
+    img.addEventListener('error', () => {
+      img.remove();
+      mini.textContent = letterIcon(bm);
+    });
     mini.append(img);
-    const row = h('div', { class: 'home-link', role: 'listitem', draggable: true, dataset: { id: bm.id }, title: bm.url },
-      h('span', { class: 'grip', 'aria-hidden': 'true' }, svgIcon('grip')), mini, h('span', { class: 'nm' }, name),
-      h('button', { class: 'x', 'aria-label': `Remove ${name}`, title: 'Remove', onClick: () => removeTile(bm, ctx) }, svgIcon('x')));
-    row.addEventListener('dragstart', (e) => { if (e.target !== row) return; dragId = bm.id; e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', bm.url); row.classList.add('dragging'); });
-    row.addEventListener('dragend', () => { dragId = null; row.classList.remove('dragging'); list.querySelectorAll('.drop-before, .drop-after').forEach(n => n.classList.remove('drop-before', 'drop-after')); });
+    const row = h(
+      'div',
+      { class: 'home-link', role: 'listitem', draggable: true, dataset: { id: bm.id }, title: bm.url },
+      h('span', { class: 'grip', 'aria-hidden': 'true' }, svgIcon('grip')),
+      mini,
+      h('span', { class: 'nm' }, name),
+      h('button', { class: 'x', 'aria-label': `Remove ${name}`, title: 'Remove', onClick: () => removeTile(bm, ctx) }, svgIcon('x')),
+    );
+    row.addEventListener('dragstart', (e) => {
+      if (e.target !== row) return;
+      dragId = bm.id;
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', bm.url);
+      row.classList.add('dragging');
+    });
+    row.addEventListener('dragend', () => {
+      dragId = null;
+      row.classList.remove('dragging');
+      list.querySelectorAll('.drop-before, .drop-after').forEach((n) => n.classList.remove('drop-before', 'drop-after'));
+    });
     row.addEventListener('dragover', (e) => {
       if (!dragId || dragId === bm.id) return;
-      e.preventDefault(); e.dataTransfer.dropEffect = 'move';
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
       const r = row.getBoundingClientRect();
-      list.querySelectorAll('.drop-before, .drop-after').forEach(n => n.classList.remove('drop-before', 'drop-after'));
+      list.querySelectorAll('.drop-before, .drop-after').forEach((n) => n.classList.remove('drop-before', 'drop-after'));
       row.classList.add(e.clientY > r.top + r.height / 2 ? 'drop-after' : 'drop-before');
     });
     row.addEventListener('drop', async (e) => {
       if (!dragId || dragId === bm.id) return;
       e.preventDefault();
       const after = row.classList.contains('drop-after');
-      const id = dragId; dragId = null;
+      const id = dragId;
+      dragId = null;
       await chrome.bookmarks.move(id, { parentId: folder.id, index: bm.index + (after ? 1 : 0) });
     });
     list.append(row);
@@ -243,15 +357,21 @@ export function homeLinksList(links, folder, ctx) {
 
   const nameIn = h('input', { placeholder: 'Name', 'aria-label': 'New link name' });
   const urlIn = h('input', { placeholder: 'URL', 'aria-label': 'New link URL' });
-  const form = h('form', { class: 'home-add', novalidate: true },
-    nameIn, urlIn, h('button', { class: 'btn primary sm', type: 'submit' }, 'Add link'));
+  const form = h('form', { class: 'home-add', novalidate: true }, nameIn, urlIn, h('button', { class: 'btn primary sm', type: 'submit' }, 'Add link'));
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     if (!folder) return;
     const url = normalizeUrl(urlIn.value);
-    if (!url) { urlIn.focus(); return; }
+    if (!url) {
+      urlIn.focus();
+      return;
+    }
     const title = nameIn.value.trim() || hostOf(url).replace(/^www\./, '') || url;
-    try { await chrome.bookmarks.create({ parentId: folder.id, title, url }); } catch (err) { ctx.toast(`Couldn't add: ${err.message}`); }
+    try {
+      await chrome.bookmarks.create({ parentId: folder.id, title, url });
+    } catch (err) {
+      ctx.toast(`Couldn't add: ${err.message}`);
+    }
   });
   return h('div', { class: 'home-links-box' }, list, form);
 }
@@ -259,12 +379,15 @@ export function homeLinksList(links, folder, ctx) {
 function pickIcon(bm, ctx) {
   const f = h('input', { type: 'file', accept: 'image/*' });
   f.addEventListener('change', async () => {
-    const file = f.files[0]; if (!file) return;
+    const file = f.files[0];
+    if (!file) return;
     try {
       icons[bm.id] = await resizeImage(file, 128, 'image/png');
       await saveIcons();
       ctx.rerender();
-    } catch { ctx.toast('That file is not an image the browser can read.'); }
+    } catch {
+      ctx.toast('That file is not an image the browser can read.');
+    }
   });
   f.click();
 }

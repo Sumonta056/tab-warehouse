@@ -13,7 +13,10 @@ function findChrome() {
   if (process.env.CHROME) return process.env.CHROME;
   const base = join(homedir(), 'Library/Caches/ms-playwright');
   if (!existsSync(base)) return null;
-  for (const d of readdirSync(base).filter(d => d.startsWith('chromium-')).sort().reverse()) {
+  for (const d of readdirSync(base)
+    .filter((d) => d.startsWith('chromium-'))
+    .sort()
+    .reverse()) {
     for (const arch of ['chrome-mac-arm64', 'chrome-mac', 'chrome-mac-x64']) {
       const p = join(base, d, arch, 'Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing');
       if (existsSync(p)) return p;
@@ -24,45 +27,68 @@ function findChrome() {
 
 const CHROME = findChrome();
 if (!CHROME) {
-  console.error('No Chrome for Testing found. Branded Chrome ignores --load-extension.\nRun: npx playwright install chromium   or set CHROME=/path/to/chrome-for-testing');
+  console.error(
+    'No Chrome for Testing found. Branded Chrome ignores --load-extension.\nRun: npx playwright install chromium   or set CHROME=/path/to/chrome-for-testing',
+  );
   process.exit(2);
 }
 
 const profile = mkdtempSync(join(tmpdir(), 'warehouse-perf-'));
-const proc = spawn(CHROME, [
-  '--headless=new', '--no-first-run', '--no-default-browser-check', `--user-data-dir=${profile}`,
-  `--load-extension=${EXT}`, `--disable-extensions-except=${EXT}`, '--remote-debugging-pipe',
-  '--enable-precise-memory-info', '--window-size=1600,1000'
-], { stdio: ['ignore', 'ignore', 'ignore', 'pipe', 'pipe'] });
+const proc = spawn(
+  CHROME,
+  [
+    '--headless=new',
+    '--no-first-run',
+    '--no-default-browser-check',
+    `--user-data-dir=${profile}`,
+    `--load-extension=${EXT}`,
+    `--disable-extensions-except=${EXT}`,
+    '--remote-debugging-pipe',
+    '--enable-precise-memory-info',
+    '--window-size=1600,1000',
+  ],
+  { stdio: ['ignore', 'ignore', 'ignore', 'pipe', 'pipe'] },
+);
 
 const pageErrors = [];
 const pending = new Map();
-let seq = 0, buf = '';
+let seq = 0,
+  buf = '';
 proc.stdio[4].on('data', (d) => {
   buf += d.toString();
   let i;
   while ((i = buf.indexOf('\0')) >= 0) {
-    const msg = JSON.parse(buf.slice(0, i)); buf = buf.slice(i + 1);
+    const msg = JSON.parse(buf.slice(0, i));
+    buf = buf.slice(i + 1);
     if (msg.method === 'Runtime.exceptionThrown') pageErrors.push(msg.params.exceptionDetails.exception?.description || msg.params.exceptionDetails.text);
     if (!msg.id || !pending.has(msg.id)) continue;
-    const p = pending.get(msg.id); pending.delete(msg.id);
-    if (msg.error) p.rej(new Error(JSON.stringify(msg.error))); else p.res(msg.result);
+    const p = pending.get(msg.id);
+    pending.delete(msg.id);
+    if (msg.error) p.rej(new Error(JSON.stringify(msg.error)));
+    else p.res(msg.result);
   }
 });
-const send = (method, params = {}, sessionId) => new Promise((res, rej) => {
-  const m = { id: ++seq, method, params, ...(sessionId ? { sessionId } : {}) };
-  pending.set(m.id, { res, rej });
-  proc.stdio[3].write(JSON.stringify(m) + '\0');
-});
-const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+const send = (method, params = {}, sessionId) =>
+  new Promise((res, rej) => {
+    const m = { id: ++seq, method, params, ...(sessionId ? { sessionId } : {}) };
+    pending.set(m.id, { res, rej });
+    proc.stdio[3].write(JSON.stringify(m) + '\0');
+  });
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 function processMB() {
   const pids = execSync(`ps -axo pid,command | grep -- '--extension-process' | grep -v grep | grep '${profile}' || true`)
-    .toString().trim().split('\n').filter(Boolean).map(l => l.trim().split(/\s+/)[0]);
-  return pids.map(pid => {
+    .toString()
+    .trim()
+    .split('\n')
+    .filter(Boolean)
+    .map((l) => l.trim().split(/\s+/)[0]);
+  return pids.map((pid) => {
     if (platform() === 'darwin') {
-      const m = execSync(`footprint -p ${pid} 2>/dev/null | grep -m1 'Footprint:' || true`).toString().match(/([\d.]+)\s*(KB|MB|GB)/);
-      if (m) return +(Number(m[1]) * ({ KB: 1 / 1024, MB: 1, GB: 1024 })[m[2]]).toFixed(1);
+      const m = execSync(`footprint -p ${pid} 2>/dev/null | grep -m1 'Footprint:' || true`)
+        .toString()
+        .match(/([\d.]+)\s*(KB|MB|GB)/);
+      if (m) return +(Number(m[1]) * { KB: 1 / 1024, MB: 1, GB: 1024 }[m[2]]).toFixed(1);
     }
     return +(Number(execSync(`ps -o rss= -p ${pid} || echo 0`).toString().trim()) / 1024).toFixed(1);
   });
@@ -118,7 +144,7 @@ try {
     await send('HeapProfiler.collectGarbage', {}, s);
     await sleep(300);
     await send('HeapProfiler.collectGarbage', {}, s);
-    const m = Object.fromEntries((await send('Performance.getMetrics', {}, s)).metrics.map(x => [x.name, x.value]));
+    const m = Object.fromEntries((await send('Performance.getMetrics', {}, s)).metrics.map((x) => [x.name, x.value]));
     const row = { label, heapMB: +(m.JSHeapUsedSize / 1048576).toFixed(2), nodes: m.Nodes, listeners: m.JSEventListeners, processMB: processMB() };
     rows.push(row);
     return row;
@@ -162,7 +188,7 @@ try {
     return +((performance.now() - t) / navs.length).toFixed(2);
   })()`);
 
-  console.table(rows.map(r => ({ ...r, processMB: r.processMB.join(' / ') })));
+  console.table(rows.map((r) => ({ ...r, processMB: r.processMB.join(' / ') })));
   console.log(`rows per folder: ${shown}   folder render: ${renderMs} ms`);
 
   const checks = [
@@ -170,10 +196,10 @@ try {
     ['listeners stable in 2nd half', end.listeners === mid.listeners, `${mid.listeners} -> ${end.listeners}`],
     [`JS heap growth in 2nd half < ${LIMITS.heapGrowthMB} MB`, end.heapMB - mid.heapMB < LIMITS.heapGrowthMB, `${(end.heapMB - mid.heapMB).toFixed(2)} MB`],
     [`folder render < ${LIMITS.renderMs} ms`, renderMs < LIMITS.renderMs, `${renderMs} ms`],
-    ['no page errors', pageErrors.length === 0, pageErrors.slice(0, 3).join(' | ') || 'none']
+    ['no page errors', pageErrors.length === 0, pageErrors.slice(0, 3).join(' | ') || 'none'],
   ];
   for (const [name, ok, detail] of checks) console.log(`${ok ? 'PASS' : 'FAIL'}  ${name}  (${detail})`);
-  if (checks.some(c => !c[1])) exitCode = 1;
+  if (checks.some((c) => !c[1])) exitCode = 1;
   console.log(`PERF_RESULT ${JSON.stringify({ links: LINKS, cycles: CYCLES, renderMs, rows, pass: !exitCode })}`);
 } catch (e) {
   console.error('ERROR', e.message);

@@ -4,14 +4,14 @@ Every rule here has at least one test. If you change a rule, change its test in 
 
 ## Data ownership
 
-| Data | Lives in | Never in |
-|---|---|---|
-| Link title, URL, folder membership, order inside a folder | `chrome.bookmarks` | `chrome.storage` |
-| Sections (status groups inside a folder) | Real subfolders in `chrome.bookmarks` | settings |
-| Home links and their order | Bookmark folder `settings.home.folderId` (created in *Other bookmarks*) | settings |
-| Sidebar order, categories, folder→category, section colors, per-folder prefs, env rules, host map, Home look, sidebar width, theme, sidebar look | `chrome.storage.local.settings` | bookmarks |
-| Home icon overrides (URL or 128 px data URL), keyed by bookmark id | `chrome.storage.local.homeIcons` | settings |
-| Home background image (JPEG, max 1920 px) | `chrome.storage.local.homeBg` | settings (it would be rewritten on every save) |
+| Data                                                                                                                                             | Lives in                                                                | Never in                                       |
+| ------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------- | ---------------------------------------------- |
+| Link title, URL, folder membership, order inside a folder                                                                                        | `chrome.bookmarks`                                                      | `chrome.storage`                               |
+| Sections (status groups inside a folder)                                                                                                         | Real subfolders in `chrome.bookmarks`                                   | settings                                       |
+| Home links and their order                                                                                                                       | Bookmark folder `settings.home.folderId` (created in _Other bookmarks_) | settings                                       |
+| Sidebar order, categories, folder→category, section colors, per-folder prefs, env rules, host map, Home look, sidebar width, theme, sidebar look | `chrome.storage.local.settings`                                         | bookmarks                                      |
+| Home icon overrides (URL or 128 px data URL), keyed by bookmark id                                                                               | `chrome.storage.local.homeIcons`                                        | settings                                       |
+| Home background image (JPEG, max 1920 px)                                                                                                        | `chrome.storage.local.homeBg`                                           | settings (it would be rewritten on every save) |
 
 - `loadSettings()` merges stored settings over `DEFAULT_SETTINGS`, and merges `home` and `sideLook` one level deep over `DEFAULT_HOME` / `DEFAULT_SIDE_LOOK`, so old stored objects gain new keys.
 - Code that changes settings re-reads by **id** from the current `settings` object. The `storage.onChanged` listener replaces `settings` objects, so a category/section object captured at render time can be stale (this bug happened; test "category menu: color, rename, Move down").
@@ -43,7 +43,7 @@ Every rule here has at least one test. If you change a rule, change its test in 
 ## Environments (labels and sites)
 
 - No defaults: `envRules` and `hostMap` start as `[]` on a fresh install. Saved lists from older versions are kept as they are. With no labels, `detectEnv` uses only the PROD/TEST/STAGE/DEV words in the title.
-- All copy is plain language: *Labels* ("If the address contains" → "Show the label") and *Same site in each version* (one row per site, a box per label). Label names stay PROD/TEST/STAGE/LOCAL with their colors; plain names (`ENV_NAMES`: Live, Test, Staging, Your computer) show beside them.
+- All copy is plain language: _Labels_ ("If the address contains" → "Show the label") and _Same site in each version_ (one row per site, a box per label). Label names stay PROD/TEST/STAGE/LOCAL with their colors; plain names (`ENV_NAMES`: Live, Test, Staging, Your computer) show beside them.
 - "What is this?" card explains both lists and has **Try it**: type a link or click a sample. It shows the label (`explainEnv()`), why ("Label N matched: the address contains …", "No label matches this address.", "There are no labels yet."), and the same page in the other versions from the site row (`deriveUrl`), or why there is none.
 - Labels: add row (text + label + ＋, Enter works), edit on blur, a select colored by its label. Clearing the text or ✕ removes the row with an Undo toast. Drag the grip or Alt+↑/↓ to reorder; the first match wins. A pasted full address is cut to its host; text is lower-cased.
 - Sites: 4 boxes (PROD, TEST, STAGE, LOCAL) + ✕; an empty box means none. A row with all boxes empty is not added, and emptying every box removes it (Undo). Full addresses are cut to the host.
@@ -72,7 +72,7 @@ Every rule here has at least one test. If you change a rule, change its test in 
 - No categories → the sidebar renders flat, exactly as before categories existed.
 - Header text: `Name (count)`. "No category" is a fixed group after the categories, shown only when it has folders; it cannot be renamed, colored, dragged or collapsed.
 - Drop a folder on a header → that category, placed at its end. Drop a folder on a folder in another category → adopts that category at that position.
-- Folder menu: *Move to <category>* (except its current one), *Remove from category*.
+- Folder menu: _Move to <category>_ (except its current one), _Remove from category_.
 - Header menu: color (default + red/orange/yellow/green/blue/purple), Rename, Move up/down, Delete. Drag a header onto another header to reorder.
 - Delete asks `confirm()`, removes the category and its `folderCat` entries; folders and bookmarks stay.
 
@@ -94,18 +94,18 @@ Every rule here has at least one test. If you change a rule, change its test in 
 - Headers in Chrome order, then **No section** (direct links) last and always present as a drop target. A folder without subfolders renders the plain list.
 - Collapse is per folder: `folders[id].closed[sectionId]`.
 - Drop a link on a header → move into that subfolder. Drop a link before/after a row of another section (Manual sort) → move to that position.
-- Link menu: *Move to <section>* for every section except the current one, including *No section*.
+- Link menu: _Move to <section>_ for every section except the current one, including _No section_.
 - Header menu: color (saved in `settings.partColors[folderId]`), Rename (Chrome title), Move up/down (Chrome order), Delete (moves its children to the parent first, then removes the empty folder; asks `confirm()`). Drag a header onto another header to reorder.
 - Folder count, Open all, Copy all URLs, Env matrix and search include links in sections.
 
 ## Home
 
 - Default view on every new tab. Fills the right pane; the sidebar stays.
-- First start: find or create a folder **Home** in *Other bookmarks* (`tree.children[1]`, fallback first child). An existing *Home* folder is adopted. The 24 default links (from the Bonjourr export, `DEFAULT_HOME_LINKS`) are added only when `home.seeded` is false **and** the folder is empty. `seeded` is set before creating links. Removed defaults never come back. If the Home folder is deleted later, an empty one is created.
-- Tiles = links in the Home folder in Chrome order, then an *Add link* tile. Click opens in the same tab; the *Open in new tab* setting adds `target=_blank rel=noopener`.
+- First start: find or create a folder **Home** in _Other bookmarks_ (`tree.children[1]`, fallback first child). An existing _Home_ folder is adopted. The 24 default links (from the Bonjourr export, `DEFAULT_HOME_LINKS`) are added only when `home.seeded` is false **and** the folder is empty. `seeded` is set before creating links. Removed defaults never come back. If the Home folder is deleted later, an empty one is created.
+- Tiles = links in the Home folder in Chrome order, then an _Add link_ tile. Click opens in the same tab; the _Open in new tab_ setting adds `target=_blank rel=noopener`.
 - Icon order: `homeIcons[id]` → official Google product icon by host (`googleIcon`: Gmail, Drive, Calendar, Keep, Meet, Docs/Sheets/Slides/Forms) → Chrome favicon `_favicon?pageUrl=…&size=64` → letter icon. Failed images fall back down this chain.
 - Tile menu: Change icon… (upload, resized to 128 px PNG), Icon from URL…, Use site icon, Edit name / URL, Open in new tab, Remove (undo toast restores the bookmark **and** its icon).
-- Drag a tile onto a tile → move before it; onto *Add link* → move to the end.
+- Drag a tile onto a tile → move before it; onto _Add link_ → move to the end.
 - Links list (Settings › Home page, card `Links (n)`): the Home folder's links in Chrome order with icon, name and a Remove button (same undo toast as the tile menu). Drag rows to reorder (same-parent index rule: before = target index, after = index + 1). The add form takes name + URL: no URL → nothing is added; no scheme → `https://`; no name → host without `www.`. Settings stay open on the same tab and keep their scroll position when the list changes.
 - Home has no settings button of its own. Its look (background image, opacity, darkness, blur, color; clock size 48–260 (also capped to 17 % of pane width), 24-hour, seconds, date; show names, open in new tab, icon size 40–88, per row 4–16) is edited in Settings › Home page, next to a live preview. Changes save after 300 ms.
 - Defaults: color `#185a63`, darkness 65, blur 2, clock 170, 12-hour with seconds, date on, names on, same tab, icon 56, 12 per row.
@@ -113,8 +113,8 @@ Every rule here has at least one test. If you change a rule, change its test in 
 ## Popup (save current tab)
 
 - Shows the active tab title (editable), the full URL and its env badge. No tab → message, Save disabled.
-- *This page* saves the full URL; *Whole site* saves `origin/` with the host as title and exists only for http(s) pages. A title you edited is kept when switching mode.
-- Folder list: root first, then every nested folder (indented); filter matches the full path. If no folder has exactly the typed name, the last item is *Create "<name>"* (created under the root).
+- _This page_ saves the full URL; _Whole site_ saves `origin/` with the host as title and exists only for http(s) pages. A title you edited is kept when switching mode.
+- Folder list: root first, then every nested folder (indented); filter matches the full path. If no folder has exactly the typed name, the last item is _Create "<name>"_ (created under the root).
 - Preselects `settings.lastSaveFolder`, else the root. ↑/↓ move, Enter saves. After save: status "Saved to X", remember the folder, close after 0.9 s.
 - If the URL is already bookmarked: show up to 3 locations with Remove (undo toast).
 

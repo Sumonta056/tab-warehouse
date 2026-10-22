@@ -45,13 +45,15 @@ Developers keep the same page open in many versions: live, test, staging and `lo
 ## Features
 
 ### Home
+
 - Opens on every new tab: a large clock, the date and your link tiles.
-- Tiles are a normal bookmark folder called *Home* in *Other bookmarks*, created on first start with 24 default links.
+- Tiles are a normal bookmark folder called _Home_ in _Other bookmarks_, created on first start with 24 default links.
 - Drag tiles to reorder. Right-click a tile to change its icon (upload or URL), edit it, open it in a new tab or remove it (with undo).
 - Official icons for Google apps (Gmail, Drive, Calendar, Keep, Meet, Docs, Sheets, Slides, Forms); Chrome's favicon for everything else.
 - Background image, darkness, blur, color, clock size, 12/24-hour, seconds, icon size and icons per row — all with a live preview.
 
 ### Sidebar
+
 - One entry per folder under your root folder, with link counts.
 - Drag folders into your own order. The order is saved in the extension; Chrome's tree is never reordered.
 - **Categories** group folders (for example "Daily" and "Rarely used"), with colors, collapse and drag reorder.
@@ -59,25 +61,29 @@ Developers keep the same page open in many versions: live, test, staging and `lo
 - Resizable (180–440 px) and themeable: a solid color or a blurred copy of your Home background.
 
 ### Folder page
+
 - Full URLs that wrap instead of truncating. Show the title first or the URL first.
 - Sort per folder: manual, name, URL, environment, date added or host.
 - **Sections**: split a folder into groups such as "In progress" or "Blocked". Each section is a real subfolder, so it syncs too.
-- Inline edit, right-click menus, a folder filter, *Open all* and *Copy all URLs*.
+- Inline edit, right-click menus, a folder filter, _Open all_ and _Copy all URLs_.
 - Delete a link and undo it within 8 seconds.
 
 ### Environments
+
 - **Labels**: "if the address contains `-test.` show TEST". The first matching rule wins. Without rules, words like PROD or TEST in the title still work.
-- **Same site in each version**: list the PROD, TEST, STAGE and LOCAL hosts of a site once. Every link then offers *Open on TEST / PROD / …*.
+- **Same site in each version**: list the PROD, TEST, STAGE and LOCAL hosts of a site once. Every link then offers _Open on TEST / PROD / …_.
 - **Env matrix** view: one row per page, one column per environment. Empty cells offer **+ derive**.
 - A **Try it** box explains which rule matches a link and why.
 - Copy both lists as text and paste them on another machine.
 
 ### Popup (`⌘⇧B` / `Ctrl+Shift+B`)
+
 - Save the current tab into any folder, or create a new folder by typing its name.
 - Save the full page or the whole site (`origin/`).
 - Shows the env badge, remembers the last folder, and tells you if the URL is already saved.
 
 ### Settings and backup
+
 - One Settings view with 5 tabs: Appearance, Home page, Bookmarks, Environments, Backup.
 - Every change saves at once. There is no Save button.
 - Export to JSON (links, sections, sidebar order, categories and preferences) or to HTML (Chrome's bookmark format). Import merges and skips URLs you already have.
@@ -100,7 +106,7 @@ Coming soon.
 
 ## Quick start
 
-1. **Pick your root folder.** Open ⚙ Settings → Bookmarks. Its subfolders become the sidebar. By default Tab Warehouse uses a folder named *My Links* if you have one, else your bookmarks bar.
+1. **Pick your root folder.** Open ⚙ Settings → Bookmarks. Its subfolders become the sidebar. By default Tab Warehouse uses a folder named _My Links_ if you have one, else your bookmarks bar.
 2. **Add environment labels.** Settings → Environments → Labels. For example: `localhost` → LOCAL, `-test.` → TEST, `-stage.` → STAGE.
 3. **Link your environments.** Settings → Environments → Same site in each version. Add one row per site with its PROD, TEST, STAGE and LOCAL hosts.
 4. **Save a page.** On any site, press `⌘⇧B` (macOS) or `Ctrl+Shift+B` (Windows/Linux), pick a folder and press Enter.
@@ -108,17 +114,17 @@ Coming soon.
 
 ## Keyboard shortcuts
 
-| Keys | Action |
-|---|---|
-| `⌘⇧B` / `Ctrl+Shift+B` | Open the save popup |
-| `⌘K` / `Ctrl+K` or `/` | Search all folders |
-| `Enter` (in search) | Open the first result |
-| `Esc` | Clear search or filter; close Settings |
-| `j` / `k` | Next / previous folder |
-| `Alt+↑` / `Alt+↓` | Move the focused folder or section up / down |
-| `←` / `→` (on the sidebar edge) | Resize the sidebar by 16 px |
-| `←` / `→` (in Settings) | Next / previous tab |
-| `↑` / `↓`, `Enter` (in the popup) | Pick a folder, save |
+| Keys                              | Action                                       |
+| --------------------------------- | -------------------------------------------- |
+| `⌘⇧B` / `Ctrl+Shift+B`            | Open the save popup                          |
+| `⌘K` / `Ctrl+K` or `/`            | Search all folders                           |
+| `Enter` (in search)               | Open the first result                        |
+| `Esc`                             | Clear search or filter; close Settings       |
+| `j` / `k`                         | Next / previous folder                       |
+| `Alt+↑` / `Alt+↓`                 | Move the focused folder or section up / down |
+| `←` / `→` (on the sidebar edge)   | Resize the sidebar by 16 px                  |
+| `←` / `→` (in Settings)           | Next / previous tab                          |
+| `↑` / `↓`, `Enter` (in the popup) | Pick a folder, save                          |
 
 ## Privacy and permissions
 
@@ -128,12 +134,12 @@ Tab Warehouse has no server, no account, no analytics and no tracking. It does n
 - Preferences (sidebar order, categories, env rules, Home look) stay in **`chrome.storage.local`** on your machine.
 - The only images loaded from the network are the official Google app icons (from `ssl.gstatic.com`) and any icon URL you add yourself.
 
-| Permission | Why it is needed |
-|---|---|
-| `bookmarks` | Read and edit your bookmarks — the core of the extension |
-| `storage` | Save sidebar order, per-folder preferences, env rules and the Home look |
-| `favicon` | Show site icons from Chrome's own favicon cache |
-| `tabs` | Read the active tab's title and URL in the popup, and open the new tab page |
+| Permission  | Why it is needed                                                            |
+| ----------- | --------------------------------------------------------------------------- |
+| `bookmarks` | Read and edit your bookmarks — the core of the extension                    |
+| `storage`   | Save sidebar order, per-folder preferences, env rules and the Home look     |
+| `favicon`   | Show site icons from Chrome's own favicon cache                             |
+| `tabs`      | Read the active tab's title and URL in the popup, and open the new tab page |
 
 ## How it works
 
@@ -191,9 +197,9 @@ python3 -I tests/serve.py 8799
   - Renamed to **Tab Warehouse** with a new terminal-style icon.
   - Home page: clock, date, 24 default tiles, background, clock and tile settings, official Google icons.
   - One Settings view with 5 tabs, auto-save, accent themes and a sidebar background.
-  - Environments: plain-language labels and site rows, *Try it*, copy and paste; no default rules.
+  - Environments: plain-language labels and site rows, _Try it_, copy and paste; no default rules.
   - Resizable sidebar; categories with colors and drag reorder; sections inside folders; save-current-tab popup.
-  - Fixes: edit form Save, category menu after a settings change, *Whole site* only for http(s).
+  - Fixes: edit form Save, category menu after a settings change, _Whole site_ only for http(s).
 - **2.1.0** — Rename folders from the sidebar and page header; ✎ and ··· always visible on rows; right-click menus; import and export (JSON with preferences, Netscape HTML); `tools/make-icons.py`.
 - **2.0.1** — Sidebar drag fixed; Alt+↑/↓ keyboard reorder; Unsorted always listed last.
 - **2.0.0** — Sidebar and folder page replace the column board. Six sort modes, env matrix with derive, per-folder view settings, reorderable sidebar, global search, host map.

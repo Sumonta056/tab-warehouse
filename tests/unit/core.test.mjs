@@ -1,11 +1,38 @@
 import { test, describe, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  ENVS, DEFAULT_HOME, SIDE_WIDTH, explainEnv, envText, parseEnvText,
-  hostOf, pathKey, displayUrl, isGithub, sameAsUrl, detectEnv, deriveUrl,
-  findById, findFolderByTitle, resolveRoot, flatten, folderList, sections, sortLinks, buildMatrix,
-  googleIcon, normalizeUrl, clampSideWidth, clockText, msToNextTick,
-  loadSettings, saveSettings, THEMES, themeVars, DEFAULT_SIDE_LOOK, sideLookVars
+  ENVS,
+  DEFAULT_HOME,
+  SIDE_WIDTH,
+  explainEnv,
+  envText,
+  parseEnvText,
+  hostOf,
+  pathKey,
+  displayUrl,
+  isGithub,
+  sameAsUrl,
+  detectEnv,
+  deriveUrl,
+  findById,
+  findFolderByTitle,
+  resolveRoot,
+  flatten,
+  folderList,
+  sections,
+  sortLinks,
+  buildMatrix,
+  googleIcon,
+  normalizeUrl,
+  clampSideWidth,
+  clockText,
+  msToNextTick,
+  loadSettings,
+  saveSettings,
+  THEMES,
+  themeVars,
+  DEFAULT_SIDE_LOOK,
+  sideLookVars,
 } from '../../lib/core.js';
 
 const SAMPLE_ENV_RULES = [
@@ -20,12 +47,12 @@ const SAMPLE_ENV_RULES = [
   { pattern: 'api.example.com', env: 'PROD' },
   { pattern: 'www.example.com', env: 'PROD' },
   { pattern: 'console.aws.amazon.com', env: 'PROD' },
-  { pattern: 'prod', env: 'PROD' }
+  { pattern: 'prod', env: 'PROD' },
 ];
 const SAMPLE_HOST_MAP = [
   { PROD: 'shop.example.com', TEST: 'shop-test.example.com', STAGE: 'shop-stage.example.com', LOCAL: 'localhost:8080' },
   { PROD: 'api.example.com', TEST: 'api-test.example.com', STAGE: '', LOCAL: 'localhost:8080' },
-  { PROD: 'www.example.com', TEST: 'test.example.com', STAGE: '', LOCAL: '' }
+  { PROD: 'www.example.com', TEST: 'test.example.com', STAGE: '', LOCAL: '' },
 ];
 
 const L = (id, title, url, extra = {}) => ({ id, title, url, ...extra });
@@ -116,10 +143,10 @@ describe('bookmark tree helpers', () => {
       F('10', 'My Links', [
         F('11', 'Shop API', [L('111', 'a', 'https://a.com')]),
         F('12', 'Tasks', [L('121', 'b', 'https://b.com'), F('122', 'Blocked', [L('1221', 'c', 'https://c.com')])]),
-        L('13', 'loose', 'https://loose.com')
-      ])
+        L('13', 'loose', 'https://loose.com'),
+      ]),
     ]),
-    F('2', 'Other bookmarks', [])
+    F('2', 'Other bookmarks', []),
   ]);
   test('findById and findFolderByTitle', () => {
     assert.equal(findById(tree, '122').title, 'Blocked');
@@ -134,10 +161,25 @@ describe('bookmark tree helpers', () => {
   });
   test('flatten gives every link with its folder path', () => {
     const r = flatten(findById(tree, '10'));
-    assert.deepEqual(r.map(x => [x.id, x.path]), [['111', 'Shop API'], ['121', 'Tasks'], ['1221', 'Tasks › Blocked'], ['13', '']]);
+    assert.deepEqual(
+      r.map((x) => [x.id, x.path]),
+      [
+        ['111', 'Shop API'],
+        ['121', 'Tasks'],
+        ['1221', 'Tasks › Blocked'],
+        ['13', ''],
+      ],
+    );
   });
   test('folderList gives nested folders with depth', () => {
-    assert.deepEqual(folderList(findById(tree, '10')).map(f => [f.title, f.depth]), [['Shop API', 0], ['Tasks', 0], ['Blocked', 1]]);
+    assert.deepEqual(
+      folderList(findById(tree, '10')).map((f) => [f.title, f.depth]),
+      [
+        ['Shop API', 0],
+        ['Tasks', 0],
+        ['Blocked', 1],
+      ],
+    );
   });
 });
 
@@ -146,30 +188,51 @@ describe('sections()', () => {
     F('a', 'A', [L('a1', 'x', 'https://x.com')], { index: 0 }),
     F('b', 'B', [L('b1', 'y', 'https://y.com'), F('b2', 'Part', [L('b21', 'z', 'https://z.com')])], { index: 1 }),
     F('c', 'C', [], { index: 2 }),
-    L('l1', 'loose', 'https://l.com')
+    L('l1', 'loose', 'https://l.com'),
   ]);
   test('saved order first, unknown folders appended in tree order, Unsorted last', () => {
     const s = sections(root, ['c', 'a']);
-    assert.deepEqual(s.map(x => x.id), ['c', 'a', 'b', 'unsorted:10']);
+    assert.deepEqual(
+      s.map((x) => x.id),
+      ['c', 'a', 'b', 'unsorted:10'],
+    );
     assert.equal(s.at(-1).virtual, true);
   });
   test('no loose links means no Unsorted section', () => {
     const s = sections(F('r', 'R', [F('a', 'A', [])]), []);
-    assert.equal(s.some(x => x.virtual), false);
+    assert.equal(
+      s.some((x) => x.virtual),
+      false,
+    );
   });
   test('parts are direct subfolders; all = direct links + part links', () => {
-    const b = sections(root, []).find(x => x.id === 'b');
-    assert.deepEqual(b.links.map(x => x.id), ['b1']);
-    assert.deepEqual(b.parts.map(x => [x.id, x.title, x.links.length]), [['b2', 'Part', 1]]);
-    assert.deepEqual(b.all.map(x => x.id), ['b1', 'b21']);
+    const b = sections(root, []).find((x) => x.id === 'b');
+    assert.deepEqual(
+      b.links.map((x) => x.id),
+      ['b1'],
+    );
+    assert.deepEqual(
+      b.parts.map((x) => [x.id, x.title, x.links.length]),
+      [['b2', 'Part', 1]],
+    );
+    assert.deepEqual(
+      b.all.map((x) => x.id),
+      ['b1', 'b21'],
+    );
   });
   test('hidden ids are excluded (Home folder never becomes a sidebar section)', () => {
-    assert.deepEqual(sections(root, [], ['b']).map(x => x.id), ['a', 'c', 'unsorted:10']);
+    assert.deepEqual(
+      sections(root, [], ['b']).map((x) => x.id),
+      ['a', 'c', 'unsorted:10'],
+    );
   });
   test('Unsorted has empty parts and all = loose links', () => {
     const u = sections(root, []).at(-1);
     assert.deepEqual(u.parts, []);
-    assert.deepEqual(u.all.map(x => x.id), ['l1']);
+    assert.deepEqual(
+      u.all.map((x) => x.id),
+      ['l1'],
+    );
   });
 });
 
@@ -179,37 +242,42 @@ describe('sortLinks', () => {
     L('2', 'alpha', 'https://shop-test.example.com/1', { index: 0, dateAdded: 30 }),
     L('3', 'Gamma', 'http://localhost:8080/1', { index: 1, dateAdded: 20 }),
     L('4', 'item 10', 'https://a.com/10', { index: 3, dateAdded: 5 }),
-    L('5', 'item 9', 'https://a.com/9', { index: 4, dateAdded: 1 })
+    L('5', 'item 9', 'https://a.com/9', { index: 4, dateAdded: 1 }),
   ];
-  const ids = (sort) => sortLinks(links, sort, SAMPLE_ENV_RULES).map(x => x.id);
+  const ids = (sort) => sortLinks(links, sort, SAMPLE_ENV_RULES).map((x) => x.id);
   test('manual = Chrome index', () => assert.deepEqual(ids('manual'), ['2', '3', '1', '4', '5']));
   test('name is case-insensitive and numeric-aware', () => assert.deepEqual(ids('name'), ['2', '1', '3', '5', '4']));
   test('date added = newest first', () => assert.deepEqual(ids('added'), ['2', '3', '1', '4', '5']));
   test('env = PROD, TEST, STAGE, LOCAL, then none', () => {
-    const r = sortLinks(links, 'env', SAMPLE_ENV_RULES).map(x => detectEnv(x, SAMPLE_ENV_RULES));
+    const r = sortLinks(links, 'env', SAMPLE_ENV_RULES).map((x) => detectEnv(x, SAMPLE_ENV_RULES));
     assert.deepEqual(r.slice(0, 2), ['TEST', 'LOCAL']);
     assert.deepEqual(r.slice(2), ['', '', '']);
   });
   test('host then path', () => assert.deepEqual(ids('host').slice(0, 2), ['5', '4']));
   test('does not mutate the input array', () => {
-    const before = links.map(x => x.id);
+    const before = links.map((x) => x.id);
     sortLinks(links, 'name', SAMPLE_ENV_RULES);
-    assert.deepEqual(links.map(x => x.id), before);
+    assert.deepEqual(
+      links.map((x) => x.id),
+      before,
+    );
   });
 });
 
 describe('buildMatrix', () => {
   test('groups the same path across envs; no-env links go to rest', () => {
-    const { rows, rest } = buildMatrix([
-      L('1', 'p', 'https://shop.example.com/api/x?q=1'),
-      L('2', 't', 'https://shop-test.example.com/api/x'),
-      L('3', 'n', 'https://github.com/a')
-    ], SAMPLE_ENV_RULES);
+    const { rows, rest } = buildMatrix(
+      [L('1', 'p', 'https://shop.example.com/api/x?q=1'), L('2', 't', 'https://shop-test.example.com/api/x'), L('3', 'n', 'https://github.com/a')],
+      SAMPLE_ENV_RULES,
+    );
     assert.equal(rows.length, 1);
     assert.equal(rows[0].key, '/api/x');
     assert.equal(rows[0].cells.PROD.length, 1);
     assert.equal(rows[0].cells.TEST.length, 1);
-    assert.deepEqual(rest.map(x => x.id), ['3']);
+    assert.deepEqual(
+      rest.map((x) => x.id),
+      ['3'],
+    );
   });
 });
 
@@ -267,10 +335,16 @@ describe('settings storage', () => {
   let store;
   beforeEach(() => {
     store = {};
-    globalThis.chrome = { storage: { local: {
-      get: async (k) => ({ [k]: store[k] }),
-      set: async (o) => { Object.assign(store, JSON.parse(JSON.stringify(o))); }
-    } } };
+    globalThis.chrome = {
+      storage: {
+        local: {
+          get: async (k) => ({ [k]: store[k] }),
+          set: async (o) => {
+            Object.assign(store, JSON.parse(JSON.stringify(o)));
+          },
+        },
+      },
+    };
   });
   test('fresh install returns all defaults', async () => {
     const s = await loadSettings();
@@ -332,21 +406,31 @@ describe('sidebar look', () => {
     assert.deepEqual(sideLookVars({ ...DEFAULT_SIDE_LOOK, mode: 'image' }, ''), solid);
   });
   test('image mode uses the image, darkness and blur', () => {
-    assert.deepEqual(sideLookVars({ mode: 'image', color: '#102030', dark: 55, blur: 8 }, 'data:x'),
-      { '--side-color': '#102030', '--side-dark': '0.55', '--side-blur': '8px', '--side-img': 'url("data:x")' });
+    assert.deepEqual(sideLookVars({ mode: 'image', color: '#102030', dark: 55, blur: 8 }, 'data:x'), {
+      '--side-color': '#102030',
+      '--side-dark': '0.55',
+      '--side-blur': '8px',
+      '--side-img': 'url("data:x")',
+    });
   });
 });
 
 describe('environment labels: explain and text format', () => {
   test('explainEnv names the matching rule, or the title word, or nothing', () => {
-    const rules = [{ pattern: 'test.', env: 'TEST' }, { pattern: 'shop.example.com', env: 'PROD' }];
+    const rules = [
+      { pattern: 'test.', env: 'TEST' },
+      { pattern: 'shop.example.com', env: 'PROD' },
+    ];
     assert.deepEqual(explainEnv({ url: 'https://test.shop.example.com/a' }, rules), { env: 'TEST', rule: 0 });
     assert.deepEqual(explainEnv({ url: 'https://shop.example.com/a' }, rules), { env: 'PROD', rule: 1 });
     assert.deepEqual(explainEnv({ url: 'https://x.org', title: 'Admin DEV' }, rules), { env: 'TEST', rule: -1, word: 'DEV' });
     assert.deepEqual(explainEnv({ url: 'https://x.org', title: '' }, []), { env: '', rule: -1 });
   });
   test('envText and parseEnvText round-trip both lists', () => {
-    const rules = [{ pattern: 'localhost', env: 'LOCAL' }, { pattern: 'test.', env: 'TEST' }];
+    const rules = [
+      { pattern: 'localhost', env: 'LOCAL' },
+      { pattern: 'test.', env: 'TEST' },
+    ];
     const map = [{ PROD: 'shop.example.com', TEST: 'test.shop.example.com', STAGE: '', LOCAL: 'localhost:3000' }];
     const text = envText(rules, map);
     assert.match(text, /^# Labels/);
