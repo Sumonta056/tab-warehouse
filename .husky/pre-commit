@@ -1,0 +1,2 @@
+npx lint-staged
+npm run --silent test:fast

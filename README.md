@@ -137,7 +137,7 @@ Tab Warehouse has no server, no account, no analytics and no tracking. It does n
 
 ## How it works
 
-Tab Warehouse is plain JavaScript with ES modules. There is no framework, no bundler, no npm and no build step.
+Tab Warehouse is plain JavaScript with ES modules. There is no framework, no bundler, no runtime dependency and no build step. npm is used only for dev tools (Husky, Prettier, commitlint).
 
 - **Chrome's bookmarks are the source of truth.** The extension never caches titles or URLs. Every change calls `chrome.bookmarks`, and the page re-renders from `chrome.bookmarks.getTree()` when Chrome reports a change.
 - **Extension-only data** (sidebar order, categories, env rules, Home look) lives in `chrome.storage.local`.
@@ -164,8 +164,9 @@ The full behaviour spec is in [`.claude/rules/business-logic.md`](.claude/rules/
 Contributions are welcome — bug reports, ideas and pull requests.
 
 1. Read [CONTRIBUTING.md](CONTRIBUTING.md) for setup, code style and the pull request checklist.
-2. Look at the [open issues](https://github.com/Sumonta056/tab-warehouse/issues), or open a new one before a large change.
-3. Run `./tests/run.sh` and make sure it is green before you open a pull request.
+2. Run `npm install` once. It installs Prettier and the git hooks that format, test and check your commit messages.
+3. Look at the [open issues](https://github.com/Sumonta056/tab-warehouse/issues), or open a new one before a large change.
+4. Run `./tests/run.sh` and make sure it is green before you open a pull request.
 
 ## Tests
 

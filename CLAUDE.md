@@ -37,6 +37,8 @@ tests/                 run.sh · unit/ (node --test) · e2e/ (headless Chrome + 
 
 There is no build. Load unpacked at `chrome://extensions`, then after edits click the ↻ on the extension card and open a new tab.
 
+- First time: `npm install`. It installs the dev tools and the git hooks: pre-commit runs Prettier on staged files and `npm run test:fast`; commit-msg enforces Conventional Commits (`feat:`, `fix:`, `docs:` …); pre-push runs `./tests/run.sh`.
+- Format: `npm run format` (Prettier, config in `.prettierrc.json`).
 - Full check (syntax + unit + e2e, ~10 s): `./tests/run.sh` — must be green before any change is called done. Filter e2e: `./tests/run.sh "sections"`.
 - RAM / leak / render-speed check on the real extension (~1 min, needs Chrome for Testing): `node tests/perf/memprobe.mjs`. See the `/perf-check` skill.
 - Debug a scenario visually: `python3 -I tests/serve.py 8799` (no-cache server), open `http://127.0.0.1:8799/tests/e2e/runner.html?only=<name>`.
@@ -44,7 +46,7 @@ There is no build. Load unpacked at `chrome://extensions`, then after edits clic
 
 ## Conventions
 
-- Keep it dependency-free. If something seems to need a library, it doesn't.
+- Keep the extension dependency-free at runtime. If something seems to need a library, it doesn't. Dev tools (Husky, Prettier, lint-staged, commitlint) live in `devDependencies` and never ship.
 - UI text: sentence case, plain verbs ("Save", not "Submit"). Buttons say what happens.
 - All interactive elements ≥ 28 px tall in dense lists, ≥ 36 px in toolbars, ≥ 44 px for primary actions. Keep `:focus-visible` working.
 - Colors only via tokens in `lib/shared.css`. Env colors: PROD orange, TEST blue, STAGE purple, LOCAL green — do not reassign.
@@ -54,7 +56,7 @@ There is no build. Load unpacked at `chrome://extensions`, then after edits clic
 
 ## Don't
 
-- Don't add a bundler, framework, TypeScript, or npm.
+- Don't add a bundler, framework, TypeScript, or runtime npm packages.
 - Don't store bookmark titles/URLs in `chrome.storage` — they're already in Chrome.
 - Don't add new permissions without saying why in the PR/commit message.
 - Don't change the env color mapping or the badge/pill class names (`PROD` `TEST` `STAGE` `LOCAL` `GH`); CSS depends on them.

@@ -1,0 +1,21 @@
+{
+  "name": "tab-warehouse",
+  "version": "2.1.0",
+  "private": true,
+  "description": "Dev tools only. The extension itself has no runtime dependencies.",
+  "license": "MIT",
+  "scripts": {
+    "prepare": "husky",
+    "test": "./tests/run.sh",
+    "test:fast": "for f in newtab.js popup.js home.js settings.js lib/core.js lib/transfer.js; do node --check $f || exit 1; done && node --test tests/unit/",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^20.5.3",
+    "@commitlint/config-conventional": "^20.5.3",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
+    "prettier": "^3.9.10"
+  }
+}

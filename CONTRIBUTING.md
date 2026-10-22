@@ -10,15 +10,19 @@ Thank you for your interest in this project. This guide shows how to set up the 
 
 ## Set up
 
-There is no build step and nothing to install.
+There is no build step. The extension runs straight from the source folder.
 
 1. Fork the repository and clone your fork:
    ```sh
    git clone https://github.com/<your-user>/tab-warehouse.git
    cd tab-warehouse
    ```
-2. Open `chrome://extensions`, turn on **Developer mode** and click **Load unpacked**. Choose the project folder.
-3. Open a new tab.
+2. Install the dev tools and git hooks (Node 20 or newer):
+   ```sh
+   npm install
+   ```
+3. Open `chrome://extensions`, turn on **Developer mode** and click **Load unpacked**. Choose the project folder.
+4. Open a new tab.
 
 To test with your real bookmarks safely, use a separate Chrome profile.
 
@@ -50,13 +54,14 @@ Read these 2 files before you change behaviour:
 ## Core rules
 
 1. **Chrome's bookmarks are the source of truth.** Never store bookmark titles or URLs in `chrome.storage`. Change bookmarks with the `chrome.bookmarks` API and let `refresh()` re-render.
-2. **No dependencies.** Do not add npm, a bundler, a framework or TypeScript.
+2. **No runtime dependencies.** Do not add a bundler, a framework, TypeScript or any package that ships with the extension. npm is only for dev tools (`devDependencies`).
 3. **No remote code.** No CDN scripts, no inline `<script>` and no inline event handlers (the extension CSP blocks them).
 4. **No `innerHTML` with user data.** Build DOM with the `h()` helper. Titles and URLs are user content.
 5. **No new permissions** without a reason in the pull request and a line in the README's permissions table.
 
 ## Code style
 
+- [Prettier](https://prettier.io) formats the code (`.prettierrc.json`). The pre-commit hook formats staged files for you; run `npm run format` to format everything, or `npm run format:check` to check only.
 - 2-space indent, single quotes, semicolons.
 - Early returns. No classes.
 - Match the code around your change.
@@ -85,9 +90,20 @@ Run the full check before you open a pull request. It takes about 10 seconds.
 
 **Every behaviour change updates `business-logic.md` and adds or updates a test in the same pull request.** Never weaken a test to make it pass.
 
+## Git hooks
+
+`npm install` sets up these hooks with [Husky](https://typicode.github.io/husky/):
+
+| Hook | What it runs |
+|---|---|
+| pre-commit | Prettier on staged files ([lint-staged](https://github.com/lint-staged/lint-staged)), then the syntax check and unit tests (`npm run test:fast`) |
+| commit-msg | [commitlint](https://commitlint.js.org) with the Conventional Commits rules |
+| pre-push | The full suite (`./tests/run.sh`) |
+
 ## Pull request checklist
 
 - [ ] The change does one thing, and the title says what it is.
+- [ ] The commit messages follow Conventional Commits.
 - [ ] `./tests/run.sh` is green.
 - [ ] `.claude/rules/business-logic.md` describes the new or changed behaviour.
 - [ ] A test covers the new or changed behaviour.
@@ -97,12 +113,15 @@ Run the full check before you open a pull request. It takes about 10 seconds.
 
 ## Commit messages
 
-Use a short summary in the imperative mood, for example:
+Use [Conventional Commits](https://www.conventionalcommits.org): `type(scope): summary`, with the summary in the imperative mood. The commit-msg hook rejects other formats.
 
 ```
-Add host sort to the folder page
-Fix popup folder filter for nested folders
+feat: add host sort to the folder page
+fix(popup): match nested folders in the filter
+docs: explain env labels in the README
 ```
+
+Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`.
 
 ## License
 
