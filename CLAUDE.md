@@ -5,16 +5,19 @@ Bookmarks as a warehouse: a Home page (clock + link tiles), a resizable folder s
 ## Layout
 
 ```
-manifest.json          MV3: newtab override + action popup + ⌘⇧B command
-newtab.html/.css/.js   The warehouse page (sidebar + folder page)
-home.js                Home view: clock, tiles, links list, default links
-settings.js            Settings view (right pane, 5 tabs); opened by the sidebar gear
-popup.html/.js         Toolbar popup: save the current tab into any folder
-lib/core.js            Shared: settings schema, env detection, derive, sort, matrix, DOM helpers
-lib/transfer.js        Export (JSON w/ prefs, Netscape HTML) and merge-import
-tools/make-icons.py    Build icons/ from any logo
-lib/shared.css         Design tokens + shared components (.row, .badge, .btn, .menu, .toast)
-icons/                 16/48/128 PNG
+extension/             Everything that ships; the Load unpacked folder. Paths below are relative to it.
+  manifest.json        MV3: newtab override + action popup + ⌘⇧B command
+  newtab.html/.css/.js The warehouse page (sidebar + folder page)
+  home.js              Home view: clock, tiles, links list, default links
+  board.js             Board view: one column of cards per folder
+  settings.js          Settings view (right pane, 5 tabs); opened by the sidebar gear
+  popup.html/.js       Toolbar popup: save the current tab into any folder
+  lib/core.js          Shared: settings schema, env detection, derive, sort, matrix, DOM helpers
+  lib/transfer.js      Export (JSON w/ prefs, Netscape HTML) and merge-import
+  lib/shared.css       Design tokens + shared components (.row, .badge, .btn, .menu, .toast)
+  icons/               16/48/128 PNG
+tools/                 make-icons.py (build extension/icons/ from any logo), package.sh (release ZIP)
+docs/                  Notes and requirements
 tests/                 run.sh · unit/ (node --test) · e2e/ (headless Chrome + fake chrome.* API)
 site/                  GitHub Pages website + live demo (site/build.sh, deployed by .github/workflows/pages.yml)
 .claude/rules/         Always-on conventions; business-logic.md is the behaviour spec
@@ -36,14 +39,14 @@ site/                  GitHub Pages website + live demo (site/build.sh, deployed
 
 ## Commands
 
-There is no build. Load unpacked at `chrome://extensions`, then after edits click the ↻ on the extension card and open a new tab.
+There is no build. Load unpacked at `chrome://extensions` (choose `extension/`), then after edits click the ↻ on the extension card and open a new tab.
 
 - First time: `npm install`. It installs the dev tools and the git hooks: pre-commit runs Prettier on staged files and `npm run test:fast`; commit-msg enforces Conventional Commits (`feat:`, `fix:`, `docs:` …); pre-push runs `./tests/run.sh`.
 - Format: `npm run format` (Prettier, config in `.prettierrc.json`).
 - Full check (syntax + unit + e2e, ~10 s): `./tests/run.sh` — must be green before any change is called done. Filter e2e: `./tests/run.sh "sections"`.
 - RAM / leak / render-speed check on the real extension (~1 min, needs Chrome for Testing): `node tests/perf/memprobe.mjs`. See the `/perf-check` skill.
 - Debug a scenario visually: `python3 -I tests/serve.py 8799` (no-cache server), open `http://127.0.0.1:8799/tests/e2e/runner.html?only=<name>`.
-- Package: see the `/release` skill (excludes `.claude/`, `tests/`).
+- Package: `./tools/package.sh` zips `extension/` + LICENSE; see the `/release` skill.
 
 ## Conventions
 

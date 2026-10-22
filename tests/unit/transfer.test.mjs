@@ -1,7 +1,7 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { cleanImport } from '../../lib/transfer.js';
-import { imageSaveError, sortLinks, detectEnv } from '../../lib/core.js';
+import { cleanImport } from '../../extension/lib/transfer.js';
+import { imageSaveError, sortLinks, detectEnv } from '../../extension/lib/core.js';
 
 describe('cleanImport', () => {
   test('drops bad env rules, host rows and folder prefs that would break rendering', () => {

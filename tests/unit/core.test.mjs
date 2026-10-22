@@ -37,7 +37,7 @@ import {
   DEFAULT_SIDE_LOOK,
   DEFAULT_BOARD,
   sideLookVars,
-} from '../../lib/core.js';
+} from '../../extension/lib/core.js';
 
 const SAMPLE_ENV_RULES = [
   { pattern: 'localhost', env: 'LOCAL' },
@@ -504,7 +504,7 @@ describe('tileIconSrcs', () => {
   const fav = (u) => `chrome-extension://x/_favicon/?pageUrl=${encodeURIComponent(u)}&size=64`;
   const web = (host) => `https://www.google.com/s2/favicons?domain=${host}&sz=64`;
   test('page favicon, then the site root favicon, then the web icon', async () => {
-    const { tileIconSrcs } = await import('../../lib/core.js');
+    const { tileIconSrcs } = await import('../../extension/lib/core.js');
     assert.deepEqual(tileIconSrcs({ id: '1', url: 'https://www.chess.com/home' }, {}), [
       fav('https://www.chess.com/home'),
       fav('https://www.chess.com/'),
@@ -513,11 +513,11 @@ describe('tileIconSrcs', () => {
     ]);
   });
   test('no duplicate when the link is the site root', async () => {
-    const { tileIconSrcs } = await import('../../lib/core.js');
+    const { tileIconSrcs } = await import('../../extension/lib/core.js');
     assert.deepEqual(tileIconSrcs({ id: '1', url: 'https://github.com/' }, {}), [fav('https://github.com/'), web('github.com')]);
   });
   test('local, IP and non-web links never go to the web icon service', async () => {
-    const { webIconUrls } = await import('../../lib/core.js');
+    const { webIconUrls } = await import('../../extension/lib/core.js');
     assert.deepEqual(webIconUrls('http://localhost:3000/'), []);
     assert.deepEqual(webIconUrls('http://192.168.1.4/x'), []);
     assert.deepEqual(webIconUrls('chrome://extensions'), []);
@@ -525,7 +525,7 @@ describe('tileIconSrcs', () => {
     assert.deepEqual(webIconUrls('https://daily.dev/'), [web('daily.dev')]);
   });
   test('custom and Google icons come first', async () => {
-    const { tileIconSrcs } = await import('../../lib/core.js');
+    const { tileIconSrcs } = await import('../../extension/lib/core.js');
     assert.equal(tileIconSrcs({ id: '1', url: 'https://x.com/' }, { 1: 'data:a' })[0], 'data:a');
     assert.match(tileIconSrcs({ id: '2', url: 'https://mail.google.com/' }, {})[0], /gmail/);
   });

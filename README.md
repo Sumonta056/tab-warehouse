@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="icons/icon128.png" width="96" height="96" alt="Tab Warehouse icon">
+  <img src="extension/icons/icon128.png" width="96" height="96" alt="Tab Warehouse icon">
 </p>
 
 <h1 align="center">Tab Warehouse</h1>
@@ -156,7 +156,7 @@ The website and the demo live in [`site/`](site/). The demo loads the extension'
 git clone https://github.com/Sumonta056/tab-warehouse.git
 ```
 
-Load the cloned folder with **Load unpacked**. After a `git pull`, click ↻ on the extension card.
+Load the `extension` folder of the clone with **Load unpacked**. After a `git pull`, click ↻ on the extension card.
 
 ### Chrome Web Store
 
@@ -208,19 +208,22 @@ Tab Warehouse is plain JavaScript with ES modules. There is no framework, no bun
 - **Sections are real subfolders**, so they survive an uninstall and sync with Chrome.
 
 ```
-manifest.json          Manifest V3: new tab override, popup, ⌘⇧B command
-newtab.html/.css/.js   The main page: sidebar + folder page
-home.js                Home view: clock, tiles, default links
-board.js               Board view: every folder as a column of cards
-settings.js            Settings view (5 tabs)
-popup.html/.js         Toolbar popup: save the current tab
-lib/core.js            Shared logic: settings, env detection, derive, sort, matrix, DOM helper
-lib/transfer.js        Export (JSON, Netscape HTML) and merge import
-lib/shared.css         Design tokens and shared components
-icons/                 Extension icons (source: icons/logo.svg)
+extension/             Everything Chrome loads (choose this folder in Load unpacked)
+  manifest.json        Manifest V3: new tab override, popup, ⌘⇧B command
+  newtab.html/.css/.js The main page: sidebar + folder page
+  home.js              Home view: clock, tiles, default links
+  board.js             Board view: every folder as a column of cards
+  settings.js          Settings view (5 tabs)
+  popup.html/.js       Toolbar popup: save the current tab
+  lib/core.js          Shared logic: settings, env detection, derive, sort, matrix, DOM helper
+  lib/transfer.js      Export (JSON, Netscape HTML) and merge import
+  lib/shared.css       Design tokens and shared components
+  icons/               Extension icons (source: icons/logo.svg)
 tools/make-icons.py    Build the icon sizes from any logo
+tools/package.sh       Build the release ZIP from extension/
 tests/                 Unit, end-to-end and performance tests
 site/                  Website, live demo and screenshots (deployed to GitHub Pages)
+docs/                  Notes and requirements
 ```
 
 The full behaviour spec is in [`.claude/rules/business-logic.md`](.claude/rules/business-logic.md). Every rule there has at least one test.
@@ -244,7 +247,7 @@ No dependencies: Node's built-in test runner and headless Chrome.
 node tests/perf/memprobe.mjs   # RAM, leak and render-speed check on the real extension
 ```
 
-The e2e runner loads the real `newtab.html` and `popup.html` with a fake `chrome.*` API, so tests never touch your bookmarks. To watch a scenario run:
+The e2e runner loads the real `extension/newtab.html` and `extension/popup.html` with a fake `chrome.*` API, so tests never touch your bookmarks. To watch a scenario run:
 
 ```sh
 python3 -I tests/serve.py 8799

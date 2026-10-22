@@ -7,7 +7,7 @@
   "scripts": {
     "prepare": "husky",
     "test": "./tests/run.sh",
-    "test:fast": "for f in newtab.js popup.js home.js settings.js board.js lib/core.js lib/transfer.js; do node --check $f || exit 1; done && node --test tests/unit/",
+    "test:fast": "for f in extension/*.js extension/lib/*.js; do node --check $f || exit 1; done && node --test tests/unit/",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
@@ -17,5 +17,13 @@
     "husky": "^9.1.7",
     "lint-staged": "^16.4.0",
     "prettier": "^3.9.10"
+  },
+  "lint-staged": {
+    "*.{js,mjs,css,html,json,md}": "prettier --write"
+  },
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ]
   }
 }

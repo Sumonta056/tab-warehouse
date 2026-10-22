@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Make icons/icon16.png, icon48.png, icon128.png from a logo file.
+"""Make extension/icons/icon16.png, icon48.png, icon128.png from a logo file.
 
   python3 tools/make-icons.py path/to/logo.png            # square-crop + resize
   python3 tools/make-icons.py path/to/logo.svg            # needs: pip install cairosvg
@@ -16,7 +16,7 @@ ap = argparse.ArgumentParser()
 ap.add_argument('src')
 ap.add_argument('--bg', default=None, help='hex colour to pad with (default: transparent crop to square)')
 ap.add_argument('--pad', type=float, default=0.0, help='inner padding fraction, e.g. 0.1')
-ap.add_argument('--out', default=os.path.join(os.path.dirname(__file__), '..', 'icons'))
+ap.add_argument('--out', default=os.path.join(os.path.dirname(__file__), '..', 'extension', 'icons'))
 a = ap.parse_args()
 
 if a.src.lower().endswith('.svg'):

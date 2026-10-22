@@ -4,7 +4,7 @@ import { tmpdir, homedir, platform } from 'node:os';
 import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const EXT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
+const EXT = resolve(dirname(fileURLToPath(import.meta.url)), '../../extension');
 const LINKS = Number(process.env.LINKS || 1000);
 const CYCLES = Number(process.env.CYCLES || 300);
 const LIMITS = { heapGrowthMB: 0.3, renderMs: 50 };

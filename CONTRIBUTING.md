@@ -21,7 +21,7 @@ There is no build step. The extension runs straight from the source folder.
    ```sh
    npm install
    ```
-3. Open `chrome://extensions`, turn on **Developer mode** and click **Load unpacked**. Choose the project folder.
+3. Open `chrome://extensions`, turn on **Developer mode** and click **Load unpacked**. Choose the `extension` folder in the project.
 4. Open a new tab.
 
 To test with your real bookmarks safely, use a separate Chrome profile.
@@ -34,14 +34,19 @@ To test with your real bookmarks safely, use a separate Chrome profile.
 ## Project structure
 
 ```
-manifest.json          Manifest V3: new tab override, popup, ⌘⇧B command
-newtab.html/.css/.js   The main page: sidebar + folder page
-home.js                Home view: clock, tiles, default links
-settings.js            Settings view (5 tabs)
-popup.html/.js         Toolbar popup: save the current tab
-lib/core.js            Shared logic: settings, env detection, derive, sort, matrix, DOM helper
-lib/transfer.js        Export and import
-lib/shared.css         Design tokens and shared components
+extension/             Everything Chrome loads (choose this folder in Load unpacked)
+  manifest.json        Manifest V3: new tab override, popup, ⌘⇧B command
+  newtab.html/.css/.js The main page: sidebar + folder page
+  home.js              Home view: clock, tiles, default links
+  board.js             Board view: every folder as a column of cards
+  settings.js          Settings view (5 tabs)
+  popup.html/.js       Toolbar popup: save the current tab
+  lib/core.js          Shared logic: settings, env detection, derive, sort, matrix, DOM helper
+  lib/transfer.js      Export and import
+  lib/shared.css       Design tokens and shared components
+  icons/               Extension icons
+tools/                 make-icons.py · package.sh (release ZIP)
+docs/                  Notes and requirements
 tests/                 run.sh · unit/ · e2e/ · perf/
 .claude/rules/         Conventions and the behaviour spec (business-logic.md)
 ```

@@ -1,7 +1,7 @@
 node_modules/
 package-lock.json
-icons/
+extension/icons/
 .impeccable/
 *.zip
-Requirements.md
+docs/requirements.md
 _site/

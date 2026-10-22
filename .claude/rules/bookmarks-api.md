@@ -1,8 +1,8 @@
 ---
 description: Gotchas when calling chrome.bookmarks
 paths:
-  - 'newtab.js'
-  - 'lib/core.js'
+  - 'extension/newtab.js'
+  - 'extension/lib/core.js'
 ---
 
 # chrome.bookmarks gotchas

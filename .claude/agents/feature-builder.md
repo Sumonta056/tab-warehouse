@@ -1,6 +1,6 @@
 ---
 name: feature-builder
-description: Implements one approved feature or fix in Tab Warehouse (newtab.js, home.js, popup.js, lib/core.js, CSS) following the project rules, together with its business rule and tests. Invoke with an approved plan; not for planning or open design questions.
+description: Implements one approved feature or fix in Tab Warehouse (extension/: newtab.js, home.js, popup.js, lib/core.js, CSS) following the project rules, together with its business rule and tests. Invoke with an approved plan; not for planning or open design questions.
 tools: Read, Grep, Glob, Bash, Edit, Write
 ---
 

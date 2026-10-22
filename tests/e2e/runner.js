@@ -29,9 +29,9 @@ const NO_MOTION = '<style>*, *::before, *::after { transition: none !important; 
 async function pageHtml(name, motion = false) {
   const key = `${name}:${motion}`;
   if (!pages[key]) {
-    const html = await (await fetch(`/${name}.html`, { cache: 'no-store' })).text();
+    const html = await (await fetch(`/extension/${name}.html`, { cache: 'no-store' })).text();
     pages[key] = html
-      .replace('<head>', `<head><base href="/">${motion ? '' : NO_MOTION}`)
+      .replace('<head>', `<head><base href="/extension/">${motion ? '' : NO_MOTION}`)
       .replace('<script type="module"', '<script src="/tests/e2e/chrome-stub.js"></script>\n<script type="module"');
   }
   return pages[key];

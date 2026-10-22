@@ -59,9 +59,9 @@ Folder render: 3.9 ms at 50 rows, 16 ms at 250 rows. Sorting 5000 links in Node:
 Run these and read every hit:
 
 ```
-grep -nE "innerHTML|outerHTML|insertAdjacentHTML|document\.write|eval\(|new Function" *.js lib/*.js
-grep -nE "https?://" *.js lib/*.js
-grep -n '"permissions"\|content_security_policy\|host_permissions' manifest.json
+grep -nE "innerHTML|outerHTML|insertAdjacentHTML|document\.write|eval\(|new Function" extension/*.js extension/lib/*.js
+grep -nE "https?://" extension/*.js extension/lib/*.js
+grep -n '"permissions"\|content_security_policy\|host_permissions' extension/manifest.json
 ```
 
 | Rule                                                                                                                                                                  | Where                                 |
