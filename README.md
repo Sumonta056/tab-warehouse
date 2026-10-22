@@ -47,7 +47,7 @@ Developers keep the same page open in many versions: live, test, staging and `lo
 ### Home
 
 - Opens on every new tab: a large clock, the date and your link tiles.
-- Tiles are a normal bookmark folder called _Home_ in _Other bookmarks_, created empty on first start. Add your own links with _Add link_.
+- Tiles are a normal bookmark folder called _Home_ in _Other bookmarks_, created empty on first start. Add your own links in Settings › Home page.
 - Drag tiles to reorder. Right-click a tile to change its icon (upload or URL), edit it, open it in a new tab or remove it (with undo).
 - Official icons for Google apps (Gmail, Drive, Calendar, Keep, Meet, Docs, Sheets, Slides, Forms); Chrome's favicon for everything else; on Home, Google's favicon service when Chrome has none, then a letter.
 - Background image, darkness, blur, color, clock size, 12/24-hour, seconds, icon size and icons per row — all with a live preview.
