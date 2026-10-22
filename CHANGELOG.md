@@ -7,9 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.3.0] - 2026-10-22
+
+Tab Warehouse 2.3.0 adds the Board: every folder as a column of cards on one screen. The release also adds a website with a live demo, and a ZIP download on each GitHub release.
+
 ### Added
 
-- Board view: a board button next to Home shows every folder as a column of cards (favicon, title, full URL, env badge), in lanes by category or in one row. Drag cards between columns, onto section headers or within a column (Manual sort); drag column headers to reorder folders; add a link per column; delete with undo; filter all columns.
+**Board**
+
+- A Board button next to Home opens every folder as a column of cards. A card shows the favicon, the title, the URL and the PROD / TEST / STAGE / LOCAL or GH badge.
+- Columns sit in one lane per category, or in one row. Switch with **By category** / **One row** (shown only when you have categories). Unsorted is always the last column.
+- A folder's sections show as small headers inside its column, with **No section** last.
+- Drag a card onto a column, a section header, or another card (Manual sort) to move it. Drag it onto a sidebar folder or the Home button, as on the folder page.
+- Drag a column header onto another column to reorder folders. Chrome's bookmark tree does not change.
+- **Add link** at the bottom of every column. Each card has a ✕ that deletes with an 8 s Undo.
+- A filter box searches the title and URL in all columns.
+- A separate Board text size slider in Settings › Appearance.
+
+**Website and download**
+
+- A website on GitHub Pages with screenshots, a settings tour, install steps and a live demo that runs the real extension in the browser.
+- Each GitHub release has a `tab-warehouse-<version>.zip` to download and load unpacked.
+
+### Changed
+
+- The sidebar search box now has the full width. Home and Board are two labeled tabs under it.
+- `j` / `k` now walk Home, Board, then the folders. The floating Home button also shows on the Board.
+- The files that Chrome loads now live in the `extension/` folder. Choose `extension/` in _Load unpacked_. Existing users who load unpacked from the repo root must copy their Local Extension Settings, because a new path gives a new extension ID. The release ZIP is not affected.
+- Dev: new GitHub Actions deploy the site after CI passes and attach the release ZIP. No permission changes.
 
 ## [2.2.0] - 2026-10-22
 
@@ -105,5 +130,6 @@ Tab Warehouse 2.2.0 is a bookmark manager and new tab page for developers. It sh
 
 - Column board, popup search.
 
-[Unreleased]: https://github.com/Sumonta056/tab-warehouse/compare/v2.2.0...HEAD
+[Unreleased]: https://github.com/Sumonta056/tab-warehouse/compare/v2.3.0...HEAD
+[2.3.0]: https://github.com/Sumonta056/tab-warehouse/compare/v2.2.0...v2.3.0
 [2.2.0]: https://github.com/Sumonta056/tab-warehouse/releases/tag/v2.2.0

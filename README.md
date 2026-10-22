@@ -256,8 +256,11 @@ python3 -I tests/serve.py 8799
 
 ## Changelog
 
-- **Unreleased** — Board view: every folder as a column of cards, grouped by category or in one row, with drag to move and reorder, add, delete with undo and a filter.
-- **2.2.0** — Full history in [CHANGELOG.md](CHANGELOG.md).
+- **2.3.0** — Full history in [CHANGELOG.md](CHANGELOG.md).
+  - Board view: every folder as a column of cards, grouped by category or in one row, with drag to move and reorder, add, delete with undo and a filter.
+  - Website with a live demo, and a release ZIP to download.
+  - Shipped files now live in `extension/`.
+- **2.2.0**
   - New installs start without built-in links; your name as the brand and a credit footer.
   - Home: no _Add link_ tile, space-above-tiles setting, missing icons fixed.
   - Delete button on each link row; text size sliders for the sidebar and the page.

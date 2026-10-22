@@ -1,6 +1,6 @@
 {
   "name": "tab-warehouse",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "private": true,
   "description": "Dev tools only. The extension itself has no runtime dependencies.",
   "license": "MIT",
