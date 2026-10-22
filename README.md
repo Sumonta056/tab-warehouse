@@ -6,7 +6,7 @@
 
 <p align="center">
   <b>A bookmark manager and new tab page for developers.</b><br>
-  Folders, full URLs, PROD / TEST / STAGE / LOCAL tags, an environment matrix and drag and drop — all on top of Chrome's own bookmarks.
+  Folders, full URLs, an environment matrix and drag and drop — all on top of Chrome's own bookmarks.
 </p>
 
 <p align="center">
@@ -17,12 +17,27 @@
   <a href="https://github.com/Sumonta056/tab-warehouse/issues"><img alt="Issues" src="https://img.shields.io/github/issues/Sumonta056/tab-warehouse"></a>
 </p>
 
+<p align="center">
+  <a href="https://sumonta056.github.io/tab-warehouse/"><b>Website</b></a> ·
+  <a href="https://sumonta056.github.io/tab-warehouse/#demo"><b>Live demo</b></a> ·
+  <a href="#install"><b>Install</b></a>
+</p>
+
+<p align="center">
+  <img src="site/screenshots/home.png" alt="Home: a large clock, the date and site tiles over a dark photo, with the folder sidebar on the left" width="100%">
+</p>
+
+<p align="center">
+  <img src="site/screenshots/folder.png" alt="A folder page with a Priority section; each row shows the title and the full URL" width="100%">
+</p>
+
 ---
 
 ## Contents
 
 - [Why Tab Warehouse](#why-tab-warehouse)
 - [Features](#features)
+- [Live demo](#live-demo)
 - [Install](#install)
 - [Quick start](#quick-start)
 - [Keyboard shortcuts](#keyboard-shortcuts)
@@ -52,13 +67,27 @@ Developers keep the same page open in many versions: live, test, staging and `lo
 - Official icons for Google apps (Gmail, Drive, Calendar, Keep, Meet, Docs, Sheets, Slides, Forms); Chrome's favicon for everything else; on Home, Google's favicon service when Chrome has none, then a letter.
 - Background image, darkness, blur, color, clock size, 12/24-hour, seconds, icon size and icons per row — all with a live preview.
 
+![Home with a background photo, also used blurred in the sidebar](site/screenshots/home-demo.png)
+
 ### Sidebar
 
+- A full-width search box with **Home** and **Board** tabs under it.
 - One entry per folder under your root folder, with link counts.
 - Drag folders into your own order. The order is saved in the extension; Chrome's tree is never reordered.
 - **Categories** group folders (for example "Daily" and "Rarely used"), with colors, collapse and drag reorder.
 - Drop a link on a folder to move it there, or on the Home button to add it to Home.
 - Resizable (180–440 px) and themeable: a solid color or a blurred copy of your Home background.
+
+![Sidebar grouped into the Work, Learning and Later categories](site/screenshots/sprint.png)
+
+### Board
+
+- The **Board** tab next to Home shows every folder as a column of cards, side by side, grouped into lanes by category (or in one row).
+- Each card has the favicon, title, full URL and env badge. Folders with sections show them as small headers inside the column.
+- Drag cards between columns or onto a section header to move them, or within a column to reorder (Manual sort). Drag a column header to change the folder order.
+- Add a link at the bottom of any column, delete one with undo, and filter every column at once.
+
+![Board: a column of link cards per folder, in lanes by category](site/screenshots/board.png)
 
 ### Folder page
 
@@ -68,6 +97,8 @@ Developers keep the same page open in many versions: live, test, staging and `lo
 - Inline edit, right-click menus, a folder filter, _Open all_ and _Copy all URLs_.
 - Delete a link and undo it within 8 seconds.
 
+![A folder with a Checkout section and PROD, TEST, STAGE and LOCAL badges](site/screenshots/sections.png)
+
 ### Environments
 
 - **Labels**: "if the address contains `-test.` show TEST". The first matching rule wins. Without rules, words like PROD or TEST in the title still work.
@@ -76,29 +107,56 @@ Developers keep the same page open in many versions: live, test, staging and `lo
 - A **Try it** box explains which rule matches a link and why.
 - Copy both lists as text and paste them on another machine.
 
+![Env matrix: one row per page, one column per environment](site/screenshots/env-matrix.png)
+
+![Settings › Environments with the Try it box](site/screenshots/settings-environments.png)
+
 ### Popup (`⌘⇧B` / `Ctrl+Shift+B`)
 
 - Save the current tab into any folder, or create a new folder by typing its name.
 - Save the full page or the whole site (`origin/`).
 - Shows the env badge, remembers the last folder, and tells you if the URL is already saved.
 
+<img src="site/screenshots/popup.png" alt="The save popup with a TEST badge and the folder list" width="360">
+
 ### Settings and backup
 
 - One Settings view with 5 tabs: Appearance, Home page, Bookmarks, Environments, Backup.
 - Every change saves at once. There is no Save button.
+- Text size for the sidebar, the page and the Board (80–140 %).
 - Export to JSON (links, sections, sidebar order, categories and preferences) or to HTML (Chrome's bookmark format). Import merges and skips URLs you already have.
+
+![Settings › Appearance: name, text size, accent color and sidebar background](site/screenshots/settings-appearance.png)
+
+## Live demo
+
+Try the real extension in your browser, with sample bookmarks and nothing to install: **[https://sumonta056.github.io/tab-warehouse/#demo](https://sumonta056.github.io/tab-warehouse/#demo)**.
+
+The website and the demo live in [`site/`](site/). The demo loads the extension's own `newtab.html` and `popup.html` with a fake `chrome.*` API ([`site/demo/demo-chrome.js`](site/demo/demo-chrome.js)), so nothing is saved. The [Pages workflow](.github/workflows/pages.yml) builds and deploys the site after CI passes on `main`. To preview it locally:
+
+```sh
+./site/build.sh && python3 -I tests/serve.py 8811 _site
+# then open http://127.0.0.1:8811/
+```
 
 ## Install
 
-### From source (unpacked)
+### Download (recommended)
 
-1. Download the code:
-   ```sh
-   git clone https://github.com/Sumonta056/tab-warehouse.git
-   ```
+1. Download the latest ZIP from **[Releases](https://github.com/Sumonta056/tab-warehouse/releases/latest)** and unzip it. Move the folder to a place where it can stay, for example Documents.
 2. Open `chrome://extensions` and turn on **Developer mode** (top right).
-3. Click **Load unpacked** and choose the `tab-warehouse` folder.
-4. Open a new tab.
+3. Click **Load unpacked** and choose the unzipped folder (the one that contains `manifest.json`).
+4. Open a new tab. If Chrome asks, click **Keep it**. Then open ⚙ Settings to add your name, your Home sites and your root folder.
+
+**Update:** download the new ZIP, replace the old folder, then click ↻ on the extension card. Your bookmarks and settings stay.
+
+### From source
+
+```sh
+git clone https://github.com/Sumonta056/tab-warehouse.git
+```
+
+Load the cloned folder with **Load unpacked**. After a `git pull`, click ↻ on the extension card.
 
 ### Chrome Web Store
 
@@ -120,7 +178,7 @@ Coming soon.
 | `⌘K` / `Ctrl+K` or `/`            | Search all folders                           |
 | `Enter` (in search)               | Open the first result                        |
 | `Esc`                             | Clear search or filter; close Settings       |
-| `j` / `k`                         | Next / previous folder                       |
+| `j` / `k`                         | Next / previous: Home, Board, folders        |
 | `Alt+↑` / `Alt+↓`                 | Move the focused folder or section up / down |
 | `←` / `→` (on the sidebar edge)   | Resize the sidebar by 16 px                  |
 | `←` / `→` (in Settings)           | Next / previous tab                          |
@@ -153,6 +211,7 @@ Tab Warehouse is plain JavaScript with ES modules. There is no framework, no bun
 manifest.json          Manifest V3: new tab override, popup, ⌘⇧B command
 newtab.html/.css/.js   The main page: sidebar + folder page
 home.js                Home view: clock, tiles, default links
+board.js               Board view: every folder as a column of cards
 settings.js            Settings view (5 tabs)
 popup.html/.js         Toolbar popup: save the current tab
 lib/core.js            Shared logic: settings, env detection, derive, sort, matrix, DOM helper
@@ -161,6 +220,7 @@ lib/shared.css         Design tokens and shared components
 icons/                 Extension icons (source: icons/logo.svg)
 tools/make-icons.py    Build the icon sizes from any logo
 tests/                 Unit, end-to-end and performance tests
+site/                  Website, live demo and screenshots (deployed to GitHub Pages)
 ```
 
 The full behaviour spec is in [`.claude/rules/business-logic.md`](.claude/rules/business-logic.md). Every rule there has at least one test.
@@ -193,6 +253,7 @@ python3 -I tests/serve.py 8799
 
 ## Changelog
 
+- **Unreleased** — Board view: every folder as a column of cards, grouped by category or in one row, with drag to move and reorder, add, delete with undo and a filter.
 - **2.2.0** — Full history in [CHANGELOG.md](CHANGELOG.md).
   - New installs start without built-in links; your name as the brand and a credit footer.
   - Home: no _Add link_ tile, space-above-tiles setting, missing icons fixed.

@@ -2,3 +2,4 @@
 .impeccable/
 *.zip
 node_modules/
+_site/

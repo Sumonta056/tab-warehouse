@@ -21,7 +21,7 @@ description: Add or change a feature in the warehouse new-tab page, Home, or pop
    - e2e scenario(s) in `tests/e2e/scenarios/*.js` for the user-visible behaviour, including the edge cases (empty folder, Unsorted, sections, categories, Home)
    - prove each new test fails when the feature is broken
 6. **Check:** `./tests/run.sh` must be fully green. Then reload at `chrome://extensions`, open a new tab, try it with the Shop API folder (longest URLs, all four envs), an empty folder, a folder with sections, and Home.
-7. **Document:** README.md (feature table / section + changelog line).
+7. **Document:** README.md (feature table / section + changelog line). After the feature is committed, run `/update-website` so the website, its live demo, the screenshots and the README show it.
 
 Checklist before saying done: `./tests/run.sh` green · keyboard reachable · focus visible · works in URL mode and Title mode · works with Manual and Env sort · works with and without categories · works in a folder with sections · nothing truncates a URL on the folder page · no new permission without a README line.
 

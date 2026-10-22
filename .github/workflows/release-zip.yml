@@ -1,0 +1,33 @@
+name: Release ZIP
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag to attach the ZIP to (for example v2.2.0)
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  zip:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      TAG: ${{ github.event.release.tag_name || inputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
+
+      - name: Build the extension ZIP
+        id: build
+        run: echo "file=$(./tools/package.sh "$PWD/tab-warehouse-${TAG#v}.zip")" >> "$GITHUB_OUTPUT"
+
+      - name: Attach the ZIP to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "$TAG" "${{ steps.build.outputs.file }}" --clobber

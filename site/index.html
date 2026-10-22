@@ -1,0 +1,592 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Tab Warehouse</title>
+    <meta
+      name="description"
+      content="Tab Warehouse is a free Chrome extension and bookmark manager for developers: a new tab page with a clock and site tiles, folders with full URLs, a Board with every folder side by side, PROD / TEST / STAGE / LOCAL environment tags and an env matrix. No account, no tracking."
+    />
+    <meta
+      name="keywords"
+      content="Tab Warehouse, Chrome extension, bookmark manager, new tab page, bookmarks for developers, environment tags, PROD TEST STAGE LOCAL, Manifest V3"
+    />
+    <meta name="author" content="Sumonta Saha Mridul" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://sumonta056.github.io/tab-warehouse/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Tab Warehouse" />
+    <meta property="og:title" content="Tab Warehouse — bookmark manager and new tab page for Chrome" />
+    <meta
+      property="og:description"
+      content="A free Chrome extension for developers: full URLs, env tags, an env matrix and a Home page with a clock and tiles. No account, no tracking."
+    />
+    <meta property="og:url" content="https://sumonta056.github.io/tab-warehouse/" />
+    <meta property="og:image" content="https://sumonta056.github.io/tab-warehouse/screenshots/home.png" />
+    <meta property="og:image:width" content="2000" />
+    <meta property="og:image:height" content="1226" />
+    <meta property="og:image:alt" content="Tab Warehouse Home page with a clock and site tiles" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Tab Warehouse" />
+    <meta name="twitter:description" content="A free Chrome extension and bookmark manager for developers. Full URLs, env tags, env matrix, no tracking." />
+    <meta name="twitter:image" content="https://sumonta056.github.io/tab-warehouse/screenshots/home.png" />
+    <meta name="theme-color" content="#0b1110" />
+    <link rel="icon" type="image/png" sizes="48x48" href="demo/icons/icon48.png" />
+    <link rel="icon" type="image/png" sizes="128x128" href="demo/icons/icon128.png" />
+    <link rel="apple-touch-icon" href="demo/icons/icon128.png" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Tab Warehouse",
+        "applicationCategory": "BrowserApplication",
+        "operatingSystem": "Chrome",
+        "description": "A Chrome extension and bookmark manager for developers: new tab page with clock and tiles, folders with full URLs, a Board view, environment tags and an env matrix.",
+        "url": "https://sumonta056.github.io/tab-warehouse/",
+        "image": "https://sumonta056.github.io/tab-warehouse/screenshots/home.png",
+        "screenshot": [
+          "https://sumonta056.github.io/tab-warehouse/screenshots/home.png",
+          "https://sumonta056.github.io/tab-warehouse/screenshots/folder.png",
+          "https://sumonta056.github.io/tab-warehouse/screenshots/board.png",
+          "https://sumonta056.github.io/tab-warehouse/screenshots/env-matrix.png"
+        ],
+        "softwareVersion": "2.2.0",
+        "license": "https://opensource.org/licenses/MIT",
+        "isAccessibleForFree": true,
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "author": { "@type": "Person", "name": "Sumonta Saha Mridul", "url": "https://sumonta056.vercel.app/" },
+        "codeRepository": "https://github.com/Sumonta056/tab-warehouse"
+      }
+    </script>
+    <link rel="stylesheet" href="site.css" />
+  </head>
+  <body>
+    <header class="top">
+      <div class="wrap top-in">
+        <a class="brand" href="#">
+          <img src="demo/icons/icon48.png" alt="" width="28" height="28" />
+          <span>Tab Warehouse</span>
+        </a>
+        <nav class="top-nav" aria-label="Sections">
+          <a href="#demo">Live demo</a>
+          <a href="#features">Features</a>
+          <a href="#settings">Settings</a>
+          <a href="#install">Install</a>
+        </nav>
+        <a class="btn ghost sm" href="https://github.com/Sumonta056/tab-warehouse" rel="noopener">
+          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+            <path
+              fill="currentColor"
+              d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.53-1.33-1.28-1.69-1.28-1.69-1.05-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.56-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.69 5.39-5.25 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5Z"
+            />
+          </svg>
+          GitHub
+        </a>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="wrap">
+          <h1>Your bookmarks,<br /><span class="grad">organised like a warehouse.</span></h1>
+          <p class="lead">
+            <strong>Tab Warehouse</strong> is a free Chrome extension: a new tab page with a clock and your favourite sites, a folder view that shows every URL
+            in full, and a Board with every folder side by side.
+          </p>
+          <div class="cta">
+            <a class="btn primary" href="#demo">Try the live demo</a>
+            <a class="btn ghost" href="#install">Install from GitHub</a>
+          </div>
+          <ul class="facts">
+            <li><b>0</b> runtime dependencies</li>
+            <li><b>0</b> servers or accounts</li>
+            <li><b>100%</b> secure, local storage</li>
+            <li><b>100%</b> real Chrome bookmarks</li>
+          </ul>
+        </div>
+        <div class="wrap shots">
+          <figure class="frame tilt-l">
+            <div class="frame-bar"><i></i><i></i><i></i><span>New tab</span></div>
+            <img
+              src="screenshots/home.png"
+              alt="Tab Warehouse Home: a large clock, the date and a grid of site tiles over a dark photo, with the folder sidebar on the left"
+              width="2000"
+              height="1226"
+              fetchpriority="high"
+              data-zoom
+            />
+          </figure>
+          <figure class="frame tilt-r">
+            <div class="frame-bar"><i></i><i></i><i></i><span>Learning Pending</span></div>
+            <img
+              src="screenshots/folder.png"
+              alt="A folder page with a Priority section and a No section group; each row shows the title and the full URL"
+              width="2000"
+              height="1240"
+              loading="lazy"
+              data-zoom
+            />
+          </figure>
+        </div>
+      </section>
+
+      <section id="demo" class="demo" aria-labelledby="demo-h">
+        <div class="wrap">
+          <p class="eyebrow">Live demo</p>
+          <h2 id="demo-h">Click around the real extension</h2>
+          <p class="lead">
+            This is the real extension code, running in your browser with sample bookmarks. Nothing is saved: reload to start again. Things to try:
+          </p>
+          <ul class="tries">
+            <li>Open <b>Shop project</b> and switch to <b>Env matrix</b></li>
+            <li>Click <b>Board</b> and drag a card to another column</li>
+            <li>Press <kbd>/</kbd> and search for <b>api</b></li>
+            <li>Open ⚙ Settings and change the accent color</li>
+            <li>Save the page in the <b>Popup</b> tab, then look in the folder</li>
+          </ul>
+          <div class="demo-bar">
+            <div class="demo-tabs" role="tablist" aria-label="Demo page">
+              <button role="tab" aria-selected="true" data-src="demo/newtab.html">New tab page</button>
+              <button role="tab" aria-selected="false" data-src="demo/popup.html">Popup</button>
+            </div>
+            <span class="spacer"></span>
+            <button class="btn ghost sm" id="demoReset">Reset demo</button>
+            <a class="btn ghost sm" id="demoOpen" href="demo/newtab.html" target="_blank" rel="noopener">Open full screen ↗</a>
+          </div>
+          <div class="demo-stage frame big">
+            <div class="frame-bar"><i></i><i></i><i></i><span id="demoTitle">New tab</span></div>
+            <div class="demo-view">
+              <iframe id="demoNewtab" title="Tab Warehouse live demo: new tab page" src="demo/newtab.html" loading="lazy"></iframe>
+              <div class="popup-layer" id="demoPopup" hidden>
+                <div class="popup-win">
+                  <iframe id="demoPopupFrame" title="Tab Warehouse live demo: save popup"></iframe>
+                </div>
+              </div>
+            </div>
+          </div>
+          <p class="note">On a phone the demo is small. Open it full screen, or try it on a computer.</p>
+        </div>
+      </section>
+
+      <section id="features" class="features" aria-labelledby="feat-h">
+        <div class="wrap">
+          <p class="eyebrow">Features</p>
+          <h2 id="feat-h">Everything a developer's bookmark bar is missing</h2>
+        </div>
+
+        <div class="wrap feature">
+          <div class="txt">
+            <h3>Home page</h3>
+            <p>
+              Every new tab opens on Home: a large clock, the date and your link tiles. The tiles are a normal bookmark folder called <em>Home</em>, so they
+              sync too.
+            </p>
+            <ul>
+              <li>Background photo with darkness, blur and opacity</li>
+              <li>Clock size, 12 or 24 hours, seconds and date</li>
+              <li>Drag tiles to reorder; right-click to change the icon</li>
+              <li>Official Gmail, Drive, Calendar, Keep and Docs icons</li>
+            </ul>
+            <a class="more" href="#demo" data-demo="newtab">Try it in the demo →</a>
+          </div>
+          <figure class="frame">
+            <img
+              src="screenshots/home-demo.png"
+              alt="Home page with a clock, the date and 18 site tiles over a darkened mountain photo; the sidebar uses the same photo, blurred"
+              loading="lazy"
+              width="1800"
+              height="1007"
+              data-zoom
+            />
+          </figure>
+        </div>
+
+        <div class="wrap feature flip">
+          <div class="txt">
+            <h3>Folders and sections</h3>
+            <p>
+              The sidebar lists the folders under your root folder. Open one to see each link with its full URL. Split a folder into
+              <strong>sections</strong> such as <em>Checkout</em> or <em>Blocked</em> — each section is a real subfolder.
+            </p>
+            <ul>
+              <li>Sort: manual, name, URL, environment, date added or host</li>
+              <li>Show the title first or the URL first</li>
+              <li>Edit inline, delete with an 8-second undo</li>
+              <li>Open all, copy all URLs, filter the folder</li>
+            </ul>
+          </div>
+          <figure class="frame">
+            <img
+              src="screenshots/sections.png"
+              alt="Shop project folder with a Checkout section and PROD, TEST, STAGE and LOCAL badges on each row"
+              loading="lazy"
+              width="1800"
+              height="1007"
+              data-zoom
+            />
+          </figure>
+        </div>
+
+        <div class="wrap feature">
+          <div class="txt">
+            <h3>Board</h3>
+            <p>
+              See every folder at once, as a column of cards. Columns sit in lanes by category, or in one long row. Sections show as small headers inside each
+              column.
+            </p>
+            <ul>
+              <li>Drag a card to another column or section to move it</li>
+              <li>Drag a column header to change the folder order</li>
+              <li>Add a link at the bottom of any column</li>
+              <li>Filter every column at once; delete with undo</li>
+            </ul>
+            <a class="more" href="#demo" data-demo="board">Open the Board in the demo →</a>
+          </div>
+          <figure class="frame">
+            <img
+              src="screenshots/board.png"
+              alt="Board view: lanes for the Work and Learning categories, with a column of link cards per folder, section headers and env badges"
+              loading="lazy"
+              width="1800"
+              height="1007"
+              data-zoom
+            />
+          </figure>
+        </div>
+
+        <div class="wrap feature flip">
+          <div class="txt">
+            <h3>Env matrix</h3>
+            <p>
+              One row per page, one column per environment. See at a glance which versions you have saved. An empty cell offers <code>+ derive</code>: it opens
+              the same path on the other host, and Alt+click saves it.
+            </p>
+            <ul>
+              <li>Hosts come from <em>Same site in each version</em></li>
+              <li>Query strings stay with the link</li>
+              <li>Jump from TEST to PROD in one click</li>
+            </ul>
+          </div>
+          <figure class="frame">
+            <img
+              src="screenshots/env-matrix.png"
+              alt="Env matrix table: rows for /admin/orders, /api/v2/products, /checkout/cart and /health with open and derive buttons per environment"
+              loading="lazy"
+              width="1800"
+              height="1007"
+              data-zoom
+            />
+          </figure>
+        </div>
+
+        <div class="wrap feature">
+          <div class="txt">
+            <h3>Categories and drag and drop</h3>
+            <p>
+              Group folders into colored categories such as <em>Work</em>, <em>Learning</em> and <em>Later</em>. Drag folders, headers, sections and links. The
+              sidebar order lives in the extension, so Chrome's own tree never changes.
+            </p>
+            <ul>
+              <li>Drop a link on a folder to move it there</li>
+              <li>Home and Board tabs sit under a full-width search</li>
+              <li>Alt+↑ / Alt+↓ moves a folder with the keyboard</li>
+              <li>Resizable sidebar, 180–440 px</li>
+            </ul>
+          </div>
+          <figure class="frame">
+            <img
+              src="screenshots/sprint.png"
+              alt="Sprint board folder with In progress and Blocked sections, and the sidebar grouped into Work, Learning and Later"
+              loading="lazy"
+              width="1800"
+              height="1007"
+              data-zoom
+            />
+          </figure>
+        </div>
+
+        <div class="wrap feature flip">
+          <div class="txt">
+            <h3>Search everything</h3>
+            <p>
+              Press <kbd>⌘K</kbd> or <kbd>/</kbd> and type. The search looks at every folder and section, highlights the match and shows where each link lives.
+              <kbd>Enter</kbd> opens the first hit, <kbd>Esc</kbd> clears.
+            </p>
+          </div>
+          <figure class="frame">
+            <img
+              src="screenshots/search.png"
+              alt="Search results for api across Shop project and Docs, with the matching text highlighted"
+              loading="lazy"
+              width="1800"
+              height="1007"
+              data-zoom
+            />
+          </figure>
+        </div>
+
+        <div class="wrap feature compact">
+          <div class="txt">
+            <h3>Save the current tab</h3>
+            <p>
+              Press <kbd>⌘⇧B</kbd> (<kbd>Ctrl+Shift+B</kbd> on Windows and Linux) on any site. Pick a folder or type a new name, then press <kbd>Enter</kbd>.
+            </p>
+            <ul>
+              <li>Save the page, or the whole site (<code>origin/</code>)</li>
+              <li>Shows the env badge before you save</li>
+              <li>Tells you if the URL is already saved</li>
+            </ul>
+            <ol class="flow" aria-label="How saving works">
+              <li><span class="kbd-big">⌘⇧B</span><span>Open the popup on any page</span></li>
+              <li><span class="kbd-big">Type</span><span>Find a folder, or create one</span></li>
+              <li><span class="kbd-big">↵</span><span>Saved. The popup closes</span></li>
+            </ol>
+            <div class="saved-card">
+              <span class="badge TEST">TEST</span>
+              <div>
+                <b>Already saved in</b>
+                <span>Shop project › Checkout</span>
+              </div>
+              <span class="rm">Remove</span>
+            </div>
+            <a class="more" href="#demo" data-demo="popup">Try the popup →</a>
+          </div>
+          <figure class="frame narrow">
+            <img
+              src="screenshots/popup.png"
+              alt="The save popup with the page title, a TEST badge, a folder list and a Save button"
+              loading="lazy"
+              width="840"
+              height="1268"
+              data-zoom
+            />
+          </figure>
+        </div>
+      </section>
+
+      <section id="settings" class="settings" aria-labelledby="set-h">
+        <div class="wrap">
+          <p class="eyebrow">Settings</p>
+          <h2 id="set-h">Five tabs. No Save button.</h2>
+          <p class="lead">Every change saves at once. Pick a tab to see what it holds.</p>
+          <div class="set-tabs" role="tablist" aria-label="Settings tabs"></div>
+          <div class="set-body">
+            <div class="set-txt" id="setTxt"></div>
+            <figure class="frame">
+              <img id="setImg" src="screenshots/settings-appearance.png" alt="" loading="lazy" width="1800" height="1007" data-zoom />
+            </figure>
+          </div>
+        </div>
+      </section>
+
+      <section class="envs wrap" aria-labelledby="env-h">
+        <div class="env-grid">
+          <div>
+            <p class="eyebrow">How env tags work</p>
+            <h2 id="env-h">Two short lists, written in plain words</h2>
+            <p>
+              <b>Labels.</b> "If the address contains <code>test.</code>, show TEST." The list is checked from top to bottom and the first match wins. Without
+              labels, words like PROD or TEST in the title still work.
+            </p>
+            <p>
+              <b>Same site in each version.</b> Write the PROD, TEST, STAGE and LOCAL hosts of a site once. Every link of that site then offers
+              <em>Open on TEST / PROD / …</em>, and the env matrix can derive missing links.
+            </p>
+            <p>A <b>Try it</b> box tells you which label matches a link and why. Copy both lists as text and paste them on another machine.</p>
+          </div>
+          <div class="rules" aria-label="Example rules">
+            <div class="rule"><code>localhost</code><span>→</span><span class="badge LOCAL">LOCAL</span></div>
+            <div class="rule"><code>test.</code><span>→</span><span class="badge TEST">TEST</span></div>
+            <div class="rule"><code>staging.</code><span>→</span><span class="badge STAGE">STAGE</span></div>
+            <div class="rule"><code>shop.example.com</code><span>→</span><span class="badge PROD">PROD</span></div>
+            <div class="try">
+              <span class="badge TEST">TEST</span>
+              <div><code>https://test.shop.example.com/cart</code><small>Label 2 matched: the address contains "test."</small></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="install" class="install" aria-labelledby="inst-h">
+        <div class="wrap">
+          <p class="eyebrow">Install</p>
+          <h2 id="inst-h">Ready in a minute</h2>
+          <p class="lead">Download the ZIP, load it in Chrome, open a new tab. No account and no build step.</p>
+          <div class="install-grid">
+            <aside class="dl-card">
+              <img src="demo/icons/icon128.png" alt="" width="64" height="64" />
+              <h3>Tab Warehouse</h3>
+              <p class="dl-meta" id="dlMeta">Latest release</p>
+              <a class="btn primary dl-btn" id="dlBtn" href="https://github.com/Sumonta056/tab-warehouse/releases/latest" rel="noopener">
+                <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                  <path
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M12 3v12m0 0-5-5m5 5 5-5M4 21h16"
+                  />
+                </svg>
+                <span id="dlLabel">Download ZIP</span>
+              </a>
+              <p class="dl-links">
+                <a href="https://github.com/Sumonta056/tab-warehouse/releases" rel="noopener">All releases</a> ·
+                <a href="https://github.com/Sumonta056/tab-warehouse/blob/main/CHANGELOG.md" rel="noopener">What is new</a>
+              </p>
+              <p class="dl-soon"><span class="pill">Soon</span> Chrome Web Store</p>
+              <details class="dev">
+                <summary>For developers: install from source</summary>
+                <pre><code>git clone https://github.com/Sumonta056/tab-warehouse.git</code></pre>
+                <p>Load the cloned folder with <em>Load unpacked</em> (step 4). After a <code>git pull</code>, click ↻ on the extension card.</p>
+              </details>
+            </aside>
+
+            <ol class="tut">
+              <li>
+                <div class="tut-txt">
+                  <h3>Download and unzip</h3>
+                  <p>
+                    Click the <b>Download</b> button. Double-click the ZIP file to unzip it. Move the folder to a place where it can stay, for example
+                    Documents: Chrome loads the extension from it.
+                  </p>
+                </div>
+                <div class="mock mock-files" aria-hidden="true">
+                  <span class="file zip">tab-warehouse-2.2.0.zip</span>
+                  <span class="arrow">→</span>
+                  <span class="file folder">tab-warehouse</span>
+                </div>
+              </li>
+              <li>
+                <div class="tut-txt">
+                  <h3>Open the extensions page</h3>
+                  <p>
+                    Type this address in Chrome's address bar and press <kbd>Enter</kbd>. Chrome does not open <code>chrome://</code> links from websites, so
+                    copy it.
+                  </p>
+                </div>
+                <div class="mock mock-url">
+                  <code>chrome://extensions</code>
+                  <button class="btn ghost sm" id="copyUrl" type="button">Copy</button>
+                </div>
+              </li>
+              <li>
+                <div class="tut-txt">
+                  <h3>Turn on Developer mode</h3>
+                  <p>The switch is in the top-right corner of the extensions page.</p>
+                </div>
+                <div class="mock mock-toggle" aria-hidden="true">
+                  <span>Developer mode</span>
+                  <span class="switch"><i></i></span>
+                </div>
+              </li>
+              <li>
+                <div class="tut-txt">
+                  <h3>Click Load unpacked</h3>
+                  <p>Choose the unzipped folder, the one that contains <code>manifest.json</code>. The Tab Warehouse card appears.</p>
+                </div>
+                <div class="mock mock-buttons" aria-hidden="true">
+                  <span class="on">Load unpacked</span>
+                  <span>Pack extension</span>
+                </div>
+              </li>
+              <li>
+                <div class="tut-txt">
+                  <h3>Open a new tab and set it up</h3>
+                  <p>Chrome may ask to keep the new tab page: click <b>Keep it</b>. Then open ⚙ Settings:</p>
+                  <ul>
+                    <li><b>Appearance:</b> type your name</li>
+                    <li><b>Home page:</b> add the sites you use most</li>
+                    <li><b>Bookmarks:</b> pick the folder the sidebar shows</li>
+                  </ul>
+                </div>
+                <div class="mock mock-pin" aria-hidden="true">
+                  <span class="kbd-big">⌘T</span>
+                  <span class="muted">or</span>
+                  <span class="kbd-big">Ctrl+T</span>
+                </div>
+              </li>
+            </ol>
+          </div>
+          <p class="update-note">
+            <b>Update to a new version:</b> download the new ZIP, replace the old folder with the new one, then click ↻ on the extension card. Your bookmarks
+            and settings stay.
+          </p>
+
+          <div class="two">
+            <div class="panel">
+              <h3>Keyboard shortcuts</h3>
+              <table>
+                <tr>
+                  <td><kbd>⌘⇧B</kbd> / <kbd>Ctrl+Shift+B</kbd></td>
+                  <td>Save the current tab</td>
+                </tr>
+                <tr>
+                  <td><kbd>⌘K</kbd> or <kbd>/</kbd></td>
+                  <td>Search all folders</td>
+                </tr>
+                <tr>
+                  <td><kbd>Enter</kbd></td>
+                  <td>Open the first result</td>
+                </tr>
+                <tr>
+                  <td><kbd>Esc</kbd></td>
+                  <td>Clear search; close Settings</td>
+                </tr>
+                <tr>
+                  <td><kbd>j</kbd> / <kbd>k</kbd></td>
+                  <td>Next / previous folder</td>
+                </tr>
+                <tr>
+                  <td><kbd>Alt+↑</kbd> / <kbd>Alt+↓</kbd></td>
+                  <td>Move a folder or section</td>
+                </tr>
+              </table>
+            </div>
+            <div class="panel">
+              <h3>Privacy and permissions</h3>
+              <p>No server, no account, no analytics. Links stay in Chrome's bookmarks; preferences stay in <code>chrome.storage.local</code>.</p>
+              <table>
+                <tr>
+                  <td><code>bookmarks</code></td>
+                  <td>Read and edit your bookmarks</td>
+                </tr>
+                <tr>
+                  <td><code>storage</code></td>
+                  <td>Save sidebar order, env rules and the Home look</td>
+                </tr>
+                <tr>
+                  <td><code>favicon</code></td>
+                  <td>Show site icons from Chrome's cache</td>
+                </tr>
+                <tr>
+                  <td><code>activeTab</code></td>
+                  <td>Read the current tab, only when you open the popup</td>
+                </tr>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="foot">
+      <div class="wrap foot-in">
+        <span>Made by <a href="https://sumonta056.vercel.app/" rel="noopener">Sumonta</a> · MIT license</span>
+        <span
+          ><a href="https://github.com/Sumonta056/tab-warehouse" rel="noopener">GitHub</a> ·
+          <a href="https://github.com/Sumonta056/tab-warehouse/issues" rel="noopener">Report an issue</a> ·
+          <a href="https://github.com/Sumonta056/tab-warehouse/blob/main/CHANGELOG.md" rel="noopener">Changelog</a></span
+        >
+      </div>
+    </footer>
+
+    <dialog id="zoom" aria-label="Screenshot">
+      <button class="btn ghost sm close" aria-label="Close">✕</button>
+      <img src="screenshots/home.png" alt="" />
+    </dialog>
+
+    <script src="site.js" defer></script>
+  </body>
+</html>

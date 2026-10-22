@@ -16,8 +16,9 @@ tools/make-icons.py    Build icons/ from any logo
 lib/shared.css         Design tokens + shared components (.row, .badge, .btn, .menu, .toast)
 icons/                 16/48/128 PNG
 tests/                 run.sh · unit/ (node --test) · e2e/ (headless Chrome + fake chrome.* API)
+site/                  GitHub Pages website + live demo (site/build.sh, deployed by .github/workflows/pages.yml)
 .claude/rules/         Always-on conventions; business-logic.md is the behaviour spec
-.claude/skills/        Workflows: add-feature, regression-check, debug-extension, release
+.claude/skills/        Workflows: add-feature, regression-check, debug-extension, release, update-website
 .claude/agents/        feature-builder (implements), regression-guard (verifies)
 ```
 
