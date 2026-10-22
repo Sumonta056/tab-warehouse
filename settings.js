@@ -795,11 +795,11 @@ const VIEWS = {
       });
       const copy = async () => {
         ta.value = envText(rules, map);
+        ta.select();
         try {
-          await navigator.clipboard.writeText(ta.value);
+          await Promise.race([navigator.clipboard.writeText(ta.value), new Promise((_, no) => setTimeout(no, 1000))]);
           c.toast('Copied. You can paste it anywhere.');
         } catch {
-          ta.select();
           c.toast('Press ⌘C (Ctrl+C) to copy the selected text.');
         }
       };
