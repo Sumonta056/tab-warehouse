@@ -501,6 +501,32 @@ export default [
   },
   {
     area,
+    name: 'delete icon beside edit deletes the link without opening it; Undo restores it',
+    page: 'newtab',
+    fixture: () => base(),
+    async run(t) {
+      await t.folder('Shop API');
+      const tabs = t.tabs.length;
+      const acts = [...t.row('32').querySelectorAll('.acts .act')];
+      t.eq(
+        acts.map((b) => b.getAttribute('aria-label')),
+        ['Edit title and URL', 'Delete link', 'Link menu'],
+        'delete sits between edit and the menu',
+      );
+      t.ok(acts[1].getBoundingClientRect().height >= 28, 'at least 28 px tall');
+      t.click(acts[1]);
+      await t.settle();
+      t.ok(!t.node('32'), 'deleted');
+      t.eq(t.tabs.length, tabs, 'no tab opened');
+      t.ok(t.toast()?.textContent.includes('Deleted'), 'toast shown');
+      t.click(t.toast()?.querySelector('button'));
+      await t.settle();
+      const back = t.node('30').children[1];
+      t.eq([back?.title, back?.url], ['Shop TEST', 'https://shop-test.example.com/api/x'], 'restored at index 1');
+    },
+  },
+  {
+    area,
     name: 'link menu offers Open on other envs from the host map',
     page: 'newtab',
     fixture: () => base(),

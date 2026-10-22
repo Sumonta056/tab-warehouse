@@ -795,6 +795,20 @@ function renderRow(bm, s, p, { crumb = null, q = filterQ } = {}) {
       h(
         'button',
         {
+          class: 'act del',
+          'aria-label': 'Delete link',
+          title: 'Delete',
+          onClick: (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            deleteBookmark(bm);
+          },
+        },
+        svgIcon('trash'),
+      ),
+      h(
+        'button',
+        {
           class: 'act more',
           'aria-label': 'Link menu',
           title: 'More',

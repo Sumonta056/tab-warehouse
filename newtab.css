@@ -966,6 +966,10 @@ img.wait {
   background: var(--surface-2);
   color: var(--text);
 }
+.row .act.del:hover,
+.row .act.del:focus-visible {
+  color: var(--red-fg);
+}
 .row .more {
   position: static;
   transform: none;

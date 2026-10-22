@@ -89,6 +89,7 @@ Every rule here has at least one test. If you change a rule, change its test in 
 - Env matrix: rows = same path across envs; `+ derive` uses the host map; Alt+click saves the derived link.
 - Folder filter matches title + URL, all terms must match; shows "Nothing matches the filter." when empty.
 - Edit form: `novalidate`; a URL without a scheme gets `https://`; Chrome errors show as a toast and keep the old value; Cancel/Escape discard.
+- Each row has Edit (pencil), Delete (trash, `aria-label="Delete link"`) and the ⋯ menu. Delete does not open the link.
 - Delete link → undo toast for 8 s (recreated at the same parent and index). Delete folder → `confirm()`.
 - Global search (sidebar box) searches every folder and section (not Home), shows a crumb `Folder › Section`, Escape clears it.
 
