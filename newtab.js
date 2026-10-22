@@ -29,6 +29,7 @@ import {
 } from './lib/core.js';
 import { renderHome, ensureHomeFolder, loadHomeAssets, homeBgUrl } from './home.js';
 import { renderSettings } from './settings.js';
+import { renderBoard } from './board.js';
 
 const $ = (s) => document.querySelector(s);
 const nav = $('#nav');
@@ -47,6 +48,7 @@ let openMenu = null;
 let drag = null; // { kind: 'link'|'folder', id, parentId }
 const HOME = { id: 'home', title: 'Home', home: true, links: [], parts: [], all: [] };
 const SETTINGS = { id: 'settings', title: 'Settings', settings: true, links: [], parts: [], all: [] };
+const BOARD = { id: 'board', title: 'Board', board: true, links: [], parts: [], all: [] };
 let beforeSettings = null;
 let saveQueue = Promise.resolve();
 
@@ -55,6 +57,7 @@ $('#gearIcon').append(svgIcon('gear'));
 $('#plusIcon').append(svgIcon('plus'));
 $('#catIcon').append(svgIcon('plus'));
 $('#homeIcon').append(svgIcon('home'));
+$('#boardIcon').append(svgIcon('board'));
 $('#ghIcon').append(svgIcon('github'));
 $('#webIcon').append(svgIcon('globe'));
 $('#fabIcon').append(svgIcon('home'));
@@ -83,7 +86,7 @@ async function refresh() {
   root = resolveRoot(tree, settings);
   secs = sections(root, settings.order, [settings.home.folderId]);
   renderBrand();
-  current = current?.home ? HOME : current?.settings ? SETTINGS : secs.find((s) => s.id === current?.id) || HOME;
+  current = current?.home ? HOME : current?.settings ? SETTINGS : current?.board ? BOARD : secs.find((s) => s.id === current?.id) || HOME;
   renderNav();
   renderPage();
 }
@@ -118,8 +121,8 @@ function groups() {
 }
 
 function navOrder() {
-  if (!settings.categories.length) return [HOME, ...secs];
-  return [HOME, ...groups().flatMap((g) => (g.cat?.closed ? [] : g.items)), ...secs.filter((s) => s.virtual)];
+  if (!settings.categories.length) return [HOME, BOARD, ...secs];
+  return [HOME, BOARD, ...groups().flatMap((g) => (g.cat?.closed ? [] : g.items)), ...secs.filter((s) => s.virtual)];
 }
 
 function bindHomeButtons() {
@@ -134,6 +137,10 @@ function bindHomeButtons() {
     get node() {
       return { id: settings.home.folderId };
     },
+  });
+  $('#boardBtn').addEventListener('click', () => {
+    if (query) clearQuery();
+    select(BOARD);
   });
   $('#homeFab').addEventListener('click', () => {
     if (query) clearQuery();
@@ -150,6 +157,9 @@ function renderNav() {
   const on = !!current?.home;
   $('#homeBtn').classList.toggle('on', on);
   $('#homeBtn').setAttribute('aria-current', on ? 'page' : 'false');
+  const onBoard = !!current?.board;
+  $('#boardBtn').classList.toggle('on', onBoard);
+  $('#boardBtn').setAttribute('aria-current', onBoard ? 'page' : 'false');
   $('#settingsBtn').classList.toggle('on', !!current?.settings);
   $('#settingsBtn').setAttribute('aria-pressed', String(!!current?.settings));
   nav.replaceChildren();
@@ -385,7 +395,7 @@ async function select(s) {
 async function saveOrder(ids) {
   settings.order = ids;
   await saveSettings({ order: ids });
-  secs = sections(root, ids);
+  secs = sections(root, ids, [settings.home.folderId]);
   renderNav();
 }
 
@@ -397,6 +407,22 @@ async function moveSection(s, delta) {
   ids.splice(ids.indexOf(n.id) + (delta > 0 ? 1 : 0), 0, s.id);
   await saveOrder(ids);
   nav.querySelector(`.nav[data-id="${CSS.escape(s.id)}"]`)?.focus();
+}
+
+async function moveFolder(id, targetId, after) {
+  const ids = secs
+    .filter((x) => !x.virtual)
+    .map((x) => x.id)
+    .filter((x) => x !== id);
+  ids.splice(ids.indexOf(targetId) + (after ? 1 : 0), 0, id);
+  if (catId(id) !== catId(targetId)) {
+    const folderCat = { ...settings.folderCat };
+    if (catId(targetId)) folderCat[id] = catId(targetId);
+    else delete folderCat[id];
+    settings.folderCat = folderCat;
+    await saveSettings({ folderCat });
+  }
+  await saveOrder(ids);
 }
 
 function bindNavDrag(el, s) {
@@ -438,20 +464,7 @@ function bindNavDrag(el, s) {
     if (drag.kind === 'folder') {
       const after = el.classList.contains('drop-after');
       clearMarks();
-      const ids = secs
-        .filter((x) => !x.virtual)
-        .map((x) => x.id)
-        .filter((id) => id !== drag.id);
-      const at = ids.indexOf(s.id) + (after ? 1 : 0);
-      ids.splice(at, 0, drag.id);
-      if (catId(drag.id) !== catId(s.id)) {
-        const folderCat = { ...settings.folderCat };
-        if (catId(s.id)) folderCat[drag.id] = catId(s.id);
-        else delete folderCat[drag.id];
-        settings.folderCat = folderCat;
-        await saveSettings({ folderCat });
-      }
-      await saveOrder(ids);
+      await moveFolder(drag.id, s.id, after);
       toast('Sidebar order saved');
     } else if (drag.kind === 'link') {
       clearMarks();
@@ -467,10 +480,12 @@ function renderPage() {
   page.replaceChildren();
   page.classList.toggle('home-mode', !!current?.home && !query);
   page.classList.toggle('settings-mode', !!current?.settings && !query);
+  page.classList.toggle('board-mode', !!current?.board && !query);
   $('#homeFab').hidden = !!current?.home && !query;
   if (query) return renderSearch();
   if (current?.home) return renderHome(page, { settings, tree, showMenu, toast, rerender: renderPage });
   if (current?.settings) return renderSettings(page, settingsCtx);
+  if (current?.board) return renderBoard(page, boardCtx);
   if (!current) {
     page.append(h('div', { class: 'empty' }, 'No folders under this root. Change the root folder in Settings.'));
     return;
@@ -1389,6 +1404,43 @@ const settingsCtx = {
   done: () => closeSettings(),
 };
 
+const boardCtx = {
+  get settings() {
+    return settings;
+  },
+  get secs() {
+    return secs;
+  },
+  get drag() {
+    return drag;
+  },
+  set drag(v) {
+    drag = v;
+  },
+  get filter() {
+    return filterQ;
+  },
+  set filter(v) {
+    filterQ = v;
+  },
+  groups: () => groups(),
+  folderPrefs: (id) => folderPrefs(id),
+  select: (s) => select(s),
+  folderMenu: (e, s) => folderMenu(e, s),
+  deleteLink: (bm) => deleteBookmark(bm),
+  async moveFolder(id, targetId, after) {
+    await moveFolder(id, targetId, after);
+    renderPage();
+  },
+  async setBoard(patch) {
+    settings.board = { ...settings.board, ...patch };
+    await saveSettings({ board: settings.board });
+    renderPage();
+  },
+  clearMarks: () => clearMarks(),
+  toast,
+};
+
 function openSettings() {
   if (current?.settings && !query) return closeSettings();
   if (query) {
@@ -1403,7 +1455,7 @@ function openSettings() {
 }
 
 function closeSettings() {
-  current = (beforeSettings?.home ? HOME : secs.find((s) => s.id === beforeSettings?.id)) || HOME;
+  current = (beforeSettings?.home ? HOME : beforeSettings?.board ? BOARD : secs.find((s) => s.id === beforeSettings?.id)) || HOME;
   beforeSettings = null;
   renderNav();
   renderPage();
@@ -1418,6 +1470,7 @@ function applyFontSize(s) {
   const root = document.documentElement.style;
   root.setProperty('--fs-side', String(clampFont(s.fontSide) / 100));
   root.setProperty('--fs-page', String(clampFont(s.fontPage) / 100));
+  root.setProperty('--fs-board', String(clampFont(s.fontBoard) / 100));
 }
 
 /* ================= global ================= */

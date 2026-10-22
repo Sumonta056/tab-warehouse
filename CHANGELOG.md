@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Board view: a board button next to Home shows every folder as a column of cards (favicon, title, full URL, env badge), in lanes by category or in one row. Drag cards between columns, onto section headers or within a column (Manual sort); drag column headers to reorder folders; add a link per column; delete with undo; filter all columns.
+
 ## [2.2.0] - 2026-10-22
 
 Tab Warehouse 2.2.0 is a bookmark manager and new tab page for developers. It shows full URLs, PROD / TEST / STAGE / LOCAL tags and an environment matrix, on top of Chrome's own bookmarks. Manifest V3, no runtime dependencies, no build step.

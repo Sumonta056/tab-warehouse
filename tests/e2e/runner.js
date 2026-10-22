@@ -4,8 +4,9 @@ import categories from './scenarios/categories.js';
 import home from './scenarios/home.js';
 import popup from './scenarios/popup.js';
 import environments from './scenarios/environments.js';
+import board from './scenarios/board.js';
 
-const ALL = [...newtab, ...sections, ...categories, ...home, ...popup, ...environments];
+const ALL = [...newtab, ...sections, ...categories, ...home, ...popup, ...environments, ...board];
 const frame = document.getElementById('frame');
 const out = document.getElementById('results');
 const summary = document.getElementById('summary');

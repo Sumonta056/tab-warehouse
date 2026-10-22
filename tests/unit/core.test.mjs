@@ -35,6 +35,7 @@ import {
   THEMES,
   themeVars,
   DEFAULT_SIDE_LOOK,
+  DEFAULT_BOARD,
   sideLookVars,
 } from '../../lib/core.js';
 
@@ -376,6 +377,22 @@ describe('settings storage', () => {
     const s = await loadSettings();
     assert.equal(s.home.color, '#000000');
     assert.equal(s.home.perRow, DEFAULT_HOME.perRow);
+  });
+  test('board defaults to By category and old stored objects gain new board keys', async () => {
+    assert.deepEqual(DEFAULT_BOARD, { group: 'cat' });
+    assert.deepEqual((await loadSettings()).board, { group: 'cat' });
+    store.settings = { board: { group: 'flat' } };
+    assert.equal((await loadSettings()).board.group, 'flat');
+    store.settings = { board: {} };
+    assert.equal((await loadSettings()).board.group, 'cat');
+    store.settings = { userName: 'x' };
+    assert.equal((await loadSettings()).board.group, 'cat');
+  });
+  test('Board text size defaults to 100 % and old stored settings gain it', async () => {
+    store.settings = { fontPage: 120 };
+    const s = await loadSettings();
+    assert.equal(s.fontBoard, 100);
+    assert.equal(s.fontPage, 120);
   });
   test('ENVS order is fixed (CSS depends on it)', () => {
     assert.deepEqual(ENVS, ['PROD', 'TEST', 'STAGE', 'LOCAL']);

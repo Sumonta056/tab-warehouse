@@ -301,7 +301,13 @@ const VIEWS = {
           'The sidebar and the browser tab show "<name>\'s Warehouse". Leave it empty for "Tab Warehouse".',
           field('What is your name?', nameBox),
         ),
-        card('Text size', 'Makes the text in each pane bigger or smaller.', fontSlider(c, 'fontSide', 'Sidebar'), fontSlider(c, 'fontPage', 'Page')),
+        card(
+          'Text size',
+          'Makes the text in each pane bigger or smaller.',
+          fontSlider(c, 'fontSide', 'Sidebar'),
+          fontSlider(c, 'fontPage', 'Page'),
+          fontSlider(c, 'fontBoard', 'Board'),
+        ),
         card('Accent color', 'Colors the active folder, Home buttons, focus rings and buttons.', swatches),
         card(
           'Sidebar background',

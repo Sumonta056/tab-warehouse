@@ -25,6 +25,16 @@ describe('cleanImport', () => {
     assert.doesNotThrow(() => detectEnv({ title: 't', url: 'https://prod.example/x' }, r.preferences.envRules));
   });
 
+  test('keeps board.group only when it is cat or flat', () => {
+    const pick = (board) => cleanImport({ sections: [], preferences: { board } }).preferences.board;
+    assert.deepEqual(pick({ group: 'flat', evil: 1 }), { group: 'flat' });
+    assert.deepEqual(pick({ group: 'cat' }), { group: 'cat' });
+    assert.equal(pick({ group: 'grid' }), undefined);
+    assert.equal(pick({ group: 1 }), undefined);
+    assert.equal(pick('flat'), undefined);
+    assert.equal(pick(undefined), undefined);
+  });
+
   test('keeps only sections and links with string titles and URLs', () => {
     const r = cleanImport({
       sections: [

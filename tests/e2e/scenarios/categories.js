@@ -69,6 +69,10 @@ export default [
       t.d.activeElement?.blur();
       t.key(t.d, 'j');
       await t.settle();
+      t.eq(t.$('.head h2')?.textContent, 'Board', 'j from Home goes to the Board');
+      t.d.activeElement?.blur();
+      t.key(t.d, 'j');
+      await t.settle();
       t.eq(t.$('.head h2')?.textContent, 'GITHUB - PIN', 'j skips collapsed folders');
     },
   },

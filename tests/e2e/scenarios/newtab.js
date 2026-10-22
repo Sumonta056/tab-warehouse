@@ -7,22 +7,76 @@ const area = 'folders';
 export default [
   {
     area,
-    name: 'boots on Home; Home is an icon right of search; Home folder is not a sidebar section',
+    name: 'boots on Home; Home and Board are labeled view tabs under a full-width search; Home folder is not a sidebar section',
     page: 'newtab',
     fixture: () => base(),
     async run(t) {
       const btn = t.$('#homeBtn'),
-        search = t.$('.side .search');
-      t.ok(btn && search.parentElement === btn.parentElement, 'Home button shares the row with search');
-      t.ok(btn.getBoundingClientRect().left >= search.getBoundingClientRect().right, 'Home button is right of search');
-      t.ok(btn.getBoundingClientRect().height >= 36, 'Home button is at least 36 px tall');
-      t.eq(btn.textContent.trim(), '', 'icon only');
+        search = t.$('.side .search'),
+        tabs = t.$('.side .view-tabs');
+      t.ok(tabs && btn.parentElement === tabs && t.$('#boardBtn').parentElement === tabs, 'Home and Board share the view tabs');
+      t.eq(tabs.getAttribute('role'), 'group', 'tabs are a group');
+      t.eq(tabs.getAttribute('aria-label'), 'View', 'group name');
+      t.ok(!search.parentElement.contains(btn), 'search row has no buttons');
+      t.ok(btn.getBoundingClientRect().top >= search.getBoundingClientRect().bottom, 'tabs sit under the search box');
+      t.ok(tabs.getBoundingClientRect().top - search.getBoundingClientRect().bottom <= 6, 'tabs sit 6 px under the search box');
+      const cs = (el) => t.w.getComputedStyle(el);
+      t.eq(
+        ['height', 'borderRadius', 'backgroundColor', 'borderTopColor'].map((k) => cs(tabs)[k]),
+        ['height', 'borderRadius', 'backgroundColor', 'borderTopColor'].map((k) => cs(search)[k]),
+        'tabs box matches the search box',
+      );
+      t.eq(cs(btn).fontSize, cs(t.$('#q')).fontSize, 'tab labels match the search text size');
+      t.eq(cs(btn).columnGap, cs(search).columnGap, 'same icon-to-text gap');
+      t.ok(Math.abs(search.getBoundingClientRect().width - tabs.getBoundingClientRect().width) <= 1, 'search is as wide as the tabs');
+      t.ok(btn.getBoundingClientRect().height >= 28, 'Home tab is at least 28 px tall');
+      t.ok(t.$('.side .view-tabs').getBoundingClientRect().height <= 36, 'view tabs take at most 36 px');
+      t.ok(Math.abs(btn.getBoundingClientRect().width - t.$('#boardBtn').getBoundingClientRect().width) <= 1, 'tabs share the width equally');
+      t.eq(btn.textContent.trim(), 'Home', 'labeled');
+      t.eq(t.$('#boardBtn').textContent.trim(), 'Board', 'labeled');
+      t.ok(btn.querySelector('svg') && t.$('#boardBtn').querySelector('svg'), 'icons kept');
       t.eq(btn.getAttribute('aria-label'), 'Home', 'accessible name');
       t.ok(btn.classList.contains('on'), 'Home is selected');
       t.ok(t.$('#home'), 'Home page is rendered');
       t.eq(t.navTitles(), ['Sprint board', 'Shop API', 'GITHUB - PIN', 'Empty', 'Unsorted'], 'sidebar items');
       t.ok(!t.$('.side .hint'), 'no drag hint text');
       t.ok(!t.$('.side').textContent.includes("Chrome's bookmark tree"), 'hint text removed');
+    },
+  },
+  {
+    area,
+    name: 'view tabs: a middle line splits Home and Board while neither is open',
+    page: 'newtab',
+    fixture: () => base(),
+    async run(t) {
+      const tabs = t.$('.side .view-tabs');
+      const line = () => t.w.getComputedStyle(tabs, '::after');
+      t.click(t.$('.nav[data-id="30"]'));
+      await t.settle();
+      t.ok(line().content !== 'none' && line().opacity === '1', 'line shows on a folder page');
+      const r = tabs.getBoundingClientRect();
+      t.eq(line().width, '1px', '1 px wide');
+      t.ok(Math.abs(parseFloat(line().left) + 0.5 - r.width / 2) <= 2, 'in the middle');
+      t.ok(parseFloat(line().height) < r.height - 8, 'shorter than the box');
+      t.click(t.$('#homeBtn'));
+      await t.settle();
+      t.eq(line().opacity, '0', 'hidden while a tab is marked on');
+    },
+  },
+  {
+    area,
+    name: 'view tabs: at the narrowest sidebar the search box keeps its placeholder and the tabs fit',
+    page: 'newtab',
+    fixture: () => base({ settings: { sideWidth: 180 } }),
+    async run(t) {
+      const side = t.$('.side').getBoundingClientRect();
+      t.ok(Math.round(side.width) <= 181, 'sidebar is 180 px');
+      const q = t.$('#q');
+      t.ok(q.getBoundingClientRect().width >= 70, 'search input keeps room for its placeholder');
+      for (const b of [t.$('#homeBtn'), t.$('#boardBtn')]) {
+        t.ok(b.scrollWidth <= b.clientWidth + 1, `${b.id} label fits`);
+        t.ok(b.getBoundingClientRect().right <= side.right, `${b.id} inside the sidebar`);
+      }
     },
   },
   {
@@ -607,14 +661,22 @@ export default [
   },
   {
     area,
-    name: 'j / k move between folders in sidebar order',
+    name: 'j / k move through Home, Board and folders in sidebar order',
     page: 'newtab',
     fixture: () => base(),
     async run(t) {
       t.d.activeElement?.blur();
       t.key(t.d, 'j');
       await t.settle();
-      t.eq(t.$('.head h2')?.textContent, 'Sprint board', 'j from Home goes to first folder');
+      t.eq(t.$('.head h2')?.textContent, 'Board', 'j from Home goes to the Board');
+      t.d.activeElement?.blur();
+      t.key(t.d, 'j');
+      await t.settle();
+      t.eq(t.$('.head h2')?.textContent, 'Sprint board', 'j from the Board goes to first folder');
+      t.d.activeElement?.blur();
+      t.key(t.d, 'k');
+      await t.settle();
+      t.eq(t.$('.head h2')?.textContent, 'Board', 'k goes back to the Board');
       t.d.activeElement?.blur();
       t.key(t.d, 'k');
       await t.settle();
@@ -749,13 +811,59 @@ export default [
   },
   {
     area,
+    name: 'text size: the Board slider changes only the Board text',
+    page: 'newtab',
+    fixture: () => base(),
+    async run(t) {
+      const px = (el) => +parseFloat(t.w.getComputedStyle(el).fontSize).toFixed(2);
+      const r = (n) => +n.toFixed(2);
+      t.click(t.$('#boardBtn'));
+      await t.settle();
+      const card0 = px(t.$('#page .bcard-ttl'));
+      t.click(t.$('#settingsBtn'));
+      await t.settle();
+      const page0 = px(t.$('.set-card h3')),
+        side0 = px(t.$('#brandTitle'));
+      const sl = t.$('#fontBoard');
+      t.ok(sl, 'Board slider');
+      t.eq(
+        t
+          .$$('.set-card input[type=range]')
+          .filter((i) => /^font/.test(i.id))
+          .map((i) => i.id),
+        ['fontSide', 'fontPage', 'fontBoard'],
+        'third slider, after Page',
+      );
+      t.eq([sl.value, sl.step, sl.min, sl.max], ['100', '5', '80', '140'], 'default 100 %, 80-140 in steps of 5');
+      t.type(sl, '120');
+      await t.settle();
+      t.eq(px(t.$('.set-card h3')), page0, 'Settings page text unchanged');
+      t.eq(px(t.$('#brandTitle')), side0, 'sidebar text unchanged');
+      t.ok(t.settings().fontBoard !== 120, 'not saved yet (debounced)');
+      await t.sleep(350);
+      t.eq(t.settings().fontBoard, 120, 'Board size saved');
+      t.type(t.$('#fontPage'), '80');
+      await t.sleep(350);
+      t.click(t.$('#boardBtn'));
+      await t.settle();
+      t.eq(px(t.$('#page .bcard-ttl')), r(card0 * 1.2), 'Board text uses the Board size, not the Page size');
+      t.click(t.$('#homeBtn'));
+      await t.settle();
+      t.click(t.$('.nav[data-id="30"]'));
+      await t.settle();
+      t.eq(t.d.documentElement.style.getPropertyValue('--fs-page'), '0.8', 'folder pages keep the Page size');
+    },
+  },
+  {
+    area,
     name: 'text size: saved sizes apply on load; bad values fall back to 100 %',
     page: 'newtab',
-    fixture: () => base({ settings: { fontSide: 140, fontPage: 'big' } }),
+    fixture: () => base({ settings: { fontSide: 140, fontPage: 'big', fontBoard: 80 } }),
     async run(t) {
       const root = t.d.documentElement.style;
       t.eq(root.getPropertyValue('--fs-side'), '1.4', 'sidebar scale');
       t.eq(root.getPropertyValue('--fs-page'), '1', 'page scale falls back');
+      t.eq(root.getPropertyValue('--fs-board'), '0.8', 'board scale');
     },
   },
 ];

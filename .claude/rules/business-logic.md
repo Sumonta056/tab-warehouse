@@ -4,23 +4,24 @@ Every rule here has at least one test. If you change a rule, change its test in 
 
 ## Data ownership
 
-| Data                                                                                                                                             | Lives in                                                                | Never in                                       |
-| ------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------- | ---------------------------------------------- |
-| Link title, URL, folder membership, order inside a folder                                                                                        | `chrome.bookmarks`                                                      | `chrome.storage`                               |
-| Sections (status groups inside a folder)                                                                                                         | Real subfolders in `chrome.bookmarks`                                   | settings                                       |
-| Home links and their order                                                                                                                       | Bookmark folder `settings.home.folderId` (created in _Other bookmarks_) | settings                                       |
-| Sidebar order, categories, folder→category, section colors, per-folder prefs, env rules, host map, Home look, sidebar width, theme, sidebar look | `chrome.storage.local.settings`                                         | bookmarks                                      |
-| Home icon overrides (URL or 128 px data URL), keyed by bookmark id                                                                               | `chrome.storage.local.homeIcons`                                        | settings                                       |
-| Home background image (JPEG, max 1920 px)                                                                                                        | `chrome.storage.local.homeBg`                                           | settings (it would be rewritten on every save) |
+| Data                                                                                                                                                             | Lives in                                                                | Never in                                       |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- | ---------------------------------------------- |
+| Link title, URL, folder membership, order inside a folder                                                                                                        | `chrome.bookmarks`                                                      | `chrome.storage`                               |
+| Sections (status groups inside a folder)                                                                                                                         | Real subfolders in `chrome.bookmarks`                                   | settings                                       |
+| Home links and their order                                                                                                                                       | Bookmark folder `settings.home.folderId` (created in _Other bookmarks_) | settings                                       |
+| Sidebar order, categories, folder→category, section colors, per-folder prefs, env rules, host map, Home look, sidebar width, theme, sidebar look, Board grouping | `chrome.storage.local.settings`                                         | bookmarks                                      |
+| Home icon overrides (URL or 128 px data URL), keyed by bookmark id                                                                                               | `chrome.storage.local.homeIcons`                                        | settings                                       |
+| Home background image (JPEG, max 1920 px)                                                                                                                        | `chrome.storage.local.homeBg`                                           | settings (it would be rewritten on every save) |
 
-- `loadSettings()` merges stored settings over `DEFAULT_SETTINGS`, and merges `home` and `sideLook` one level deep over `DEFAULT_HOME` / `DEFAULT_SIDE_LOOK`, so old stored objects gain new keys.
+- `loadSettings()` merges stored settings over `DEFAULT_SETTINGS`, and merges `home`, `sideLook` and `board` one level deep over `DEFAULT_HOME` / `DEFAULT_SIDE_LOOK` / `DEFAULT_BOARD`, so old stored objects gain new keys.
 - Code that changes settings re-reads by **id** from the current `settings` object. The `storage.onChanged` listener replaces `settings` objects, so a category/section object captured at render time can be stale (this bug happened; test "category menu: color, rename, Move down").
 
 ## Sidebar
 
 - Header: the extension icon (`#logo`, `icons/icon48.png`) and `brandName(settings)` (`#brandTitle`): `"<userName>'s Warehouse"`, or `Tab Warehouse` when the name is empty. The root folder name is not shown. The browser tab title (`document.title`) is the same text.
 - Footer (`#sideFoot`), last in the sidebar: "Made by Sumonta", a GitHub link (`https://github.com/sumonta056`) and a portfolio link (`https://sumonta056.vercel.app/`). Icon links, ≥ 28 px, `target=_blank rel=noopener`, with `aria-label`.
-- Home is an icon-only button (`#homeBtn`, ≥ 36 px, `aria-label="Home"`) to the right of the search box, always present and marked `on` while Home is open. It is not an item in `#nav`. Clicking it from search results clears the search and opens Home.
+- The search box has the full sidebar width. Under it, the view tabs (`.view-tabs`, `role="group"`, `aria-label="View"`) hold two equal, labeled buttons with icons: Home (`#homeBtn`) and Board (`#boardBtn`), each ≥ 28 px tall (compact, like dense-list rows); the whole group is at most 36 px tall. At the narrowest sidebar (180 px) the labels and the search placeholder still fit. A 1 px middle line splits the two tabs while neither is marked `on`; it hides when one is.
+- Home (`#homeBtn`, `aria-label="Home"`) is always present and marked `on` while Home is open. It is not an item in `#nav`. Clicking it from search results clears the search and opens Home.
 - Order of `#nav`: (categories, or a flat list) → Unsorted.
 - There is no hint text under the sidebar buttons.
 - Sections of the sidebar = child folders of the root folder (`resolveRoot`: `rootId`, else folder named `rootName` (empty by default; older installs keep their saved name), else first top-level folder), **excluding the Home folder**.
@@ -29,10 +30,10 @@ Every rule here has at least one test. If you change a rule, change its test in 
 - Folder order is `settings.order`; ids not in it are appended in Chrome order. Reordering never moves bookmarks in Chrome.
 - Alt+↑/↓ moves a folder one step **within its own category** (or within "No category").
 - Dropping a link on a sidebar folder moves the bookmark there; dropping a link on the Home button moves it into the Home folder.
-- `j` / `k` (when nothing is focused) walk the visible order: Home, then folders, skipping collapsed categories.
+- `j` / `k` (when nothing is focused) walk the visible order: Home, Board, then folders, skipping collapsed categories.
 - Width: drag the handle, ←/→ on the focused handle (16 px steps), double-click resets to 264. Clamped to 180–440 (`clampSideWidth`). Saved on release / after 300 ms of key presses, never per pointer move.
 
-- Floating Home button (`#homeFab`, `position: fixed`, bottom-right, `aria-label="Go to Home"`): visible on every view except Home — folder pages, Unsorted and search results. Click clears search and opens Home.
+- Floating Home button (`#homeFab`, `position: fixed`, bottom-right, `aria-label="Go to Home"`): visible on every view except Home — folder pages, the Board, Unsorted and search results. Click clears search and opens Home.
 
 ## Settings
 
@@ -41,7 +42,7 @@ Every rule here has at least one test. If you change a rule, change its test in 
 - Every change saves without a Save button. Toggles, swatches, the root folder and buttons save at once; sliders and color pickers save after 300 ms; Environments rows and the name save when a box loses focus; the name is trimmed and updates the header and tab title at once. The header status shows "Saving…" then "Saved".
 - Saves go through one queue so two quick saves never overwrite each other.
 - Settings changed in another tab: a hidden tab only marks itself stale; when it is shown again it reloads settings and Home assets and re-renders (test "a hidden tab picks up settings changed in another tab when it is shown"). A visible tab never re-renders on a storage event, so its own sliders and text boxes are not interrupted.
-- Backup › Import (JSON) keeps only valid preferences (`cleanImport()`): env rules need a text pattern and a known label; host rows keep only PROD/TEST/STAGE/LOCAL text values; folder prefs keep only a known sort, `list`/`matrix`, `title`/`url` and boolean `closed`; links need a text URL. Anything else is dropped, so a bad file cannot break the page.
+- Backup › Import (JSON) keeps only valid preferences (`cleanImport()`): env rules need a text pattern and a known label; host rows keep only PROD/TEST/STAGE/LOCAL text values; folder prefs keep only a known sort, `list`/`matrix`, `title`/`url` and boolean `closed`; `board.group` is kept only when it is `cat` or `flat`; links need a text URL. Anything else is dropped, so a bad file cannot break the page.
 - Settings re-render on bookmark changes and keep their tab and scroll position.
 
 ## Environments (labels and sites)
@@ -56,9 +57,9 @@ Every rule here has at least one test. If you change a rule, change its test in 
 
 ## Text size
 
-- `settings.fontSide` and `settings.fontPage` are percents (80–140, default 100; `clampFont()`; bad values → 100).
-- Every px `font-size` in `newtab.css` and `lib/shared.css` is `calc(Npx * var(--fs, 1))`. `.side` sets `--fs` from `--fs-side`, `.page` from `--fs-page` (set on `:root` by `applyFontSize()`). Only text scales; row heights, icons and click areas stay. The Home clock and tile letters keep their own sizes.
-- Edited in Settings › Appearance › Text size: Sidebar and Page sliders, steps of 5. Changes apply at once and save after 300 ms.
+- `settings.fontSide`, `settings.fontPage` and `settings.fontBoard` are percents (80–140, default 100; `clampFont()`; bad values → 100).
+- Every px `font-size` in `newtab.css` and `lib/shared.css` is `calc(Npx * var(--fs, 1))`. `.side` sets `--fs` from `--fs-side`, `.page` from `--fs-page`, and the Board (`.page.board-mode`) from `--fs-board` (all set on `:root` by `applyFontSize()`). The Board ignores the Page size; every other view ignores the Board size. Only text scales; row heights, icons and click areas stay. The Home clock and tile letters keep their own sizes.
+- Edited in Settings › Appearance › Text size: Sidebar, Page and Board sliders, steps of 5. Text sizes are not part of Backup export/import. Changes apply at once and save after 300 ms.
 
 ## Theme
 
@@ -85,6 +86,20 @@ Every rule here has at least one test. If you change a rule, change its test in 
 - Folder menu: _Move to <category>_ (except its current one), _Remove from category_.
 - Header menu: color (default + red/orange/yellow/green/blue/purple), Rename, Move up/down, Delete. Drag a header onto another header to reorder.
 - Delete asks `confirm()`, removes the category and its `folderCat` entries; folders and bookmarks stay.
+
+## Board
+
+- `#boardBtn` (view tab, ≥ 28 px, `aria-label="Board"`) sits right after `#homeBtn`. It opens the Board in the right pane (the sidebar stays), is marked `on` with `aria-current="page"` while the Board is open, and clears a global search first. `#homeFab` stays visible on the Board. Settings opened from the Board return to the Board on Done/Escape.
+- `settings.board = { group: 'cat'|'flat' }`, default `cat`. The **By category** / **One row** switch shows only when categories exist and saves at once.
+- Columns: with categories and `group: 'cat'` → one lane per category in sidebar order (header `Name (n)`, collapsed categories still shown, empty lanes skipped), then a **No category** lane holding the uncategorised folders and Unsorted (its count includes Unsorted). No categories or `group: 'flat'` → one row in sidebar order. Unsorted is always the last column and exists only when the root has loose links. Each lane scrolls sideways; columns are 320 px wide (at most the screen width minus 48 px at ≤ 760 px).
+- Column header: the folder name is a button that opens the folder page; the count is `section.all`; ⋯ (and right-click) opens the folder menu.
+- Cards use the folder's own sort (`folders[id].sort`). A card shows the favicon (`iconEl`), the title (at most 2 lines), the URL on 1 line cut with … (the full URL is the card tooltip; hidden only when it equals the title, `sameAsUrl`) and the env or GH badge at the right edge. Cards keep their full height in a scrolling column and never overlap; the ✕ floats over the top-right corner on hover or focus. Click opens the link `target=_blank rel=noopener`.
+- Sections: a folder's subfolders show as small headers in its column (with the section color dot), **No section** last; headers show even when empty, as drop targets. Folders without subfolders show a plain card list.
+- Drag a card: onto a column → moves to the end of that folder (Unsorted = the root; not offered for its own folder); onto a section header → into that subfolder (**No section** = the folder itself; its own section refuses); onto a card → before/after it (same index rule as rows), **only when that folder's sort is Manual**; onto a sidebar folder or the Home button → the existing sidebar moves.
+- Drag a column header onto another column → reorders `settings.order` (`moveFolder`, shared with the sidebar) and adopts that column's category; the Chrome tree does not change. Unsorted can't be dragged and is not a folder drop target.
+- Card ✕ (`aria-label="Delete link"`, ≥ 28 px) deletes with the 8 s Undo toast (restored at the same parent and index).
+- **Add link** at the bottom of every column (Unsorted too: it adds to the root) opens an inline form: URL + Name, Save/Cancel, Escape cancels. No URL → nothing is added; no scheme → `https://`; no name → host without `www.`.
+- Board filter (title + URL, every term must match) re-renders only the columns, so the box keeps focus; a column with no hits says "Nothing matches."; Escape clears it. Opening the Board resets the filter.
 
 ## Folder page
 

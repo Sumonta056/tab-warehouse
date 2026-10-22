@@ -1,9 +1,7 @@
 Icon
 
-kanabar board
+tags option
 
 export all config
 
   
-html page
-
