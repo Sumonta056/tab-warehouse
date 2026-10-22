@@ -60,7 +60,7 @@ Run these and read every hit:
 
 ```
 grep -nE "innerHTML|outerHTML|insertAdjacentHTML|document\.write|eval\(|new Function" *.js lib/*.js
-grep -nE "https?://" *.js lib/*.js | grep -v DEFAULT_HOME_LINKS
+grep -nE "https?://" *.js lib/*.js
 grep -n '"permissions"\|content_security_policy\|host_permissions' manifest.json
 ```
 

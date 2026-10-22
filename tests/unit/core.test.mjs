@@ -27,6 +27,7 @@ import {
   clampSideWidth,
   clockText,
   msToNextTick,
+  letterIcon,
   loadSettings,
   saveSettings,
   THEMES,
@@ -158,6 +159,10 @@ describe('bookmark tree helpers', () => {
     assert.equal(resolveRoot(tree, { rootId: '12', rootName: 'My Links' }).id, '12');
     assert.equal(resolveRoot(tree, { rootId: 'gone', rootName: 'My Links' }).id, '10');
     assert.equal(resolveRoot(tree, { rootId: null, rootName: 'Missing' }).id, '1');
+  });
+  test('resolveRoot with fresh-install settings (no root name) uses the first top-level folder', async () => {
+    globalThis.chrome = { storage: { local: { get: async () => ({}) } } };
+    assert.equal(resolveRoot(tree, await loadSettings()).id, '1');
   });
   test('flatten gives every link with its folder path', () => {
     const r = flatten(findById(tree, '10'));
@@ -443,5 +448,20 @@ describe('environment labels: explain and text format', () => {
     assert.deepEqual(p.hostMap, [{ PROD: 'a.com', TEST: 'b.com', STAGE: '', LOCAL: '' }]);
     assert.equal(p.skipped, 3);
     assert.deepEqual(parseEnvText(''), { rules: [], hostMap: [], skipped: 0 });
+  });
+});
+
+describe('no built-in company or personal data', () => {
+  test('fresh-install settings hold no company names, hosts or labels', async () => {
+    globalThis.chrome = { storage: { local: { get: async () => ({}) } } };
+    const s = await loadSettings();
+    assert.equal(s.rootName, '');
+    assert.deepEqual([s.envRules, s.hostMap], [[], []]);
+    assert.doesNotMatch(JSON.stringify(s), /acme\.no|shop|My Links|sumonta|gitbook|vercel/i);
+  });
+  test('letterIcon has no company special cases', () => {
+    assert.equal(letterIcon({ url: 'https://shop.example.com/x', title: 'Shop API' }), 'La');
+    assert.equal(letterIcon({ url: 'https://www.example.com/', title: 'News' }), 'Ne');
+    assert.equal(letterIcon({ url: 'https://github.com/a', title: 'Repo' }), 'gh');
   });
 });

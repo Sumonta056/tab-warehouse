@@ -47,7 +47,7 @@ Developers keep the same page open in many versions: live, test, staging and `lo
 ### Home
 
 - Opens on every new tab: a large clock, the date and your link tiles.
-- Tiles are a normal bookmark folder called _Home_ in _Other bookmarks_, created on first start with 24 default links.
+- Tiles are a normal bookmark folder called _Home_ in _Other bookmarks_, created empty on first start. Add your own links with _Add link_.
 - Drag tiles to reorder. Right-click a tile to change its icon (upload or URL), edit it, open it in a new tab or remove it (with undo).
 - Official icons for Google apps (Gmail, Drive, Calendar, Keep, Meet, Docs, Sheets, Slides, Forms); Chrome's favicon for everything else.
 - Background image, darkness, blur, color, clock size, 12/24-hour, seconds, icon size and icons per row — all with a live preview.
@@ -106,7 +106,7 @@ Coming soon.
 
 ## Quick start
 
-1. **Pick your root folder.** Open ⚙ Settings → Bookmarks. Its subfolders become the sidebar. By default Tab Warehouse uses a folder named _My Links_ if you have one, else your bookmarks bar.
+1. **Pick your root folder.** Open ⚙ Settings → Bookmarks. Its subfolders become the sidebar. By default it uses your bookmarks bar.
 2. **Add environment labels.** Settings → Environments → Labels. For example: `localhost` → LOCAL, `-test.` → TEST, `-stage.` → STAGE.
 3. **Link your environments.** Settings → Environments → Same site in each version. Add one row per site with its PROD, TEST, STAGE and LOCAL hosts.
 4. **Save a page.** On any site, press `⌘⇧B` (macOS) or `Ctrl+Shift+B` (Windows/Linux), pick a folder and press Enter.
@@ -195,7 +195,7 @@ python3 -I tests/serve.py 8799
 
 - **Unreleased**
   - Renamed to **Tab Warehouse** with a new terminal-style icon.
-  - Home page: clock, date, 24 default tiles, background, clock and tile settings, official Google icons.
+  - Home page: clock, date, your own tiles, background, clock and tile settings, official Google icons.
   - One Settings view with 5 tabs, auto-save, accent themes and a sidebar background.
   - Environments: plain-language labels and site rows, _Try it_, copy and paste; no default rules.
   - Resizable sidebar; categories with colors and drag reorder; sections inside folders; save-current-tab popup.

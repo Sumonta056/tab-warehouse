@@ -15,7 +15,7 @@ Get the facts first; most bugs are one of five things.
    - _Settings not saved_: `saveSettings()` merges the whole object; make sure the key exists in `DEFAULT_SETTINGS`. Inspect `chrome.storage.local.get('settings')` in the console.
    - _A menu action does nothing after another change_: a stale object. `storage.onChanged` replaces `settings` objects; look items up by id (see business-logic.md).
    - _Form submit does nothing_: browser validation on `type=url`; forms that normalise input themselves need `novalidate`.
-   - _Home empty or doubled_: check `settings.home.folderId` / `seeded` and the _Home_ folder in Other bookmarks.
+   - _Home empty or doubled_: check `settings.home.folderId` and the _Home_ folder in Other bookmarks.
    - _Favicon broken_: `_favicon/` needs the `favicon` permission; otherwise `iconEl()` falls back to letters, which is fine.
 3. **Reproduce as a failing test first**: add a scenario to `tests/e2e/scenarios/*.js` that shows the bug (see `/regression-check`), run `./tests/run.sh "<name>"`, see it fail. In real Chrome, a test folder with one PROD, one TEST and one localhost link is the smallest manual repro.
 4. **Fix at the source**, not with a try/catch around the render.

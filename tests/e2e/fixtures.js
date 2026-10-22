@@ -58,7 +58,7 @@ export function base({ home = true, settings = {}, extraRoot = [], tasks = null,
           : []),
     ),
   ]);
-  const s = { showFavicons: false, envRules: SAMPLE_ENV_RULES, hostMap: SAMPLE_HOST_MAP, ...settings };
+  const s = { showFavicons: false, rootName: 'My Links', envRules: SAMPLE_ENV_RULES, hostMap: SAMPLE_HOST_MAP, ...settings };
   if (home && !other) s.home = { folderId: '70', seeded: true, ...(settings.home || {}) };
   return { tree, store: { settings: s, homeIcons }, nextId: 1000, activeTab };
 }

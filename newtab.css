@@ -528,6 +528,16 @@ body.resizing {
 .home .tile.dragging {
   opacity: 0.4;
 }
+.home-empty {
+  margin: 14px 0 0;
+  max-width: 420px;
+  text-align: center;
+  color: #fff;
+  opacity: 0.85;
+  font-size: 13px;
+  line-height: 1.5;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+}
 .home .tile.drop-before .ic {
   box-shadow:
     -8px 0 0 -3px var(--accent),

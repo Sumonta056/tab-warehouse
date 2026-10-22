@@ -19,54 +19,63 @@ const done = async (t) => {
 export default [
   {
     area,
-    name: 'fresh install: creates Home in Other bookmarks with the 24 default links, once',
+    name: 'fresh install: creates one empty Home folder in Other bookmarks, with no built-in links or icons',
     page: 'newtab',
-    fixture: () => base({ home: false }),
+    fixture: () => base({ home: false, settings: { rootName: undefined } }),
     async run(t) {
       const home = t.settings().home;
-      t.ok(home?.seeded && home.folderId, 'settings.home seeded + folderId');
       const folder = t.node(home.folderId);
       t.eq([folder?.title, folder?.parentId], ['Home', '2'], 'folder under Other bookmarks');
-      t.eq(folder.children.length, 24, '24 links');
-      t.eq(folder.children[0].url, 'https://github.com/', 'first is GitHub');
-      t.eq(folder.children[12].title, 'Gmail', 'Gmail name fixed');
-      const gh = folder.children[0].id,
-        drive = folder.children[13].id;
-      t.ok(t.store.homeIcons[gh]?.includes('githubassets'), 'GitHub custom icon stored');
-      t.ok(!t.store.homeIcons[drive], 'Drive uses the built-in Google icon, not storage');
-      t.eq(t.$$('#home .tile[data-id]').length, 24, '24 tiles rendered');
+      t.eq(folder.children.length, 0, 'no links');
+      t.eq(Object.keys(t.store.homeIcons || {}).length, 0, 'no icon overrides');
+      t.eq(t.$$('#home .tile[data-id]').length, 0, 'no tiles');
+      t.ok(t.$('#home .tile.add'), 'Add link tile');
+      t.ok(t.$('#home .home-empty')?.textContent.startsWith('Add the sites you use most.'), 'help text on an empty Home');
+      t.eq(t.settings().rootName, '', 'no company root folder name');
       await t.reload();
       t.eq(t.node('2').children.filter((c) => c.title === 'Home').length, 1, 'still one Home folder after reload');
-      t.eq(t.node(home.folderId).children.length, 24, 'no second seeding');
+      t.eq(t.node(home.folderId).children.length, 0, 'still empty');
     },
   },
   {
     area,
-    name: 'removed default links do not come back after reload',
+    name: 'empty Home: the first added link replaces the help text',
     page: 'newtab',
     fixture: () => base({ home: false }),
     async run(t) {
-      const first = homeKids(t)[0];
-      t.context(tile(t, first));
-      t.menu('Remove');
+      t.answer('example.org', 'Example');
+      t.click(t.$('#home .tile.add'));
       await t.settle();
-      await t.reload();
-      t.eq(homeKids(t).length, 23, '23 links remain');
+      t.eq(homeKids(t).length, 1, 'link added');
+      t.ok(!t.$('#home .home-empty'), 'help text gone');
     },
   },
   {
     area,
-    name: 'an existing "Home" folder with links is adopted and not seeded',
+    name: 'existing install keeps its own Home links and icons on update',
+    page: 'newtab',
+    fixture: () => base({ homeIcons: { 71: 'https://icons.example.com/gh.png' }, settings: { home: { folderId: '70', seeded: true } } }),
+    async run(t) {
+      t.eq(t.kids('70'), ['71', '72', '73'], 'links unchanged');
+      t.eq(t.store.homeIcons, { 71: 'https://icons.example.com/gh.png' }, 'icons unchanged');
+      t.eq(t.settings().rootName, 'My Links', 'saved root folder name kept');
+      t.eq(t.navTitles()[0], 'Sprint board', 'sidebar still uses the saved root folder');
+      t.ok(!t.$('#home .home-empty'), 'no help text when Home has links');
+    },
+  },
+  {
+    area,
+    name: 'an existing "Home" folder with links is adopted as it is',
     page: 'newtab',
     fixture: () => base({ home: false, other: [F('80', 'Home', [L('81', 'Mine', 'https://mine.example.com/')])] }),
     async run(t) {
       t.eq(t.settings().home.folderId, '80', 'adopted');
-      t.eq(t.kids('80'), ['81'], 'no defaults added');
+      t.eq(t.kids('80'), ['81'], 'nothing added');
     },
   },
   {
     area,
-    name: 'Home folder deleted after seeding is recreated empty',
+    name: 'a deleted Home folder is recreated empty',
     page: 'newtab',
     fixture: () => {
       const fx = base();
@@ -76,7 +85,7 @@ export default [
     async run(t) {
       const id = t.settings().home.folderId;
       t.ok(id && id !== '70', 'new folder id');
-      t.eq(t.kids(id).length, 0, 'empty, not reseeded');
+      t.eq(t.kids(id).length, 0, 'empty');
       t.ok(t.$('#home .tile.add'), 'Add link tile still shown');
     },
   },

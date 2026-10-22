@@ -155,6 +155,8 @@ try {
   await ev(`(async () => {
     const [tree] = await chrome.bookmarks.getTree();
     const root = await chrome.bookmarks.create({ parentId: tree.children[0].id, title: 'My Links' });
+    const { settings } = await chrome.storage.local.get('settings');
+    await chrome.storage.local.set({ settings: { ...settings, rootId: root.id } });
     const envs = ['prod', 'test', 'stage', 'local'];
     for (let f = 0; f < 20; f++) {
       const folder = await chrome.bookmarks.create({ parentId: root.id, title: 'Folder ' + f });

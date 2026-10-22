@@ -21,7 +21,7 @@ Every rule here has at least one test. If you change a rule, change its test in 
 - Home is an icon-only button (`#homeBtn`, ≥ 36 px, `aria-label="Home"`) to the right of the search box, always present and marked `on` while Home is open. It is not an item in `#nav`. Clicking it from search results clears the search and opens Home.
 - Order of `#nav`: (categories, or a flat list) → Unsorted.
 - There is no hint text under the sidebar buttons.
-- Sections of the sidebar = child folders of the root folder (`resolveRoot`: `rootId`, else folder named `rootName`, else first top-level folder), **excluding the Home folder**.
+- Sections of the sidebar = child folders of the root folder (`resolveRoot`: `rootId`, else folder named `rootName` (empty by default; older installs keep their saved name), else first top-level folder), **excluding the Home folder**.
 - `Unsorted` (id `unsorted:<rootId>`) exists only when the root has loose links; it is virtual: no rename, no drag, no New section, no category.
 - Folder count = direct links + links in its sections (`section.all`).
 - Folder order is `settings.order`; ids not in it are appended in Chrome order. Reordering never moves bookmarks in Chrome.
@@ -101,7 +101,7 @@ Every rule here has at least one test. If you change a rule, change its test in 
 ## Home
 
 - Default view on every new tab. Fills the right pane; the sidebar stays.
-- First start: find or create a folder **Home** in _Other bookmarks_ (`tree.children[1]`, fallback first child). An existing _Home_ folder is adopted. The 24 default links (from the Bonjourr export, `DEFAULT_HOME_LINKS`) are added only when `home.seeded` is false **and** the folder is empty. `seeded` is set before creating links. Removed defaults never come back. If the Home folder is deleted later, an empty one is created.
+- First start: find or create a folder **Home** in _Other bookmarks_ (`tree.children[1]`, fallback first child). An existing _Home_ folder is adopted as it is. No links or icons are built in: a new install starts with an empty Home (only the _Add link_ tile and the help text "Add the sites you use most. …"); the help text goes away once Home has a link. Existing installs keep their Home links and icons (they are bookmarks and `homeIcons`, never touched on update). If the Home folder is deleted later, an empty one is created.
 - Tiles = links in the Home folder in Chrome order, then an _Add link_ tile. Click opens in the same tab; the _Open in new tab_ setting adds `target=_blank rel=noopener`.
 - Icon order: `homeIcons[id]` → official Google product icon by host (`googleIcon`: Gmail, Drive, Calendar, Keep, Meet, Docs/Sheets/Slides/Forms) → Chrome favicon `_favicon?pageUrl=…&size=64` → letter icon. Failed images fall back down this chain.
 - Tile menu: Change icon… (upload, resized to 128 px PNG), Icon from URL…, Use site icon, Edit name / URL, Open in new tab, Remove (undo toast restores the bookmark **and** its icon).

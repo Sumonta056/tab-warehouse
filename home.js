@@ -1,38 +1,5 @@
 import { saveSettings, findById, googleIcon, faviconUrl, letterIcon, normalizeUrl, hostOf, clockText, msToNextTick, h, svgIcon } from './lib/core.js';
 
-const G = 'https://ssl.gstatic.com/images/branding/product/2x/';
-
-export const DEFAULT_HOME_LINKS = [
-  ['GitHub', 'https://github.com/', 'https://github.githubassets.com/assets/apple-touch-icon-144x144-b882e354c005.png'],
-  ['Facebook', 'https://www.facebook.com/'],
-  ['LinkedIn', 'https://www.linkedin.com/feed/', 'https://upload.wikimedia.org/wikipedia/commons/8/81/LinkedIn_icon.svg'],
-  ['Instagram', 'https://www.instagram.com/'],
-  ['Claude', 'https://claude.ai/new'],
-  ['ChatGPT', 'https://chatgpt.com/'],
-  ['Gemini', 'https://gemini.google.com/app'],
-  ['GitBook', 'https://app.gitbook.com/'],
-  [
-    'NotebookLM',
-    'https://notebook.google.com/?pli=1',
-    'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTfL6jF6qs0JbJO3W0RKJIRO_fuxBvcsm91B9MvDP-Z-w&s=10',
-  ],
-  ['Excalidraw', 'https://excalidraw.com/', 'https://excalidraw.com/apple-touch-icon.png'],
-  ['Chess', 'https://www.chess.com/home'],
-  ['Example', 'https://www.example.org/index.php', 'https://www.example.org/favicon.ico'],
-  ['Gmail', 'https://mail.google.com/mail/u/0/#inbox', `${G}gmail_2020q4_48dp.png`],
-  ['Drive', 'https://drive.google.com/drive/u/0/my-drive', `${G}drive_2020q4_48dp.png`],
-  ['YouTube', 'https://www.youtube.com/', 'https://www.youtube.com/s/desktop/32c4e480/img/favicon_144x144.png'],
-  ['Monkeytype', 'https://monkeytype.com/'],
-  ['Calendar', 'https://calendar.google.com/', `${G}calendar_2020q4_48dp.png`],
-  ['Medium', 'https://medium.com/', 'https://miro.medium.com/v2/resize:fill:152:152/1*sHhtYhaCe2Uc3IU0IgKwIQ.png'],
-  ['Dev To', 'https://dev.to/sumonta056/enhance-your-coding-journey-17-must-try-vs-code-extensions-for-enhanced-productivity-and-time-savings-3lo1'],
-  ['daily.dev', 'https://app.daily.dev/'],
-  ['Keep', 'https://keep.google.com/u/0/#home', `${G}keep_2020q4_48dp.png`],
-  ['Overleaf', 'https://www.overleaf.com/project'],
-  ['Imgflip', 'https://imgflip.com/'],
-  ['Portfolio', 'https://sumonta056.vercel.app/'],
-];
-
 let icons = null;
 let bg = null;
 let clockTimer = null;
@@ -77,17 +44,7 @@ export async function ensureHomeFolder(tree, settings) {
   const kids = await chrome.bookmarks.getChildren(parentId);
   const existing = kids.find((c) => !c.url && c.title === 'Home');
   const folder = existing || (await chrome.bookmarks.create({ parentId, title: 'Home' }));
-  const empty = !existing || !(await chrome.bookmarks.getChildren(folder.id)).length;
-  const seed = !home.seeded && empty;
-  settings = await saveSettings({ home: { ...home, seeded: true, folderId: folder.id } });
-  if (seed) {
-    await loadHomeAssets();
-    for (const [title, url, icon] of DEFAULT_HOME_LINKS) {
-      const bm = await chrome.bookmarks.create({ parentId: folder.id, title, url });
-      if (icon && !googleIcon(url)) icons[bm.id] = icon;
-    }
-    await chrome.storage.local.set({ homeIcons: icons });
-  }
+  settings = await saveSettings({ home: { ...home, folderId: folder.id } });
   return { settings, created: !existing };
 }
 
@@ -137,6 +94,9 @@ export function renderHome(page, ctx) {
       h('div', { class: 'home-clock', id: 'homeClock' }),
       h('div', { class: 'home-date', id: 'homeDate' }),
       renderTiles(links, folder, ctx),
+      links.length
+        ? null
+        : h('p', { class: 'home-empty' }, 'Add the sites you use most. They are saved in the bookmark folder “Home”, so you can also edit them in Chrome.'),
     ),
   );
   applyHomeVars(home, o);
