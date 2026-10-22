@@ -631,4 +631,66 @@ export default [
       t.eq(r.getAttribute('aria-valuenow'), '324', 'aria value');
     },
   },
+  {
+    area,
+    name: 'brand: header shows the extension icon and "Tab Warehouse", not the root folder name',
+    page: 'newtab',
+    fixture: () => base(),
+    async run(t) {
+      t.eq(t.$('#brandTitle').textContent, 'Tab Warehouse', 'header title');
+      t.ok(t.$('#logo').getAttribute('src').endsWith('icons/icon48.png'), 'extension icon');
+      t.eq(t.d.title, 'Tab Warehouse', 'browser tab title');
+    },
+  },
+  {
+    area,
+    name: 'brand: the name in Settings › Appearance changes the header and the tab title; empty goes back',
+    page: 'newtab',
+    fixture: () => base(),
+    async run(t) {
+      t.click(t.$('#settingsBtn'));
+      await t.settle();
+      t.type(t.$('#userName'), '  Sumonta ');
+      await t.settle();
+      t.eq(t.settings().userName, 'Sumonta', 'saved trimmed');
+      t.eq(t.$('#brandTitle').textContent, "Sumonta's Warehouse", 'header title');
+      t.eq(t.d.title, "Sumonta's Warehouse", 'browser tab title');
+      t.type(t.$('#userName'), '');
+      await t.settle();
+      t.eq(t.settings().userName, '', 'cleared');
+      t.eq(t.$('#brandTitle').textContent, 'Tab Warehouse', 'back to product name');
+    },
+  },
+  {
+    area,
+    name: 'brand: a saved name shows on load',
+    page: 'newtab',
+    fixture: () => base({ settings: { userName: 'Ana' } }),
+    async run(t) {
+      t.eq(t.$('#brandTitle').textContent, "Ana's Warehouse", 'header title');
+      t.eq(t.d.title, "Ana's Warehouse", 'browser tab title');
+    },
+  },
+  {
+    area,
+    name: 'sidebar footer: Made by Sumonta with GitHub and portfolio links at the bottom',
+    page: 'newtab',
+    fixture: () => base(),
+    async run(t) {
+      const foot = t.$('#sideFoot');
+      t.ok(foot.textContent.includes('Made by Sumonta'), 'credit text');
+      t.eq(foot, t.$('.side').lastElementChild, 'last item in the sidebar');
+      for (const [id, url, label] of [
+        ['#ghLink', 'https://github.com/sumonta056', 'GitHub'],
+        ['#webLink', 'https://sumonta056.vercel.app/', 'Portfolio'],
+      ]) {
+        const a = t.$(id);
+        t.eq(a.getAttribute('href'), url, `${label} URL`);
+        t.eq(a.getAttribute('target'), '_blank', `${label} opens a new tab`);
+        t.eq(a.getAttribute('rel'), 'noopener', `${label} rel`);
+        t.eq(a.getAttribute('aria-label'), label, `${label} name`);
+        t.ok(a.getBoundingClientRect().height >= 28, `${label} is at least 28 px tall`);
+      }
+    },
+  },
 ];

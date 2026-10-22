@@ -50,13 +50,6 @@ body {
   width: 28px;
   height: 28px;
   border-radius: 7px;
-  background: var(--accent);
-  color: var(--accent-ink);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
-  font-size: 13px;
   flex: 0 0 auto;
 }
 .brand h1 {
@@ -176,6 +169,22 @@ body {
 }
 .newFolder.newCat {
   margin-top: 0;
+}
+.side-foot {
+  margin-top: auto;
+  padding: 12px 6px 0;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.side-foot span {
+  flex: 1 1 auto;
+}
+.side-foot .btn {
+  min-height: 28px;
+  min-width: 28px;
 }
 .cat {
   position: relative;
@@ -1694,7 +1703,8 @@ body.resizing {
 .env-try .set-label {
   margin: 4px 0 0;
 }
-#envTry {
+#envTry,
+#userName {
   width: 100%;
   min-height: 36px;
   background: var(--surface);

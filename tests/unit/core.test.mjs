@@ -2,6 +2,7 @@ import { test, describe, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   ENVS,
+  brandName,
   DEFAULT_HOME,
   SIDE_WIDTH,
   explainEnv,
@@ -463,5 +464,16 @@ describe('no built-in company or personal data', () => {
     assert.equal(letterIcon({ url: 'https://shop.example.com/x', title: 'Shop API' }), 'La');
     assert.equal(letterIcon({ url: 'https://www.example.com/', title: 'News' }), 'Ne');
     assert.equal(letterIcon({ url: 'https://github.com/a', title: 'Repo' }), 'gh');
+  });
+});
+
+describe('brandName', () => {
+  test('falls back to the product name without a name', () => {
+    assert.equal(brandName({}), 'Tab Warehouse');
+    assert.equal(brandName({ userName: '   ' }), 'Tab Warehouse');
+    assert.equal(brandName(undefined), 'Tab Warehouse');
+  });
+  test('uses the trimmed name', () => {
+    assert.equal(brandName({ userName: ' Sumonta ' }), "Sumonta's Warehouse");
   });
 });

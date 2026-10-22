@@ -18,6 +18,8 @@ Every rule here has at least one test. If you change a rule, change its test in 
 
 ## Sidebar
 
+- Header: the extension icon (`#logo`, `icons/icon48.png`) and `brandName(settings)` (`#brandTitle`): `"<userName>'s Warehouse"`, or `Tab Warehouse` when the name is empty. The root folder name is not shown. The browser tab title (`document.title`) is the same text.
+- Footer (`#sideFoot`), last in the sidebar: "Made by Sumonta", a GitHub link (`https://github.com/sumonta056`) and a portfolio link (`https://sumonta056.vercel.app/`). Icon links, ≥ 28 px, `target=_blank rel=noopener`, with `aria-label`.
 - Home is an icon-only button (`#homeBtn`, ≥ 36 px, `aria-label="Home"`) to the right of the search box, always present and marked `on` while Home is open. It is not an item in `#nav`. Clicking it from search results clears the search and opens Home.
 - Order of `#nav`: (categories, or a flat list) → Unsorted.
 - There is no hint text under the sidebar buttons.
@@ -35,8 +37,8 @@ Every rule here has at least one test. If you change a rule, change its test in 
 ## Settings
 
 - One settings button: the gear in the sidebar header (`#settingsBtn`). It opens the Settings view in the right pane (the sidebar stays); clicking it again, **Done**, or Escape (when focus is not in a text field) returns to the page that was open before, and focus goes back to the gear. The gear is marked `on` while Settings is open. There is no settings `<dialog>`.
-- Tabs, in order: Appearance (accent color, sidebar background), Home page (links, background, clock, tiles, live preview), Bookmarks (root folder, site favicons, reset sidebar order), Environments (explanation + Try it, labels, sites, copy/paste), Backup (export JSON / HTML, import). ←/→ move between tabs. The last tab is remembered for the session.
-- Every change saves without a Save button. Toggles, swatches, the root folder and buttons save at once; sliders and color pickers save after 300 ms; Environments rows save when a box loses focus. The header status shows "Saving…" then "Saved".
+- Tabs, in order: Appearance (your name, accent color, sidebar background), Home page (links, background, clock, tiles, live preview), Bookmarks (root folder, site favicons, reset sidebar order), Environments (explanation + Try it, labels, sites, copy/paste), Backup (export JSON / HTML, import). ←/→ move between tabs. The last tab is remembered for the session.
+- Every change saves without a Save button. Toggles, swatches, the root folder and buttons save at once; sliders and color pickers save after 300 ms; Environments rows and the name save when a box loses focus; the name is trimmed and updates the header and tab title at once. The header status shows "Saving…" then "Saved".
 - Saves go through one queue so two quick saves never overwrite each other.
 - Settings changed in another tab: a hidden tab only marks itself stale; when it is shown again it reloads settings and Home assets and re-renders (test "a hidden tab picks up settings changed in another tab when it is shown"). A visible tab never re-renders on a storage event, so its own sliders and text boxes are not interrupted.
 - Backup › Import (JSON) keeps only valid preferences (`cleanImport()`): env rules need a text pattern and a known label; host rows keep only PROD/TEST/STAGE/LOCAL text values; folder prefs keep only a known sort, `list`/`matrix`, `title`/`url` and boolean `closed`; links need a text URL. Anything else is dropped, so a bad file cannot break the page.

@@ -24,6 +24,7 @@ import {
   SIDE_WIDTH,
   applyTheme,
   sideLookVars,
+  brandName,
 } from './lib/core.js';
 import { renderHome, ensureHomeFolder, loadHomeAssets, homeBgUrl } from './home.js';
 import { renderSettings } from './settings.js';
@@ -53,6 +54,8 @@ $('#gearIcon').append(svgIcon('gear'));
 $('#plusIcon').append(svgIcon('plus'));
 $('#catIcon').append(svgIcon('plus'));
 $('#homeIcon').append(svgIcon('home'));
+$('#ghIcon').append(svgIcon('github'));
+$('#webIcon').append(svgIcon('globe'));
 $('#fabIcon').append(svgIcon('home'));
 
 /* ================= boot / data ================= */
@@ -77,11 +80,16 @@ async function refresh() {
   }
   root = resolveRoot(tree, settings);
   secs = sections(root, settings.order, [settings.home.folderId]);
-  $('#rootTitle').textContent = root.title || 'Warehouse';
-  $('#logo').textContent = ((root.title || 'SW').replace(/[^A-Za-z]/g, '').slice(0, 2) || 'SW').toUpperCase();
+  renderBrand();
   current = current?.home ? HOME : current?.settings ? SETTINGS : secs.find((s) => s.id === current?.id) || HOME;
   renderNav();
   renderPage();
+}
+
+function renderBrand() {
+  const name = brandName(settings);
+  $('#brandTitle').textContent = name;
+  document.title = name;
 }
 
 function folderPrefs(id) {
@@ -1358,6 +1366,7 @@ const settingsCtx = {
     toast('Sidebar order reset to bookmark order');
   },
   applySideLook: (look) => applySideLook(look),
+  renderBrand: () => renderBrand(),
   onBgChange: () => applySideLook(settings.sideLook),
   done: () => closeSettings(),
 };

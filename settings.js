@@ -162,6 +162,21 @@ function toggle(label, checked, onChange) {
 const VIEWS = {
   appearance(c) {
     const s = c.settings;
+    const nameBox = h('input', {
+      type: 'text',
+      id: 'userName',
+      value: s.userName || '',
+      placeholder: 'Your name',
+      maxlength: 40,
+      autocomplete: 'off',
+      'aria-label': 'What is your name?',
+    });
+    nameBox.addEventListener('change', async () => {
+      const userName = nameBox.value.trim();
+      if (userName === (c.settings.userName || '')) return;
+      await c.save({ userName });
+      c.renderBrand();
+    });
     let look = { ...s.sideLook };
     const swatches = h('div', { class: 'theme-sws', id: 'themeSwatches', role: 'radiogroup', 'aria-label': 'Accent color' });
     const drawSwatches = () => {
@@ -269,6 +284,11 @@ const VIEWS = {
       h(
         'div',
         { class: 'set-col' },
+        card(
+          'Your name',
+          'The sidebar and the browser tab show "<name>\'s Warehouse". Leave it empty for "Tab Warehouse".',
+          field('What is your name?', nameBox),
+        ),
         card('Accent color', 'Colors the active folder, Home buttons, focus rings and buttons.', swatches),
         card(
           'Sidebar background',
