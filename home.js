@@ -1,0 +1,286 @@
+import { saveSettings, findById, googleIcon, faviconUrl, letterIcon, normalizeUrl, hostOf, clockText, msToNextTick, h, svgIcon } from './lib/core.js';
+
+const G = 'https://ssl.gstatic.com/images/branding/product/2x/';
+
+export const DEFAULT_HOME_LINKS = [
+  ['GitHub', 'https://github.com/', 'https://github.githubassets.com/assets/apple-touch-icon-144x144-b882e354c005.png'],
+  ['Facebook', 'https://www.facebook.com/'],
+  ['LinkedIn', 'https://www.linkedin.com/feed/', 'https://upload.wikimedia.org/wikipedia/commons/8/81/LinkedIn_icon.svg'],
+  ['Instagram', 'https://www.instagram.com/'],
+  ['Claude', 'https://claude.ai/new'],
+  ['ChatGPT', 'https://chatgpt.com/'],
+  ['Gemini', 'https://gemini.google.com/app'],
+  ['GitBook', 'https://app.gitbook.com/'],
+  ['NotebookLM', 'https://notebook.google.com/?pli=1', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTfL6jF6qs0JbJO3W0RKJIRO_fuxBvcsm91B9MvDP-Z-w&s=10'],
+  ['Excalidraw', 'https://excalidraw.com/', 'https://excalidraw.com/apple-touch-icon.png'],
+  ['Chess', 'https://www.chess.com/home'],
+  ['Example', 'https://www.example.org/index.php', 'https://www.example.org/favicon.ico'],
+  ['Gmail', 'https://mail.google.com/mail/u/0/#inbox', `${G}gmail_2020q4_48dp.png`],
+  ['Drive', 'https://drive.google.com/drive/u/0/my-drive', `${G}drive_2020q4_48dp.png`],
+  ['YouTube', 'https://www.youtube.com/', 'https://www.youtube.com/s/desktop/32c4e480/img/favicon_144x144.png'],
+  ['Monkeytype', 'https://monkeytype.com/'],
+  ['Calendar', 'https://calendar.google.com/', `${G}calendar_2020q4_48dp.png`],
+  ['Medium', 'https://medium.com/', 'https://miro.medium.com/v2/resize:fill:152:152/1*sHhtYhaCe2Uc3IU0IgKwIQ.png'],
+  ['Dev To', 'https://dev.to/sumonta056/enhance-your-coding-journey-17-must-try-vs-code-extensions-for-enhanced-productivity-and-time-savings-3lo1'],
+  ['daily.dev', 'https://app.daily.dev/'],
+  ['Keep', 'https://keep.google.com/u/0/#home', `${G}keep_2020q4_48dp.png`],
+  ['Overleaf', 'https://www.overleaf.com/project'],
+  ['Imgflip', 'https://imgflip.com/'],
+  ['Portfolio', 'https://sumonta056.vercel.app/']
+];
+
+let icons = null;
+let bg = null;
+let clockTimer = null;
+let dragId = null;
+let clockOpts = null;
+
+export async function loadHomeAssets() {
+  if (icons && bg !== null) return;
+  const r = await chrome.storage.local.get(['homeIcons', 'homeBg']);
+  icons = r.homeIcons || {};
+  bg = r.homeBg || '';
+}
+
+export function homeBgUrl() { return bg || ''; }
+
+export function homeIconMap() { return icons || {}; }
+
+export function homeLinks(tree, settings) {
+  const folder = findById(tree, settings.home.folderId);
+  return { folder, links: (folder?.children || []).filter(c => c.url) };
+}
+
+export async function setHomeBg(file) {
+  bg = file ? await resizeImage(file, 1920) : '';
+  if (bg) await chrome.storage.local.set({ homeBg: bg });
+  else await chrome.storage.local.remove('homeBg');
+  return bg;
+}
+
+export function homeFolderParent(tree) {
+  return tree.children?.[1] || tree.children?.[0] || tree;
+}
+
+export async function ensureHomeFolder(tree, settings) {
+  const home = settings.home;
+  if (home.folderId && findById(tree, home.folderId)) return { settings, created: false };
+  const parentId = homeFolderParent(tree).id;
+  const kids = await chrome.bookmarks.getChildren(parentId);
+  const existing = kids.find(c => !c.url && c.title === 'Home');
+  const folder = existing || await chrome.bookmarks.create({ parentId, title: 'Home' });
+  const empty = !existing || !(await chrome.bookmarks.getChildren(folder.id)).length;
+  const seed = !home.seeded && empty;
+  settings = await saveSettings({ home: { ...home, seeded: true, folderId: folder.id } });
+  if (seed) {
+    await loadHomeAssets();
+    for (const [title, url, icon] of DEFAULT_HOME_LINKS) {
+      const bm = await chrome.bookmarks.create({ parentId: folder.id, title, url });
+      if (icon && !googleIcon(url)) icons[bm.id] = icon;
+    }
+    await chrome.storage.local.set({ homeIcons: icons });
+  }
+  return { settings, created: !existing };
+}
+
+export function tileIconSrc(bm, iconMap) {
+  return iconMap[bm.id] || googleIcon(bm.url) || faviconUrl(bm.url, 64);
+}
+
+export function applyHomeVars(el, o) {
+  el.style.setProperty('--home-bg', o.color);
+  el.style.setProperty('--img-op', String(o.imgOpacity / 100));
+  el.style.setProperty('--dark', String(o.dark / 100));
+  el.style.setProperty('--blur', `${o.blur}px`);
+  el.style.setProperty('--clock', `${o.clockSize}px`);
+  el.style.setProperty('--tile', `${o.tileSize}px`);
+  el.style.setProperty('--per-row', String(o.perRow));
+  el.classList.toggle('no-labels', !o.labels);
+}
+
+function startClock(o) {
+  clearTimeout(clockTimer);
+  clockOpts = o;
+  const clock = document.getElementById('homeClock');
+  const date = document.getElementById('homeDate');
+  if (!clock || !clock.isConnected || document.hidden) return;
+  const now = new Date();
+  const t = clockText(now, o);
+  if (clock.textContent !== t) clock.textContent = t;
+  const d = o.date ? now.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' }) : '';
+  if (date.textContent !== d) date.textContent = d;
+  clockTimer = setTimeout(() => startClock(o), msToNextTick(now, o.seconds));
+}
+
+export function renderHome(page, ctx) {
+  const o = ctx.settings.home;
+  const { folder, links } = homeLinks(ctx.tree, ctx.settings);
+
+  const bgEl = h('div', { class: 'home-bg' });
+  if (bg) bgEl.style.backgroundImage = `url("${bg}")`;
+  const home = h('section', { class: 'home', id: 'home', 'aria-label': 'Home' },
+    bgEl,
+    h('div', { class: 'home-shade' }),
+    h('div', { class: 'home-content' },
+      h('div', { class: 'home-clock', id: 'homeClock' }),
+      h('div', { class: 'home-date', id: 'homeDate' }),
+      renderTiles(links, folder, ctx)));
+  applyHomeVars(home, o);
+  page.append(home);
+  startClock(o);
+}
+
+function renderTiles(links, folder, ctx) {
+  const o = ctx.settings.home;
+  const grid = h('div', { class: 'home-tiles' });
+  for (const bm of links) {
+    const ic = h('span', { class: `ic ${icons[bm.id]?.startsWith('data:') ? 'custom' : ''}` });
+    const img = h('img', { src: tileIconSrc(bm, icons), alt: '', loading: 'lazy', decoding: 'async' });
+    img.addEventListener('error', () => {
+      if (!img.dataset.fallback && img.src !== faviconUrl(bm.url, 64)) { img.dataset.fallback = '1'; img.src = faviconUrl(bm.url, 64); return; }
+      img.remove(); ic.classList.add('letter'); ic.textContent = letterIcon(bm);
+    });
+    ic.append(img);
+    const a = h('a', { class: 'tile', href: bm.url, title: `${bm.title}\n${bm.url}`, draggable: true, dataset: { id: bm.id },
+      target: o.newTab ? '_blank' : null, rel: o.newTab ? 'noopener' : null },
+      ic, h('span', { class: 'lbl' }, bm.title || hostOf(bm.url)));
+    a.addEventListener('contextmenu', (e) => { e.preventDefault(); tileMenu(e, bm, ctx); });
+    a.addEventListener('dragstart', (e) => { dragId = bm.id; e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', bm.url); a.classList.add('dragging'); });
+    a.addEventListener('dragend', () => { dragId = null; a.classList.remove('dragging'); grid.querySelectorAll('.drop-before').forEach(n => n.classList.remove('drop-before')); });
+    a.addEventListener('dragover', (e) => {
+      if (!dragId || dragId === bm.id) return;
+      e.preventDefault(); e.dataTransfer.dropEffect = 'move';
+      grid.querySelectorAll('.drop-before').forEach(n => n.classList.remove('drop-before'));
+      a.classList.add('drop-before');
+    });
+    a.addEventListener('drop', async (e) => {
+      if (!dragId || dragId === bm.id) return;
+      e.preventDefault();
+      const id = dragId; dragId = null;
+      await chrome.bookmarks.move(id, { parentId: folder.id, index: bm.index });
+    });
+    grid.append(a);
+  }
+  const add = h('button', { class: 'tile add', onClick: () => addTile(folder) },
+    h('span', { class: 'ic' }, svgIcon('plus')), h('span', { class: 'lbl' }, 'Add link'));
+  add.addEventListener('dragover', (e) => { if (!dragId) return; e.preventDefault(); });
+  add.addEventListener('drop', async (e) => {
+    if (!dragId) return;
+    e.preventDefault();
+    const id = dragId; dragId = null;
+    await chrome.bookmarks.move(id, { parentId: folder.id });
+  });
+  grid.append(add);
+  return grid;
+}
+
+async function addTile(folder) {
+  if (!folder) return;
+  const url = normalizeUrl(prompt('Link URL', 'https://'));
+  if (!url || url === 'https://') return;
+  const title = prompt('Name', hostOf(url).replace(/^www\./, ''))?.trim() || hostOf(url) || url;
+  await chrome.bookmarks.create({ parentId: folder.id, title, url });
+}
+
+async function saveIcons() { await chrome.storage.local.set({ homeIcons: icons }); }
+
+function tileMenu(e, bm, ctx) {
+  ctx.showMenu(e, [
+    { label: 'Change icon…', icon: 'pencil', run: () => pickIcon(bm, ctx) },
+    { label: 'Icon from URL…', run: async () => { const u = normalizeUrl(prompt('Icon image URL', icons[bm.id]?.startsWith('data:') ? '' : icons[bm.id] || '')); if (!u) return; icons[bm.id] = u; await saveIcons(); ctx.rerender(); } },
+    ...(icons[bm.id] ? [{ label: 'Use site icon', run: async () => { delete icons[bm.id]; await saveIcons(); ctx.rerender(); } }] : []),
+    { label: 'Edit name / URL', icon: 'pencil', run: async () => {
+      const title = prompt('Name', bm.title); if (title == null) return;
+      const url = normalizeUrl(prompt('URL', bm.url)); if (!url) return;
+      try { await chrome.bookmarks.update(bm.id, { title: title.trim() || hostOf(url), url }); } catch (err) { ctx.toast(`Couldn't save: ${err.message}`); }
+    } },
+    { label: 'Open in new tab', icon: 'external', run: () => chrome.tabs.create({ url: bm.url }) },
+    '-',
+    { label: 'Remove', icon: 'x', danger: true, run: () => removeTile(bm, ctx) }
+  ]);
+}
+
+export async function removeTile(bm, ctx) {
+  const icon = icons[bm.id];
+  await chrome.bookmarks.remove(bm.id);
+  ctx.toast(`Removed “${bm.title || hostOf(bm.url)}”`, { label: 'Undo', run: async () => {
+    const back = await chrome.bookmarks.create({ parentId: bm.parentId, index: bm.index, title: bm.title, url: bm.url });
+    if (icon) { icons[back.id] = icon; await saveIcons(); }
+  } });
+  if (icon) { delete icons[bm.id]; await saveIcons(); }
+}
+
+export function homeLinksList(links, folder, ctx) {
+  const list = h('div', { class: 'home-links', role: 'list' });
+  for (const bm of links) {
+    const name = bm.title || hostOf(bm.url);
+    const mini = h('span', { class: 'mini' });
+    const img = h('img', { src: tileIconSrc(bm, icons), alt: '', loading: 'lazy', decoding: 'async' });
+    img.addEventListener('error', () => { img.remove(); mini.textContent = letterIcon(bm); });
+    mini.append(img);
+    const row = h('div', { class: 'home-link', role: 'listitem', draggable: true, dataset: { id: bm.id }, title: bm.url },
+      h('span', { class: 'grip', 'aria-hidden': 'true' }, svgIcon('grip')), mini, h('span', { class: 'nm' }, name),
+      h('button', { class: 'x', 'aria-label': `Remove ${name}`, title: 'Remove', onClick: () => removeTile(bm, ctx) }, svgIcon('x')));
+    row.addEventListener('dragstart', (e) => { if (e.target !== row) return; dragId = bm.id; e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', bm.url); row.classList.add('dragging'); });
+    row.addEventListener('dragend', () => { dragId = null; row.classList.remove('dragging'); list.querySelectorAll('.drop-before, .drop-after').forEach(n => n.classList.remove('drop-before', 'drop-after')); });
+    row.addEventListener('dragover', (e) => {
+      if (!dragId || dragId === bm.id) return;
+      e.preventDefault(); e.dataTransfer.dropEffect = 'move';
+      const r = row.getBoundingClientRect();
+      list.querySelectorAll('.drop-before, .drop-after').forEach(n => n.classList.remove('drop-before', 'drop-after'));
+      row.classList.add(e.clientY > r.top + r.height / 2 ? 'drop-after' : 'drop-before');
+    });
+    row.addEventListener('drop', async (e) => {
+      if (!dragId || dragId === bm.id) return;
+      e.preventDefault();
+      const after = row.classList.contains('drop-after');
+      const id = dragId; dragId = null;
+      await chrome.bookmarks.move(id, { parentId: folder.id, index: bm.index + (after ? 1 : 0) });
+    });
+    list.append(row);
+  }
+  if (!links.length) list.append(h('p', { class: 'muted' }, 'No links yet. Add one below.'));
+
+  const nameIn = h('input', { placeholder: 'Name', 'aria-label': 'New link name' });
+  const urlIn = h('input', { placeholder: 'URL', 'aria-label': 'New link URL' });
+  const form = h('form', { class: 'home-add', novalidate: true },
+    nameIn, urlIn, h('button', { class: 'btn primary sm', type: 'submit' }, 'Add link'));
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!folder) return;
+    const url = normalizeUrl(urlIn.value);
+    if (!url) { urlIn.focus(); return; }
+    const title = nameIn.value.trim() || hostOf(url).replace(/^www\./, '') || url;
+    try { await chrome.bookmarks.create({ parentId: folder.id, title, url }); } catch (err) { ctx.toast(`Couldn't add: ${err.message}`); }
+  });
+  return h('div', { class: 'home-links-box' }, list, form);
+}
+
+function pickIcon(bm, ctx) {
+  const f = h('input', { type: 'file', accept: 'image/*' });
+  f.addEventListener('change', async () => {
+    const file = f.files[0]; if (!file) return;
+    try {
+      icons[bm.id] = await resizeImage(file, 128, 'image/png');
+      await saveIcons();
+      ctx.rerender();
+    } catch { ctx.toast('That file is not an image the browser can read.'); }
+  });
+  f.click();
+}
+
+export async function resizeImage(file, max, type = 'image/jpeg', quality = 0.82) {
+  const bmp = await createImageBitmap(file);
+  const scale = Math.min(1, max / Math.max(bmp.width, bmp.height));
+  const c = document.createElement('canvas');
+  c.width = Math.max(1, Math.round(bmp.width * scale));
+  c.height = Math.max(1, Math.round(bmp.height * scale));
+  c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height);
+  bmp.close?.();
+  return c.toDataURL(type, quality);
+}
+
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) clearTimeout(clockTimer);
+  else if (clockOpts) startClock(clockOpts);
+});

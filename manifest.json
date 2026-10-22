@@ -1,0 +1,31 @@
+{
+  "manifest_version": 3,
+  "name": "Tab Warehouse — Bookmark Manager for Developers",
+  "short_name": "Tab Warehouse",
+  "version": "2.1.0",
+  "description": "Bookmark manager and new tab page for developers: folders, full URLs, PROD/TEST/STAGE/LOCAL env tags, env matrix, drag and drop.",
+  "permissions": ["bookmarks", "storage", "favicon", "tabs"],
+  "chrome_url_overrides": {
+    "newtab": "newtab.html"
+  },
+  "action": {
+    "default_title": "Save current tab to Tab Warehouse",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "commands": {
+    "_execute_action": {
+      "suggested_key": { "default": "Ctrl+Shift+B", "mac": "Command+Shift+B" },
+      "description": "Save current tab"
+    }
+  }
+}
