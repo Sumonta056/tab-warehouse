@@ -193,7 +193,10 @@ python3 -I tests/serve.py 8799
 
 ## Changelog
 
-- **Unreleased**
+- **2.2.0** — Full history in [CHANGELOG.md](CHANGELOG.md).
+  - New installs start without built-in links; your name as the brand and a credit footer.
+  - Home: no _Add link_ tile, space-above-tiles setting, missing icons fixed.
+  - Delete button on each link row; text size sliders for the sidebar and the page.
   - Renamed to **Tab Warehouse** with a new terminal-style icon.
   - Home page: clock, date, your own tiles, background, clock and tile settings, official Google icons.
   - One Settings view with 5 tabs, auto-save, accent themes and a sidebar background.
