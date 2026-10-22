@@ -25,6 +25,7 @@ import {
   applyTheme,
   sideLookVars,
   brandName,
+  clampFont,
 } from './lib/core.js';
 import { renderHome, ensureHomeFolder, loadHomeAssets, homeBgUrl } from './home.js';
 import { renderSettings } from './settings.js';
@@ -65,6 +66,7 @@ async function boot() {
   setSideWidth(settings.sideWidth);
   await loadHomeAssets();
   applySideLook(settings.sideLook);
+  applyFontSize(settings);
   current = HOME;
   await refresh();
   bindGlobal();
@@ -1371,6 +1373,7 @@ const settingsCtx = {
     settings = await loadSettings();
     applyTheme(settings.theme);
     applySideLook(settings.sideLook);
+    applyFontSize(settings);
     await refresh();
   },
   async resetOrder() {
@@ -1380,6 +1383,7 @@ const settingsCtx = {
     toast('Sidebar order reset to bookmark order');
   },
   applySideLook: (look) => applySideLook(look),
+  applyFontSize: (s) => applyFontSize(s),
   renderBrand: () => renderBrand(),
   onBgChange: () => applySideLook(settings.sideLook),
   done: () => closeSettings(),
@@ -1408,6 +1412,12 @@ function closeSettings() {
 
 function applySideLook(look) {
   for (const [k, v] of Object.entries(sideLookVars(look, homeBgUrl()))) document.documentElement.style.setProperty(k, v);
+}
+
+function applyFontSize(s) {
+  const root = document.documentElement.style;
+  root.setProperty('--fs-side', String(clampFont(s.fontSide) / 100));
+  root.setProperty('--fs-page', String(clampFont(s.fontPage) / 100));
 }
 
 /* ================= global ================= */

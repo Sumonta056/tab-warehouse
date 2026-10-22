@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
   ENVS,
   brandName,
+  clampFont,
   DEFAULT_HOME,
   SIDE_WIDTH,
   explainEnv,
@@ -510,5 +511,18 @@ describe('tileIconSrcs', () => {
     const { tileIconSrcs } = await import('../../lib/core.js');
     assert.equal(tileIconSrcs({ id: '1', url: 'https://x.com/' }, { 1: 'data:a' })[0], 'data:a');
     assert.match(tileIconSrcs({ id: '2', url: 'https://mail.google.com/' }, {})[0], /gmail/);
+  });
+});
+
+describe('clampFont', () => {
+  test('keeps 80-140 and rounds', () => {
+    assert.equal(clampFont(120), 120);
+    assert.equal(clampFont(112.6), 113);
+    assert.equal(clampFont(50), 80);
+    assert.equal(clampFont(300), 140);
+  });
+  test('bad values fall back to 100', () => {
+    assert.equal(clampFont(undefined), 100);
+    assert.equal(clampFont('big'), 100);
   });
 });

@@ -719,4 +719,43 @@ export default [
       }
     },
   },
+  {
+    area,
+    name: 'text size: sidebar and page sliders scale only their own pane and save after 300 ms',
+    page: 'newtab',
+    fixture: () => base(),
+    async run(t) {
+      const px = (el) => +parseFloat(t.w.getComputedStyle(el).fontSize).toFixed(2);
+      const r = (n) => +n.toFixed(2);
+      t.click(t.$('#settingsBtn'));
+      await t.settle();
+      const side0 = px(t.$('#brandTitle')),
+        page0 = px(t.$('.set-card h3'));
+      t.eq([t.$('#fontSide').value, t.$('#fontPage').value], ['100', '100'], 'default 100 %');
+      t.eq([t.$('#fontSide').step, t.$('#fontSide').min, t.$('#fontSide').max], ['5', '80', '140'], 'range 80-140 in steps of 5');
+      t.type(t.$('#fontSide'), '120');
+      await t.settle();
+      t.eq(px(t.$('#brandTitle')), r(side0 * 1.2), 'sidebar text grows at once');
+      t.eq(px(t.$('.set-card h3')), page0, 'page text unchanged');
+      t.ok(t.settings().fontSide !== 120, 'not saved yet (debounced)');
+      await t.sleep(350);
+      t.eq(t.settings().fontSide, 120, 'sidebar size saved');
+      t.type(t.$('#fontPage'), '80');
+      await t.sleep(350);
+      t.eq(px(t.$('.set-card h3')), r(page0 * 0.8), 'page text shrinks');
+      t.eq(px(t.$('#brandTitle')), r(side0 * 1.2), 'sidebar text unchanged');
+      t.eq(t.settings().fontPage, 80, 'page size saved');
+    },
+  },
+  {
+    area,
+    name: 'text size: saved sizes apply on load; bad values fall back to 100 %',
+    page: 'newtab',
+    fixture: () => base({ settings: { fontSide: 140, fontPage: 'big' } }),
+    async run(t) {
+      const root = t.d.documentElement.style;
+      t.eq(root.getPropertyValue('--fs-side'), '1.4', 'sidebar scale');
+      t.eq(root.getPropertyValue('--fs-page'), '1', 'page scale falls back');
+    },
+  },
 ];

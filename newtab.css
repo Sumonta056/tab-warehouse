@@ -27,6 +27,7 @@ body {
   opacity: var(--side-dark, 1);
 }
 .side {
+  --fs: var(--fs-side, 1);
   z-index: 1;
   flex: 0 0 var(--side-w, 264px);
   width: var(--side-w, 264px);
@@ -54,7 +55,7 @@ body {
 }
 .brand h1 {
   margin: 0;
-  font-size: 15px;
+  font-size: calc(15px * var(--fs, 1));
   font-weight: 600;
   flex: 1 1 auto;
   min-width: 0;
@@ -69,7 +70,7 @@ body {
   margin-bottom: 10px;
 }
 .search.sm input {
-  font-size: 12px;
+  font-size: calc(12px * var(--fs, 1));
 }
 #searchIcon svg,
 #gearIcon svg,
@@ -91,7 +92,7 @@ body {
   min-height: 40px;
   padding: 0 8px 0 6px;
   border-radius: 8px;
-  font-size: 13px;
+  font-size: calc(13px * var(--fs, 1));
   color: var(--text-2);
   position: relative;
   cursor: pointer;
@@ -128,7 +129,7 @@ body {
   text-overflow: ellipsis;
 }
 .nav .n {
-  font-size: 11px;
+  font-size: calc(11px * var(--fs, 1));
   color: var(--muted);
   font-family: var(--mono);
 }
@@ -177,7 +178,7 @@ body {
   align-items: center;
   gap: 2px;
   color: var(--muted);
-  font-size: 12px;
+  font-size: calc(12px * var(--fs, 1));
 }
 .side-foot span {
   flex: 1 1 auto;
@@ -215,7 +216,7 @@ body {
   color: inherit;
   text-align: left;
   border-radius: 6px;
-  font-size: 12px;
+  font-size: calc(12px * var(--fs, 1));
   font-weight: 600;
   cursor: inherit;
 }
@@ -305,7 +306,7 @@ body {
   color: var(--accent-text);
 }
 .cat-empty {
-  font-size: 11px;
+  font-size: calc(11px * var(--fs, 1));
   color: var(--muted);
   padding: 4px 8px 8px 30px;
 }
@@ -478,7 +479,7 @@ body.resizing {
   align-items: center;
   gap: 6px;
   color: #fff;
-  font-size: 11px;
+  font-size: calc(11px * var(--fs, 1));
   border: 0;
   background: transparent;
   padding: 0;
@@ -536,7 +537,7 @@ img.wait {
   text-align: center;
   color: #fff;
   opacity: 0.85;
-  font-size: 13px;
+  font-size: calc(13px * var(--fs, 1));
   line-height: 1.5;
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
 }
@@ -558,7 +559,7 @@ img.wait {
   min-height: 32px;
   padding: 0 2px 0 4px;
   border-radius: 6px;
-  font-size: 12px;
+  font-size: calc(12px * var(--fs, 1));
   color: var(--text-2);
   cursor: grab;
 }
@@ -588,7 +589,7 @@ img.wait {
   justify-content: center;
   overflow: hidden;
   font-family: var(--mono);
-  font-size: 9px;
+  font-size: calc(9px * var(--fs, 1));
   font-weight: 600;
 }
 .home-link .mini img {
@@ -650,11 +651,12 @@ img.wait {
   border: 1px solid var(--line-2);
   border-radius: 6px;
   padding: 0 8px;
-  font-size: 12px;
+  font-size: calc(12px * var(--fs, 1));
 }
 
 /* ---------- page ---------- */
 .page {
+  --fs: var(--fs-page, 1);
   flex: 1 1 auto;
   min-width: 0;
   padding: 16px 28px 40px;
@@ -670,7 +672,7 @@ img.wait {
 }
 .head h2 {
   margin: 0;
-  font-size: 18px;
+  font-size: calc(18px * var(--fs, 1));
   font-weight: 600;
   cursor: text;
 }
@@ -680,16 +682,16 @@ img.wait {
   border-radius: 6px;
   padding: 3px 8px;
   font-weight: 600;
-  font-size: 16px;
+  font-size: calc(16px * var(--fs, 1));
 }
 .head .cnt {
-  font-size: 12px;
+  font-size: calc(12px * var(--fs, 1));
 }
 .head .btn.add {
   margin-left: auto;
   min-height: 36px;
   border-radius: 8px;
-  font-size: 12px;
+  font-size: calc(12px * var(--fs, 1));
 }
 
 .toolbar {
@@ -706,7 +708,7 @@ img.wait {
   border-radius: 8px;
 }
 .toolbar .search input {
-  font-size: 12px;
+  font-size: calc(12px * var(--fs, 1));
 }
 .sel {
   display: inline-flex;
@@ -718,7 +720,7 @@ img.wait {
   border: 1px solid var(--line-2);
   background: var(--surface);
   color: var(--text-2);
-  font-size: 12px;
+  font-size: calc(12px * var(--fs, 1));
 }
 .sel b {
   color: var(--text);
@@ -730,7 +732,7 @@ img.wait {
   outline: 0;
   color: var(--text);
   font-weight: 500;
-  font-size: 12px;
+  font-size: calc(12px * var(--fs, 1));
   padding: 0;
 }
 .seg {
@@ -746,7 +748,7 @@ img.wait {
   border: 0;
   background: transparent;
   color: var(--muted);
-  font-size: 12px;
+  font-size: calc(12px * var(--fs, 1));
   font-weight: 500;
 }
 .seg button.on {
@@ -754,7 +756,7 @@ img.wait {
   color: var(--accent-text);
 }
 .toolbar .note {
-  font-size: 11px;
+  font-size: calc(11px * var(--fs, 1));
   color: var(--muted);
   width: 100%;
   margin-top: -4px;
@@ -771,7 +773,7 @@ img.wait {
   align-items: center;
   gap: 10px;
   padding: 14px 10px 6px;
-  font-size: 11px;
+  font-size: calc(11px * var(--fs, 1));
   font-weight: 600;
   letter-spacing: 0.04em;
   font-family: var(--mono);
@@ -897,13 +899,13 @@ img.wait {
   flex-direction: column-reverse;
 }
 .row.url-mode .url {
-  font-size: 13px;
+  font-size: calc(13px * var(--fs, 1));
   color: var(--text);
   margin-top: 0;
   line-height: 1.5;
 }
 .row.url-mode .ttl {
-  font-size: 11px;
+  font-size: calc(11px * var(--fs, 1));
   color: var(--muted-2);
   font-weight: 400;
   margin-top: 0;
@@ -996,7 +998,7 @@ img.wait {
 }
 .subnote {
   padding: 8px 10px;
-  font-size: 11px;
+  font-size: calc(11px * var(--fs, 1));
   color: var(--muted);
 }
 
@@ -1011,11 +1013,11 @@ img.wait {
   border-collapse: separate;
   border-spacing: 0;
   width: 100%;
-  font-size: 13px;
+  font-size: calc(13px * var(--fs, 1));
 }
 .matrix th {
   text-align: left;
-  font-size: 11px;
+  font-size: calc(11px * var(--fs, 1));
   font-weight: 600;
   letter-spacing: 0.04em;
   color: var(--muted);
@@ -1052,7 +1054,7 @@ img.wait {
 .matrix .res b {
   font-weight: 500;
   font-family: var(--mono);
-  font-size: 12px;
+  font-size: calc(12px * var(--fs, 1));
   word-break: break-all;
 }
 .matrix .cell {
@@ -1071,7 +1073,7 @@ img.wait {
   min-height: 30px;
   padding: 0 10px;
   border-radius: 6px;
-  font-size: 12px;
+  font-size: calc(12px * var(--fs, 1));
   font-weight: 500;
   font-family: var(--mono);
   border: 1px solid transparent;
@@ -1116,7 +1118,7 @@ img.wait {
   border: 0;
 }
 .matrix-note {
-  font-size: 12px;
+  font-size: calc(12px * var(--fs, 1));
   color: var(--muted);
   display: flex;
   gap: 10px;
@@ -1218,12 +1220,12 @@ img.wait {
 }
 .set-top h2 {
   margin: 0;
-  font-size: 20px;
+  font-size: calc(20px * var(--fs, 1));
   font-weight: 600;
   outline: none;
 }
 .set-status {
-  font-size: 12px;
+  font-size: calc(12px * var(--fs, 1));
   color: var(--muted);
   display: inline-flex;
   align-items: center;
@@ -1294,7 +1296,7 @@ img.wait {
 }
 .set-label {
   margin: 0;
-  font-size: 11px;
+  font-size: calc(11px * var(--fs, 1));
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -1308,13 +1310,13 @@ img.wait {
 }
 .set-card h3 {
   margin: 0 0 2px;
-  font-size: 14px;
+  font-size: calc(14px * var(--fs, 1));
   font-weight: 600;
 }
 .set-card .sub {
   margin: 0 0 12px;
   color: var(--muted);
-  font-size: 12px;
+  font-size: calc(12px * var(--fs, 1));
 }
 .set-card .sub[hidden] {
   display: none;
@@ -1357,7 +1359,7 @@ img.wait {
   flex: 0 0 44px;
   text-align: right;
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: calc(11px * var(--fs, 1));
   color: var(--muted);
 }
 .set-row {
@@ -1381,11 +1383,11 @@ img.wait {
   border: 1px solid var(--line-2);
   border-radius: 8px;
   padding: 8px 10px;
-  font-size: 13px;
+  font-size: calc(13px * var(--fs, 1));
 }
 .set-card textarea {
   font-family: var(--mono);
-  font-size: 12px;
+  font-size: calc(12px * var(--fs, 1));
   resize: vertical;
 }
 .switch {
@@ -1437,7 +1439,7 @@ img.wait {
   min-height: 36px;
   padding: 0 2px 0 6px;
   border-radius: 6px;
-  font-size: 13px;
+  font-size: calc(13px * var(--fs, 1));
   color: var(--text-2);
   cursor: grab;
 }
@@ -1467,7 +1469,7 @@ img.wait {
   justify-content: center;
   overflow: hidden;
   font-family: var(--mono);
-  font-size: 9px;
+  font-size: calc(9px * var(--fs, 1));
   font-weight: 600;
 }
 .home-link .mini img {
@@ -1530,7 +1532,7 @@ img.wait {
   border: 1px solid var(--line-2);
   border-radius: 6px;
   padding: 0 10px;
-  font-size: 12px;
+  font-size: calc(12px * var(--fs, 1));
 }
 
 .home-preview {
@@ -1552,14 +1554,14 @@ img.wait {
   padding: 12px;
 }
 .pv-clock {
-  font-size: 52px;
+  font-size: calc(52px * var(--fs, 1));
   font-weight: 200;
   line-height: 1;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 .pv-date {
-  font-size: 12px;
+  font-size: calc(12px * var(--fs, 1));
   opacity: 0.92;
   margin: 6px 0 calc(var(--tiles-gap, 80px) / 4);
   min-height: 1em;
@@ -1576,7 +1578,7 @@ img.wait {
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  font-size: 9px;
+  font-size: calc(9px * var(--fs, 1));
 }
 .pv-tile .ic {
   width: 34px;
@@ -1585,7 +1587,7 @@ img.wait {
   background: #fff;
   color: #222;
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: calc(10px * var(--fs, 1));
   font-weight: 600;
   display: flex;
   align-items: center;
@@ -1641,7 +1643,7 @@ img.wait {
   border-radius: 50%;
   background: var(--accent-bg);
   color: var(--accent-text);
-  font-size: 11px;
+  font-size: calc(11px * var(--fs, 1));
   vertical-align: 1px;
 }
 .set-card .sub b {
@@ -1671,14 +1673,14 @@ img.wait {
   grid-template-columns: auto minmax(0, 1fr);
   gap: 6px 10px;
   align-items: center;
-  font-size: 12px;
+  font-size: calc(12px * var(--fs, 1));
   color: var(--text-2);
 }
 .env-tab .badge {
   margin: 0;
   min-width: 52px;
   text-align: center;
-  font-size: 11px;
+  font-size: calc(11px * var(--fs, 1));
   padding: 3px 8px;
 }
 .env-tab .badge.none {
@@ -1709,7 +1711,7 @@ img.wait {
   border-radius: 8px;
   padding: 0 10px;
   font-family: var(--mono);
-  font-size: 12px;
+  font-size: calc(12px * var(--fs, 1));
 }
 .env-samples {
   display: flex;
@@ -1719,7 +1721,7 @@ img.wait {
 .env-samples .chip {
   min-height: 28px;
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: calc(11px * var(--fs, 1));
 }
 .env-out {
   display: flex;
@@ -1742,11 +1744,11 @@ img.wait {
 .env-result .u,
 .env-other .u {
   font-family: var(--mono);
-  font-size: 12px;
+  font-size: calc(12px * var(--fs, 1));
   word-break: break-all;
 }
 .env-result .why {
-  font-size: 11px;
+  font-size: calc(11px * var(--fs, 1));
   color: var(--muted);
   margin-top: 3px;
 }
@@ -1760,7 +1762,7 @@ img.wait {
   align-items: center;
   gap: 10px;
   color: var(--text-2);
-  font-size: 12px;
+  font-size: calc(12px * var(--fs, 1));
 }
 .env-other.miss {
   color: var(--muted);
@@ -1782,7 +1784,7 @@ img.wait {
 }
 .env-rule.head,
 .env-site.head {
-  font-size: 11px;
+  font-size: calc(11px * var(--fs, 1));
   color: var(--muted);
   margin: 0 0 2px;
 }
@@ -1829,7 +1831,7 @@ img.wait {
   border-radius: 6px;
   padding: 0 9px;
   font-family: var(--mono);
-  font-size: 12px;
+  font-size: calc(12px * var(--fs, 1));
 }
 .env-in::placeholder {
   color: var(--muted-2);
@@ -1841,7 +1843,7 @@ img.wait {
   border-radius: 6px;
   border: 1px solid var(--line-2);
   padding: 0 6px;
-  font-size: 12px;
+  font-size: calc(12px * var(--fs, 1));
   font-weight: 600;
 }
 .env-sel.PROD {
@@ -1897,7 +1899,7 @@ img.wait {
   border: 1px dashed var(--line-2);
   border-radius: 8px;
   color: var(--muted);
-  font-size: 12px;
+  font-size: calc(12px * var(--fs, 1));
   text-align: center;
   line-height: 1.5;
   display: flex;
@@ -1914,7 +1916,7 @@ img.wait {
 .env-copy details {
   margin-top: 10px;
   color: var(--muted);
-  font-size: 12px;
+  font-size: calc(12px * var(--fs, 1));
 }
 .env-copy summary {
   cursor: pointer;
@@ -1928,7 +1930,7 @@ img.wait {
   border-radius: 8px;
   padding: 8px 10px;
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: calc(11px * var(--fs, 1));
   color: var(--text-2);
   overflow-x: auto;
 }

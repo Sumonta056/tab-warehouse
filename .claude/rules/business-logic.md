@@ -37,7 +37,7 @@ Every rule here has at least one test. If you change a rule, change its test in 
 ## Settings
 
 - One settings button: the gear in the sidebar header (`#settingsBtn`). It opens the Settings view in the right pane (the sidebar stays); clicking it again, **Done**, or Escape (when focus is not in a text field) returns to the page that was open before, and focus goes back to the gear. The gear is marked `on` while Settings is open. There is no settings `<dialog>`.
-- Tabs, in order: Appearance (your name, accent color, sidebar background), Home page (links, background, clock, tiles, live preview), Bookmarks (root folder, site favicons, reset sidebar order), Environments (explanation + Try it, labels, sites, copy/paste), Backup (export JSON / HTML, import). ←/→ move between tabs. The last tab is remembered for the session.
+- Tabs, in order: Appearance (your name, text size, accent color, sidebar background), Home page (links, background, clock, tiles, live preview), Bookmarks (root folder, site favicons, reset sidebar order), Environments (explanation + Try it, labels, sites, copy/paste), Backup (export JSON / HTML, import). ←/→ move between tabs. The last tab is remembered for the session.
 - Every change saves without a Save button. Toggles, swatches, the root folder and buttons save at once; sliders and color pickers save after 300 ms; Environments rows and the name save when a box loses focus; the name is trimmed and updates the header and tab title at once. The header status shows "Saving…" then "Saved".
 - Saves go through one queue so two quick saves never overwrite each other.
 - Settings changed in another tab: a hidden tab only marks itself stale; when it is shown again it reloads settings and Home assets and re-renders (test "a hidden tab picks up settings changed in another tab when it is shown"). A visible tab never re-renders on a storage event, so its own sliders and text boxes are not interrupted.
@@ -53,6 +53,12 @@ Every rule here has at least one test. If you change a rule, change its test in 
 - Sites: 4 boxes (PROD, TEST, STAGE, LOCAL) + ✕; an empty box means none. A row with all boxes empty is not added, and emptying every box removes it (Undo). Full addresses are cut to the host.
 - Empty states offer **Add examples** (neutral `example.com` / `localhost:3000` data).
 - Copy or paste: **Copy to clipboard** writes `envText()` (a `#` header per list; `pattern LABEL` lines; `PROD TEST STAGE LOCAL` host lines with `-` for none) to the box and the clipboard. **Import** parses with `parseEnvText()` (comments/blank lines ignored, any order, bad lines counted), replaces both lists and shows "Imported N labels and M sites[. Skipped K lines …]" with Undo. Text with no valid line imports nothing and says so.
+
+## Text size
+
+- `settings.fontSide` and `settings.fontPage` are percents (80–140, default 100; `clampFont()`; bad values → 100).
+- Every px `font-size` in `newtab.css` and `lib/shared.css` is `calc(Npx * var(--fs, 1))`. `.side` sets `--fs` from `--fs-side`, `.page` from `--fs-page` (set on `:root` by `applyFontSize()`). Only text scales; row heights, icons and click areas stay. The Home clock and tile letters keep their own sizes.
+- Edited in Settings › Appearance › Text size: Sidebar and Page sliders, steps of 5. Changes apply at once and save after 300 ms.
 
 ## Theme
 

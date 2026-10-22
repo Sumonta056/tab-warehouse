@@ -14,6 +14,8 @@ import {
   ENVS,
   ENV_NAMES,
   imageSaveError,
+  clampFont,
+  FONT_SCALE,
 } from './lib/core.js';
 import { homeBgUrl, homeIconMap, homeLinks, homeLinksList, setHomeBg, applyHomeVars, homeIconImg } from './home.js';
 import { exportJson, exportHtml, importFile } from './lib/transfer.js';
@@ -157,6 +159,17 @@ function toggle(label, checked, onChange) {
   return field(label, input);
 }
 
+function fontSlider(c, key, label) {
+  const f = range(label, clampFont(c.settings[key]), FONT_SCALE.min, FONT_SCALE.max, '%', (v) => {
+    c.applyFontSize({ ...c.settings, [key]: v });
+    c.saveLater(key, () => ({ [key]: v }));
+  });
+  const input = f.querySelector('input');
+  input.step = 5;
+  input.id = key;
+  return f;
+}
+
 /* ---------- tabs ---------- */
 const VIEWS = {
   appearance(c) {
@@ -288,6 +301,7 @@ const VIEWS = {
           'The sidebar and the browser tab show "<name>\'s Warehouse". Leave it empty for "Tab Warehouse".',
           field('What is your name?', nameBox),
         ),
+        card('Text size', 'Makes the text in each pane bigger or smaller.', fontSlider(c, 'fontSide', 'Sidebar'), fontSlider(c, 'fontPage', 'Page')),
         card('Accent color', 'Colors the active folder, Home buttons, focus rings and buttons.', swatches),
         card(
           'Sidebar background',
