@@ -94,11 +94,13 @@ Run the full check before you open a pull request. It takes about 10 seconds.
 
 `npm install` sets up these hooks with [Husky](https://typicode.github.io/husky/):
 
-| Hook | What it runs |
-|---|---|
+| Hook       | What it runs                                                                                                                                     |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
 | pre-commit | Prettier on staged files ([lint-staged](https://github.com/lint-staged/lint-staged)), then the syntax check and unit tests (`npm run test:fast`) |
-| commit-msg | [commitlint](https://commitlint.js.org) with the Conventional Commits rules |
-| pre-push | The full suite (`./tests/run.sh`) |
+| commit-msg | [commitlint](https://commitlint.js.org) with the Conventional Commits rules                                                                      |
+| pre-push   | The full suite (`./tests/run.sh`)                                                                                                                |
+
+GitHub Actions (`.github/workflows/ci.yml`) runs the same checks on every pull request: commit messages, `npm run format:check` and `./tests/run.sh`. A pull request into `main` can merge only when CI is green.
 
 ## Pull request checklist
 

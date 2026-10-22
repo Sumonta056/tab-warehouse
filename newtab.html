@@ -1,39 +1,49 @@
 <!doctype html>
 <html lang="en">
-<head>
-<meta charset="utf-8">
-<title>Tab Warehouse</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" href="lib/shared.css">
-<link rel="stylesheet" href="newtab.css">
-</head>
-<body>
-<div class="side-backdrop" aria-hidden="true"><div class="side-img"></div><div class="side-shade"></div></div>
-<aside class="side">
-  <div class="brand">
-    <div class="logo" id="logo">SW</div>
-    <h1 id="rootTitle">Warehouse</h1>
-    <button class="btn icon ghost sm" id="settingsBtn" aria-label="Settings" title="Settings" aria-pressed="false"><span id="gearIcon"></span></button>
-  </div>
-  <div class="search-row">
-    <label class="search sm">
-      <span class="sr">Search all bookmarks</span>
-      <span id="searchIcon"></span>
-      <input type="search" id="q" placeholder="Search all…" autocomplete="off">
-      <span class="kbd">⌘K</span>
-    </label>
-    <button class="btn icon home-btn" id="homeBtn" aria-label="Home" title="Home · drop a link here to add it to Home"><span id="homeIcon"></span></button>
-  </div>
-  <nav id="nav" aria-label="Folders"></nav>
-  <button class="btn ghost sm newFolder" id="newFolderBtn"><span id="plusIcon"></span>New folder</button>
-  <button class="btn ghost sm newFolder newCat" id="newCatBtn"><span id="catIcon"></span>New category</button>
-</aside>
-<div class="resizer" id="resizer" role="separator" aria-orientation="vertical" aria-label="Resize sidebar" tabindex="0" title="Drag to resize · double-click to reset"></div>
+  <head>
+    <meta charset="utf-8" />
+    <title>Tab Warehouse</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="lib/shared.css" />
+    <link rel="stylesheet" href="newtab.css" />
+  </head>
+  <body>
+    <div class="side-backdrop" aria-hidden="true">
+      <div class="side-img"></div>
+      <div class="side-shade"></div>
+    </div>
+    <aside class="side">
+      <div class="brand">
+        <div class="logo" id="logo">SW</div>
+        <h1 id="rootTitle">Warehouse</h1>
+        <button class="btn icon ghost sm" id="settingsBtn" aria-label="Settings" title="Settings" aria-pressed="false"><span id="gearIcon"></span></button>
+      </div>
+      <div class="search-row">
+        <label class="search sm">
+          <span class="sr">Search all bookmarks</span>
+          <span id="searchIcon"></span>
+          <input type="search" id="q" placeholder="Search all…" autocomplete="off" />
+          <span class="kbd">⌘K</span>
+        </label>
+        <button class="btn icon home-btn" id="homeBtn" aria-label="Home" title="Home · drop a link here to add it to Home"><span id="homeIcon"></span></button>
+      </div>
+      <nav id="nav" aria-label="Folders"></nav>
+      <button class="btn ghost sm newFolder" id="newFolderBtn"><span id="plusIcon"></span>New folder</button>
+      <button class="btn ghost sm newFolder newCat" id="newCatBtn"><span id="catIcon"></span>New category</button>
+    </aside>
+    <div
+      class="resizer"
+      id="resizer"
+      role="separator"
+      aria-orientation="vertical"
+      aria-label="Resize sidebar"
+      tabindex="0"
+      title="Drag to resize · double-click to reset"
+    ></div>
 
-<main class="page" id="page"></main>
-<button class="home-fab" id="homeFab" aria-label="Go to Home" title="Home" hidden><span id="fabIcon"></span></button>
+    <main class="page" id="page"></main>
+    <button class="home-fab" id="homeFab" aria-label="Go to Home" title="Home" hidden><span id="fabIcon"></span></button>
 
-
-<script type="module" src="newtab.js"></script>
-</body>
+    <script type="module" src="newtab.js"></script>
+  </body>
 </html>

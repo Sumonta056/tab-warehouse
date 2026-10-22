@@ -1,4 +1,17 @@
-import { saveSettings, findById, googleIcon, faviconUrl, letterIcon, normalizeUrl, hostOf, clockText, msToNextTick, h, svgIcon } from './lib/core.js';
+import {
+  imageSaveError,
+  saveSettings,
+  findById,
+  googleIcon,
+  faviconUrl,
+  letterIcon,
+  normalizeUrl,
+  hostOf,
+  clockText,
+  msToNextTick,
+  h,
+  svgIcon,
+} from './lib/core.js';
 
 let icons = null;
 let bg = null;
@@ -27,9 +40,10 @@ export function homeLinks(tree, settings) {
 }
 
 export async function setHomeBg(file) {
-  bg = file ? await resizeImage(file, 1920) : '';
-  if (bg) await chrome.storage.local.set({ homeBg: bg });
+  const next = file ? await resizeImage(file, 1920) : '';
+  if (next) await chrome.storage.local.set({ homeBg: next });
   else await chrome.storage.local.remove('homeBg');
+  bg = next;
   return bg;
 }
 
@@ -341,12 +355,15 @@ function pickIcon(bm, ctx) {
   f.addEventListener('change', async () => {
     const file = f.files[0];
     if (!file) return;
+    const before = icons[bm.id];
     try {
       icons[bm.id] = await resizeImage(file, 128, 'image/png');
       await saveIcons();
       ctx.rerender();
-    } catch {
-      ctx.toast('That file is not an image the browser can read.');
+    } catch (err) {
+      if (before) icons[bm.id] = before;
+      else delete icons[bm.id];
+      ctx.toast(imageSaveError(err));
     }
   });
   f.click();

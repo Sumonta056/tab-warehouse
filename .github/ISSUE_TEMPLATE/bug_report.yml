@@ -1,0 +1,67 @@
+name: Bug report
+description: Something in Tab Warehouse does not work as expected.
+title: 'fix: '
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Thank you for the report. Please check the [open issues](https://github.com/Sumonta056/tab-warehouse/issues) first.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: Describe the problem in 1 or 2 sentences.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open a new tab
+        2. Click ...
+        3. See ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Where in the extension?
+      options:
+        - Home
+        - Sidebar or categories
+        - Folder page or sections
+        - Environments or env matrix
+        - Popup (save current tab)
+        - Settings
+        - Backup (export or import)
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Extension version
+      description: See chrome://extensions.
+      placeholder: 2.1.0
+    validations:
+      required: true
+  - type: input
+    id: chrome
+    attributes:
+      label: Chrome version and OS
+      placeholder: Chrome 141, macOS 15
+    validations:
+      required: true
+  - type: textarea
+    id: console
+    attributes:
+      label: Console errors or screenshots
+      description: Right-click the page → Inspect → Console. Paste errors here, or drop a screenshot.
+      render: text

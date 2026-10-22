@@ -14,6 +14,7 @@ import {
   parseEnvText,
   ENVS,
   ENV_NAMES,
+  imageSaveError,
 } from './lib/core.js';
 import { homeBgUrl, homeIconMap, homeLinks, homeLinksList, setHomeBg, applyHomeVars, tileIconSrc } from './home.js';
 import { exportJson, exportHtml, importFile } from './lib/transfer.js';
@@ -341,8 +342,8 @@ const VIEWS = {
         await setHomeBg(f);
         live();
         c.onBgChange();
-      } catch {
-        c.toast('That file is not an image the browser can read.');
+      } catch (err) {
+        c.toast(imageSaveError(err));
       }
       file.value = '';
     });

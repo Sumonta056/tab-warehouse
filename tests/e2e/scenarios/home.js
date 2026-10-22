@@ -478,4 +478,35 @@ export default [
       );
     },
   },
+  {
+    area,
+    name: 'background upload with full storage says so and keeps no image',
+    page: 'newtab',
+    fixture: () => base(),
+    async run(t) {
+      t.H.storageQuota = JSON.stringify(t.store).length + 5000;
+      t.click(t.$('#settingsBtn'));
+      await t.settle();
+      t.click(t.$('[data-tab=home]'));
+      await t.settle();
+      const c = t.d.createElement('canvas');
+      c.width = c.height = 400;
+      const g = c.getContext('2d');
+      const px = g.createImageData(400, 400);
+      for (let i = 0; i < px.data.length; i++) px.data[i] = (i * 2654435761) % 251;
+      g.putImageData(px, 0, 0);
+      const blob = await new Promise((r) => c.toBlob(r, 'image/png'));
+      const dt = new t.w.DataTransfer();
+      dt.items.add(new t.w.File([blob], 'bg.png', { type: 'image/png' }));
+      const input = t.$('input[aria-label="Background image file"]');
+      input.files = dt.files;
+      input.dispatchEvent(new t.w.Event('change'));
+      for (let i = 0; i < 500 && !t.toast(); i++) await fetch(`/tests/e2e/runner.html?wait=${i}`, { cache: 'no-store' });
+      t.ok(t.toast()?.textContent.startsWith('Not enough storage space'), `says storage is full (${t.toast()?.textContent})`);
+      t.ok(!('homeBg' in t.store), 'nothing saved');
+      t.click(t.$('#homeBtn'));
+      await t.settle();
+      t.eq(t.$('.home-bg').style.backgroundImage, '', 'Home shows no unsaved image');
+    },
+  },
 ];

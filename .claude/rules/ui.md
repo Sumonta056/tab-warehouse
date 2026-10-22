@@ -1,9 +1,9 @@
 ---
 description: Visual and interaction conventions for newtab + popup
 paths:
-  - "newtab.*"
-  - "popup.*"
-  - "lib/shared.css"
+  - 'newtab.*'
+  - 'popup.*'
+  - 'lib/shared.css'
 ---
 
 # UI rules

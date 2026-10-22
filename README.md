@@ -134,12 +134,12 @@ Tab Warehouse has no server, no account, no analytics and no tracking. It does n
 - Preferences (sidebar order, categories, env rules, Home look) stay in **`chrome.storage.local`** on your machine.
 - The only images loaded from the network are the official Google app icons (from `ssl.gstatic.com`) and any icon URL you add yourself.
 
-| Permission  | Why it is needed                                                            |
-| ----------- | --------------------------------------------------------------------------- |
-| `bookmarks` | Read and edit your bookmarks — the core of the extension                    |
-| `storage`   | Save sidebar order, per-folder preferences, env rules and the Home look     |
-| `favicon`   | Show site icons from Chrome's own favicon cache                             |
-| `tabs`      | Read the active tab's title and URL in the popup, and open the new tab page |
+| Permission  | Why it is needed                                                        |
+| ----------- | ----------------------------------------------------------------------- |
+| `bookmarks` | Read and edit your bookmarks — the core of the extension                |
+| `storage`   | Save sidebar order, per-folder preferences, env rules and the Home look |
+| `favicon`   | Show site icons from Chrome's own favicon cache                         |
+| `activeTab` | Read the current tab's title and URL, only when you open the popup      |
 
 ## How it works
 

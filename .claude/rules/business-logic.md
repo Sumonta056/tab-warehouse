@@ -38,6 +38,8 @@ Every rule here has at least one test. If you change a rule, change its test in 
 - Tabs, in order: Appearance (accent color, sidebar background), Home page (links, background, clock, tiles, live preview), Bookmarks (root folder, site favicons, reset sidebar order), Environments (explanation + Try it, labels, sites, copy/paste), Backup (export JSON / HTML, import). ←/→ move between tabs. The last tab is remembered for the session.
 - Every change saves without a Save button. Toggles, swatches, the root folder and buttons save at once; sliders and color pickers save after 300 ms; Environments rows save when a box loses focus. The header status shows "Saving…" then "Saved".
 - Saves go through one queue so two quick saves never overwrite each other.
+- Settings changed in another tab: a hidden tab only marks itself stale; when it is shown again it reloads settings and Home assets and re-renders (test "a hidden tab picks up settings changed in another tab when it is shown"). A visible tab never re-renders on a storage event, so its own sliders and text boxes are not interrupted.
+- Backup › Import (JSON) keeps only valid preferences (`cleanImport()`): env rules need a text pattern and a known label; host rows keep only PROD/TEST/STAGE/LOCAL text values; folder prefs keep only a known sort, `list`/`matrix`, `title`/`url` and boolean `closed`; links need a text URL. Anything else is dropped, so a bad file cannot break the page.
 - Settings re-render on bookmark changes and keep their tab and scroll position.
 
 ## Environments (labels and sites)
@@ -104,6 +106,7 @@ Every rule here has at least one test. If you change a rule, change its test in 
 - First start: find or create a folder **Home** in _Other bookmarks_ (`tree.children[1]`, fallback first child). An existing _Home_ folder is adopted as it is. No links or icons are built in: a new install starts with an empty Home (only the _Add link_ tile and the help text "Add the sites you use most. …"); the help text goes away once Home has a link. Existing installs keep their Home links and icons (they are bookmarks and `homeIcons`, never touched on update). If the Home folder is deleted later, an empty one is created.
 - Tiles = links in the Home folder in Chrome order, then an _Add link_ tile. Click opens in the same tab; the _Open in new tab_ setting adds `target=_blank rel=noopener`.
 - Icon order: `homeIcons[id]` → official Google product icon by host (`googleIcon`: Gmail, Drive, Calendar, Keep, Meet, Docs/Sheets/Slides/Forms) → Chrome favicon `_favicon?pageUrl=…&size=64` → letter icon. Failed images fall back down this chain.
+- Uploading a background or an icon when `chrome.storage.local` is full shows "Not enough storage space. Remove the background image or some custom icons, then try again." and keeps the old image (`imageSaveError()`).
 - Tile menu: Change icon… (upload, resized to 128 px PNG), Icon from URL…, Use site icon, Edit name / URL, Open in new tab, Remove (undo toast restores the bookmark **and** its icon).
 - Drag a tile onto a tile → move before it; onto _Add link_ → move to the end.
 - Links list (Settings › Home page, card `Links (n)`): the Home folder's links in Chrome order with icon, name and a Remove button (same undo toast as the tile menu). Drag rows to reorder (same-parent index rule: before = target index, after = index + 1). The add form takes name + URL: no URL → nothing is added; no scheme → `https://`; no name → host without `www.`. Settings stay open on the same tab and keep their scroll position when the list changes.
@@ -124,3 +127,6 @@ Every rule here has at least one test. If you change a rule, change its test in 
 - The clock updates only text, aligned to the next second (or minute without seconds), and stops while the tab is hidden.
 - Images are resized once on upload; tiles use `loading=lazy decoding=async`; the Home pane uses `contain: strict`.
 - Sidebar resize updates at most once per animation frame and saves only on release.
+- Sorts compute each link's key (env rank, host, path, display URL) once, then sort with one shared `Intl.Collator`; nothing parses a URL inside the compare function. The env title words are compiled once (`ENV_WORDS`).
+- Closing a menu removes its document click listener.
+- Leak and speed check on the real extension: `node tests/perf/memprobe.mjs` (`/perf-check`).

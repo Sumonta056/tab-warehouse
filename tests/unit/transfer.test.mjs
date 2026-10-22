@@ -1,0 +1,92 @@
+import { test, describe } from 'node:test';
+import assert from 'node:assert/strict';
+import { cleanImport } from '../../lib/transfer.js';
+import { imageSaveError, sortLinks, detectEnv } from '../../lib/core.js';
+
+describe('cleanImport', () => {
+  test('drops bad env rules, host rows and folder prefs that would break rendering', () => {
+    const r = cleanImport({
+      sections: [],
+      preferences: {
+        envRules: [{ pattern: 5, env: 'PROD' }, { pattern: ' Prod.Example ', env: 'PROD' }, { pattern: 'x', env: 'NOPE' }, null, 'str'],
+        hostMap: [{ PROD: 'a.com', TEST: 7, STAGE: ' ', evil: 'x' }, { TEST: 3 }, null],
+        folders: { A: { sort: 'toString', view: 'matrix', show: 1, closed: { s1: true, s2: 'yes' } }, B: 'bad' },
+        order: ['A', 3, null],
+        categories: [{ name: ' Ops ', closed: 'yes', folders: ['A', 9] }, { name: '' }, { closed: true }],
+        showFavicons: 'true',
+      },
+    });
+    assert.deepEqual(r.preferences.envRules, [{ pattern: 'prod.example', env: 'PROD' }]);
+    assert.deepEqual(r.preferences.hostMap, [{ PROD: 'a.com' }]);
+    assert.deepEqual(r.preferences.folders, { A: { view: 'matrix', closed: { s1: true } } });
+    assert.deepEqual(r.preferences.order, ['A']);
+    assert.deepEqual(r.preferences.categories, [{ name: 'Ops', closed: false, folders: ['A'] }]);
+    assert.equal('showFavicons' in r.preferences, false);
+    assert.doesNotThrow(() => detectEnv({ title: 't', url: 'https://prod.example/x' }, r.preferences.envRules));
+  });
+
+  test('keeps only sections and links with string titles and URLs', () => {
+    const r = cleanImport({
+      sections: [
+        {
+          title: 'Ops',
+          unsorted: 'yes',
+          links: [{ title: 'ok', url: 'https://a.com' }, { url: 9 }, { title: 3, url: 'https://b.com' }, null],
+          parts: [{ title: 'P', links: [{ url: 'https://c.com' }] }, { title: 1 }],
+        },
+        { title: 7, links: [] },
+        null,
+      ],
+      preferences: 'nope',
+    });
+    assert.deepEqual(r, {
+      sections: [
+        {
+          title: 'Ops',
+          unsorted: false,
+          links: [
+            { title: 'ok', url: 'https://a.com' },
+            { title: '', url: 'https://b.com' },
+          ],
+          parts: [{ title: 'P', links: [{ title: '', url: 'https://c.com' }] }],
+        },
+      ],
+      preferences: null,
+    });
+  });
+});
+
+describe('imageSaveError', () => {
+  test('names a full storage', () => {
+    assert.match(imageSaveError(new Error('Resource::kQuotaBytes quota exceeded')), /^Not enough storage space/);
+  });
+  test('falls back to the unreadable image message', () => {
+    assert.equal(imageSaveError(new Error('The source image could not be decoded.')), 'That file is not an image the browser can read.');
+    assert.equal(imageSaveError(undefined), 'That file is not an image the browser can read.');
+  });
+});
+
+describe('sortLinks keeps input order for equal keys', () => {
+  const links = [
+    { id: 'a', index: 0, title: 'Same', url: 'https://x.com/p' },
+    { id: 'b', index: 1, title: 'same', url: 'https://y.com/p' },
+    { id: 'c', index: 2, title: 'Same', url: 'https://z.com/p' },
+  ];
+  for (const sort of ['name', 'env']) {
+    test(sort, () =>
+      assert.deepEqual(
+        sortLinks(links, sort, []).map((l) => l.id),
+        ['a', 'b', 'c'],
+      ),
+    );
+  }
+  test('does not change the input array', () => {
+    const copy = [...links].reverse();
+    const before = copy.map((l) => l.id);
+    sortLinks(copy, 'name', []);
+    assert.deepEqual(
+      copy.map((l) => l.id),
+      before,
+    );
+  });
+});

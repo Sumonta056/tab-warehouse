@@ -1,0 +1,31 @@
+name: Feature request
+description: Suggest an idea or an improvement.
+title: 'feat: '
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem do you want to solve?
+      description: Describe the problem first, not the solution. Example — "I cannot see which folder a search result is in."
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: Your idea
+      description: How could Tab Warehouse solve it?
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Other options you considered
+  - type: checkboxes
+    id: rules
+    attributes:
+      label: Project rules
+      description: Tab Warehouse has no runtime dependencies, no remote code and keeps bookmarks in Chrome.
+      options:
+        - label: The idea works without a new library, server or tracking.
+          required: true

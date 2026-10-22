@@ -4,7 +4,7 @@
   "short_name": "Tab Warehouse",
   "version": "2.1.0",
   "description": "Bookmark manager and new tab page for developers: folders, full URLs, PROD/TEST/STAGE/LOCAL env tags, env matrix, drag and drop.",
-  "permissions": ["bookmarks", "storage", "favicon", "tabs"],
+  "permissions": ["bookmarks", "storage", "favicon", "activeTab"],
   "chrome_url_overrides": {
     "newtab": "newtab.html"
   },

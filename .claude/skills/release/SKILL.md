@@ -7,7 +7,8 @@ description: Cut a release of the extension — bump version, sanity-check, prod
 
 1. Bump `version` in `manifest.json` (semver; UI change = minor, fix = patch).
 2. Run: `./tests/run.sh` — it must end with exit code 0 (syntax, unit and all e2e scenarios). Do not release on red.
-3. Confirm `manifest.json` lists only `bookmarks storage favicon tabs` unless a new permission was documented in README.md.
+3. Confirm `manifest.json` lists only `bookmarks storage favicon activeTab` unless a new permission was documented in README.md.
+   Then run `node tests/perf/memprobe.mjs` (see `/perf-check`). It must exit 0. Compare its table with the baseline in the perf-check skill; explain any large rise before you release.
 4. Package from the repo root, excluding dev files:
    ```
    zip -r ../tab-warehouse-$(python3 -c "import json;print(json.load(open('manifest.json'))['version'])").zip . \

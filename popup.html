@@ -1,64 +1,211 @@
 <!doctype html>
 <html lang="en">
-<head>
-<meta charset="utf-8">
-<title>Save to Tab Warehouse</title>
-<link rel="stylesheet" href="lib/shared.css">
-<style>
-  body { width: 420px; display: flex; flex-direction: column; }
-  .page { display: flex; gap: 10px; align-items: flex-start; padding: 14px 14px 10px; border-bottom: 1px solid var(--line); }
-  .page .ico { flex: 0 0 24px; width: 24px; height: 24px; border-radius: 6px; display: flex; align-items: center; justify-content: center; margin-top: 8px; font-family: var(--mono); font-size: 9px; font-weight: 600; background: var(--gh-bg); overflow: hidden; }
-  .page .ico img { width: 18px; height: 18px; }
-  .page .txt { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
-  .page .badge { margin-top: 10px; }
-  .field { background: var(--surface); border: 1px solid var(--line-2); border-radius: 8px; padding: 0 10px; min-height: 36px; width: 100%; font-size: 14px; font-weight: 500; }
-  .field:focus { border-color: var(--accent); outline: 0; }
-  .target { font-family: var(--mono); font-size: 11px; color: var(--muted-2); word-break: break-all; }
-  .sec { padding: 10px 14px; display: flex; flex-direction: column; gap: 8px; }
-  .lbl { font-size: 11px; color: var(--muted); }
-  .modes { display: flex; gap: 6px; }
-  .folders { max-height: 260px; overflow-y: auto; display: flex; flex-direction: column; gap: 1px; border: 1px solid var(--line); border-radius: 8px; padding: 4px; }
-  .folder { min-height: 32px; padding: 0 10px; border: 0; border-radius: 6px; background: transparent; color: var(--text-2); text-align: left; display: flex; align-items: center; gap: 8px; }
-  .folder:hover, .folder.focus { background: var(--surface-2); color: var(--text); }
-  .folder.on { background: var(--accent-bg); color: var(--accent-text); font-weight: 500; }
-  .folder .n { margin-left: auto; font-family: var(--mono); font-size: 10px; color: var(--muted); }
-  .folder svg { width: 14px; height: 14px; flex: 0 0 auto; }
-  .folder.create { color: var(--accent); }
-  .exists { margin: 0 14px 8px; padding: 8px 10px; border-radius: 8px; background: var(--surface); border: 1px solid var(--line-2); display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-2); }
-  .exists button { margin-left: auto; }
-  .actions { padding: 10px 14px 14px; display: flex; flex-direction: column; gap: 8px; }
-  .actions .btn.primary { justify-content: center; }
-  .actions .btn.primary:disabled { opacity: .5; cursor: default; }
-  .status { font-size: 12px; color: var(--local-fg); text-align: center; min-height: 16px; }
-  .status.err { color: #ff9a8a; }
-  .foot { display: flex; align-items: center; gap: 8px; padding: 6px 14px; border-top: 1px solid var(--line); font-size: 11px; color: var(--muted); }
-  .foot button { margin-left: auto; color: var(--accent); min-height: 32px; background: transparent; border: 0; font-weight: 500; }
-</style>
-</head>
-<body>
-<div class="page" id="page"></div>
-<div class="sec">
-  <span class="lbl">Save</span>
-  <div class="modes" id="modes"></div>
-</div>
-<div id="exists"></div>
-<div class="sec">
-  <label class="search">
-    <span class="sr">Find or create folder</span>
-    <span id="searchIcon"></span>
-    <input type="search" id="q" placeholder="Find or create folder…" autocomplete="off">
-  </label>
-  <div class="folders" id="folders" role="listbox" aria-label="Folders"></div>
-</div>
-<div class="actions">
-  <button class="btn primary" id="save"></button>
-  <div class="status" id="status" role="status"></div>
-</div>
-<div class="foot">
-  <span><span class="kbd">↑↓</span> folder</span>
-  <span><span class="kbd">↵</span> save</span>
-  <button id="openBoard">Open Tab Warehouse</button>
-</div>
-<script type="module" src="popup.js"></script>
-</body>
+  <head>
+    <meta charset="utf-8" />
+    <title>Save to Tab Warehouse</title>
+    <link rel="stylesheet" href="lib/shared.css" />
+    <style>
+      body {
+        width: 420px;
+        display: flex;
+        flex-direction: column;
+      }
+      .page {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        padding: 14px 14px 10px;
+        border-bottom: 1px solid var(--line);
+      }
+      .page .ico {
+        flex: 0 0 24px;
+        width: 24px;
+        height: 24px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: 8px;
+        font-family: var(--mono);
+        font-size: 9px;
+        font-weight: 600;
+        background: var(--gh-bg);
+        overflow: hidden;
+      }
+      .page .ico img {
+        width: 18px;
+        height: 18px;
+      }
+      .page .txt {
+        flex: 1 1 auto;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .page .badge {
+        margin-top: 10px;
+      }
+      .field {
+        background: var(--surface);
+        border: 1px solid var(--line-2);
+        border-radius: 8px;
+        padding: 0 10px;
+        min-height: 36px;
+        width: 100%;
+        font-size: 14px;
+        font-weight: 500;
+      }
+      .field:focus {
+        border-color: var(--accent);
+        outline: 0;
+      }
+      .target {
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--muted-2);
+        word-break: break-all;
+      }
+      .sec {
+        padding: 10px 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .lbl {
+        font-size: 11px;
+        color: var(--muted);
+      }
+      .modes {
+        display: flex;
+        gap: 6px;
+      }
+      .folders {
+        max-height: 260px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 4px;
+      }
+      .folder {
+        min-height: 32px;
+        padding: 0 10px;
+        border: 0;
+        border-radius: 6px;
+        background: transparent;
+        color: var(--text-2);
+        text-align: left;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .folder:hover,
+      .folder.focus {
+        background: var(--surface-2);
+        color: var(--text);
+      }
+      .folder.on {
+        background: var(--accent-bg);
+        color: var(--accent-text);
+        font-weight: 500;
+      }
+      .folder .n {
+        margin-left: auto;
+        font-family: var(--mono);
+        font-size: 10px;
+        color: var(--muted);
+      }
+      .folder svg {
+        width: 14px;
+        height: 14px;
+        flex: 0 0 auto;
+      }
+      .folder.create {
+        color: var(--accent);
+      }
+      .exists {
+        margin: 0 14px 8px;
+        padding: 8px 10px;
+        border-radius: 8px;
+        background: var(--surface);
+        border: 1px solid var(--line-2);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        color: var(--text-2);
+      }
+      .exists button {
+        margin-left: auto;
+      }
+      .actions {
+        padding: 10px 14px 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .actions .btn.primary {
+        justify-content: center;
+      }
+      .actions .btn.primary:disabled {
+        opacity: 0.5;
+        cursor: default;
+      }
+      .status {
+        font-size: 12px;
+        color: var(--local-fg);
+        text-align: center;
+        min-height: 16px;
+      }
+      .status.err {
+        color: #ff9a8a;
+      }
+      .foot {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 14px;
+        border-top: 1px solid var(--line);
+        font-size: 11px;
+        color: var(--muted);
+      }
+      .foot button {
+        margin-left: auto;
+        color: var(--accent);
+        min-height: 32px;
+        background: transparent;
+        border: 0;
+        font-weight: 500;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page" id="page"></div>
+    <div class="sec">
+      <span class="lbl">Save</span>
+      <div class="modes" id="modes"></div>
+    </div>
+    <div id="exists"></div>
+    <div class="sec">
+      <label class="search">
+        <span class="sr">Find or create folder</span>
+        <span id="searchIcon"></span>
+        <input type="search" id="q" placeholder="Find or create folder…" autocomplete="off" />
+      </label>
+      <div class="folders" id="folders" role="listbox" aria-label="Folders"></div>
+    </div>
+    <div class="actions">
+      <button class="btn primary" id="save"></button>
+      <div class="status" id="status" role="status"></div>
+    </div>
+    <div class="foot">
+      <span><span class="kbd">↑↓</span> folder</span>
+      <span><span class="kbd">↵</span> save</span>
+      <button id="openBoard">Open Tab Warehouse</button>
+    </div>
+    <script type="module" src="popup.js"></script>
+  </body>
 </html>

@@ -7,7 +7,14 @@ const saveBtn = $('#save');
 $('#searchIcon').append(svgIcon('search'));
 
 let settings, root, tab, titleEl, targetEl, badgeEl;
-let folders = [], items = [], cursor = 0, selId = null, mode = 'page', query = '', titleEdited = false, busy = false;
+let folders = [],
+  items = [],
+  cursor = 0,
+  selId = null,
+  mode = 'page',
+  query = '',
+  titleEdited = false,
+  busy = false;
 
 async function boot() {
   settings = await loadSettings();
@@ -22,7 +29,7 @@ async function boot() {
   q.focus();
 }
 
-const linkCount = (n) => (n.children || []).filter(c => c.url).length;
+const linkCount = (n) => (n.children || []).filter((c) => c.url).length;
 
 async function loadFolders() {
   root = resolveRoot(await getTree(), settings);
@@ -40,15 +47,35 @@ async function loadFolders() {
 }
 
 function siteUrl() {
-  try { const u = new URL(tab.url); return /^https?:$/.test(u.protocol) ? `${u.origin}/` : null; } catch { return null; }
+  try {
+    const u = new URL(tab.url);
+    return /^https?:$/.test(u.protocol) ? `${u.origin}/` : null;
+  } catch {
+    return null;
+  }
 }
-function targetUrl() { return mode === 'site' ? siteUrl() : tab?.url || null; }
-function defaultTitle() { return mode === 'site' ? hostOf(tab.url) : tab.title || tab.url; }
+function targetUrl() {
+  return mode === 'site' ? siteUrl() : tab?.url || null;
+}
+function defaultTitle() {
+  return mode === 'site' ? hostOf(tab.url) : tab.title || tab.url;
+}
 
 function renderPage() {
   const page = $('#page');
-  if (!tab?.url) { page.replaceChildren(h('span', { class: 'muted' }, 'No tab to save. Open a page and try again.')); return; }
-  titleEl = h('input', { class: 'field', 'aria-label': 'Title', autocomplete: 'off', onInput: () => { titleEdited = true; updateBadge(); } });
+  if (!tab?.url) {
+    page.replaceChildren(h('span', { class: 'muted' }, 'No tab to save. Open a page and try again.'));
+    return;
+  }
+  titleEl = h('input', {
+    class: 'field',
+    'aria-label': 'Title',
+    autocomplete: 'off',
+    onInput: () => {
+      titleEdited = true;
+      updateBadge();
+    },
+  });
   titleEl.value = defaultTitle();
   targetEl = h('span', { class: 'target' });
   badgeEl = h('span');
@@ -76,7 +103,18 @@ function renderModes() {
   const site = siteUrl();
   c.replaceChildren(
     h('button', { class: `chip ${mode === 'page' ? 'on' : ''}`, 'aria-pressed': String(mode === 'page'), onClick: () => setMode('page') }, 'This page'),
-    h('button', { class: `chip ${mode === 'site' ? 'on' : ''}`, 'aria-pressed': String(mode === 'site'), disabled: !site, title: site || 'This page has no website address', onClick: () => setMode('site') }, 'Whole site'));
+    h(
+      'button',
+      {
+        class: `chip ${mode === 'site' ? 'on' : ''}`,
+        'aria-pressed': String(mode === 'site'),
+        disabled: !site,
+        title: site || 'This page has no website address',
+        onClick: () => setMode('site'),
+      },
+      'Whole site',
+    ),
+  );
 }
 
 async function setMode(m) {
@@ -90,17 +128,33 @@ async function setMode(m) {
 
 function renderFolders() {
   const t = query.toLowerCase();
-  const shown = t ? folders.filter(f => f.path.toLowerCase().includes(t)) : folders;
-  items = shown.map(f => ({ key: f.id, f }));
-  if (t && !folders.some(f => f.title.toLowerCase() === t)) items.push({ key: 'create', create: query });
-  cursor = Math.max(0, items.findIndex(x => x.key === selId));
+  const shown = t ? folders.filter((f) => f.path.toLowerCase().includes(t)) : folders;
+  items = shown.map((f) => ({ key: f.id, f }));
+  if (t && !folders.some((f) => f.title.toLowerCase() === t)) items.push({ key: 'create', create: query });
+  cursor = Math.max(
+    0,
+    items.findIndex((x) => x.key === selId),
+  );
   list.replaceChildren();
   items.forEach((x, i) => {
     const el = x.create
-      ? h('button', { class: 'folder create', role: 'option', tabindex: '-1' }, svgIcon('plus'), `Create "${x.create}"`, h('span', { class: 'n' }, `in ${folders[0].title}`))
-      : h('button', { class: 'folder', role: 'option', tabindex: '-1', title: x.f.path, style: { paddingLeft: `${10 + (t ? 0 : x.f.depth * 14)}px` } },
-          t ? x.f.path : x.f.title, h('span', { class: 'n' }, String(x.f.count)));
-    el.addEventListener('click', () => { setCursor(i); q.focus(); });
+      ? h(
+          'button',
+          { class: 'folder create', role: 'option', tabindex: '-1' },
+          svgIcon('plus'),
+          `Create "${x.create}"`,
+          h('span', { class: 'n' }, `in ${folders[0].title}`),
+        )
+      : h(
+          'button',
+          { class: 'folder', role: 'option', tabindex: '-1', title: x.f.path, style: { paddingLeft: `${10 + (t ? 0 : x.f.depth * 14)}px` } },
+          t ? x.f.path : x.f.title,
+          h('span', { class: 'n' }, String(x.f.count)),
+        );
+    el.addEventListener('click', () => {
+      setCursor(i);
+      q.focus();
+    });
     el.addEventListener('dblclick', save);
     list.append(el);
   });
@@ -130,12 +184,21 @@ async function renderExists() {
   const url = targetUrl();
   if (!url) return;
   let hits = [];
-  try { hits = (await chrome.bookmarks.search({ url })).filter(b => b.url); } catch { return; }
+  try {
+    hits = (await chrome.bookmarks.search({ url })).filter((b) => b.url);
+  } catch {
+    return;
+  }
   for (const b of hits.slice(0, 3)) {
-    const parent = folders.find(f => f.id === b.parentId);
-    box.append(h('div', { class: 'exists' },
-      h('span', {}, 'Already in ', h('strong', {}, parent?.path || 'another folder')),
-      h('button', { class: 'btn sm', onClick: () => remove(b) }, 'Remove')));
+    const parent = folders.find((f) => f.id === b.parentId);
+    box.append(
+      h(
+        'div',
+        { class: 'exists' },
+        h('span', {}, 'Already in ', h('strong', {}, parent?.path || 'another folder')),
+        h('button', { class: 'btn sm', onClick: () => remove(b) }, 'Remove'),
+      ),
+    );
   }
 }
 
@@ -158,8 +221,22 @@ let toastTimer;
 function toast(msg, undo) {
   document.querySelector('.toast')?.remove();
   clearTimeout(toastTimer);
-  const el = h('div', { class: 'toast', role: 'status' }, msg,
-    undo && h('button', { onClick: async () => { el.remove(); await undo(); } }, 'Undo'));
+  const el = h(
+    'div',
+    { class: 'toast', role: 'status' },
+    msg,
+    undo &&
+      h(
+        'button',
+        {
+          onClick: async () => {
+            el.remove();
+            await undo();
+          },
+        },
+        'Undo',
+      ),
+  );
   document.body.append(el);
   toastTimer = setTimeout(() => el.remove(), 8000);
 }
@@ -199,15 +276,31 @@ q.addEventListener('input', () => {
   }, 60);
 });
 q.addEventListener('keydown', (e) => {
-  if (e.key === 'ArrowDown') { e.preventDefault(); setCursor(cursor + 1); }
-  else if (e.key === 'ArrowUp') { e.preventDefault(); setCursor(cursor - 1); }
-  else if (e.key === 'Escape' && q.value) { e.preventDefault(); q.value = ''; query = ''; selId = settings.lastSaveFolder; renderFolders(); }
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    setCursor(cursor + 1);
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    setCursor(cursor - 1);
+  } else if (e.key === 'Escape' && q.value) {
+    e.preventDefault();
+    q.value = '';
+    query = '';
+    selId = settings.lastSaveFolder;
+    renderFolders();
+  }
 });
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter' && e.target.tagName === 'INPUT') { e.preventDefault(); save(); }
+  if (e.key === 'Enter' && e.target.tagName === 'INPUT') {
+    e.preventDefault();
+    save();
+  }
 });
 
 saveBtn.addEventListener('click', save);
-$('#openBoard').addEventListener('click', () => { chrome.tabs.create({ url: chrome.runtime.getURL('newtab.html') }); window.close(); });
+$('#openBoard').addEventListener('click', () => {
+  chrome.tabs.create({ url: chrome.runtime.getURL('newtab.html') });
+  window.close();
+});
 
 boot();

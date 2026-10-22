@@ -1,24 +1,35 @@
 import { base } from '../fixtures.js';
 
 const area = 'categories';
-const withCats = () => base({ settings: {
-  categories: [{ id: 'c1', name: 'Daily working', closed: false }, { id: 'c2', name: 'Tools', closed: false }],
-  folderCat: { 20: 'c1', 30: 'c1' },
-  order: ['20', '30', '40', '50']
-} });
-const sidebar = (t) => t.$$('#nav > *').map(e => e.classList.contains('cat') ? `[${e.querySelector('.t').textContent}]` : e.querySelector('.t')?.textContent || e.textContent);
+const withCats = () =>
+  base({
+    settings: {
+      categories: [
+        { id: 'c1', name: 'Daily working', closed: false },
+        { id: 'c2', name: 'Tools', closed: false },
+      ],
+      folderCat: { 20: 'c1', 30: 'c1' },
+      order: ['20', '30', '40', '50'],
+    },
+  });
+const sidebar = (t) =>
+  t.$$('#nav > *').map((e) => (e.classList.contains('cat') ? `[${e.querySelector('.t').textContent}]` : e.querySelector('.t')?.textContent || e.textContent));
 
 export default [
   {
-    area, name: 'no categories: flat sidebar without headers',
-    page: 'newtab', fixture: () => base(),
+    area,
+    name: 'no categories: flat sidebar without headers',
+    page: 'newtab',
+    fixture: () => base(),
     async run(t) {
       t.eq(t.$$('#nav .cat').length, 0, 'no headers');
-    }
+    },
   },
   {
-    area, name: 'New category, then drop a folder on its header',
-    page: 'newtab', fixture: () => base(),
+    area,
+    name: 'New category, then drop a folder on its header',
+    page: 'newtab',
+    fixture: () => base(),
     async run(t) {
       t.answer('Daily working');
       t.click(t.$('#newCatBtn'));
@@ -29,21 +40,25 @@ export default [
       await t.settle();
       t.eq(t.settings().folderCat['30'], cat.id, 'folder assigned');
       t.eq(sidebar(t).slice(0, 3), ['[Daily working]', 'Shop API', '[No category]'], 'sidebar layout');
-    }
+    },
   },
   {
-    area, name: 'header shows "Name (count)"',
-    page: 'newtab', fixture: withCats,
+    area,
+    name: 'header shows "Name (count)"',
+    page: 'newtab',
+    fixture: withCats,
     async run(t) {
       const h = t.catHeader('Daily working');
       t.eq(h.querySelector('.n').textContent, '(2)', 'count in brackets');
       t.eq(t.catHeader('Tools').querySelector('.n').textContent, '(0)', 'empty category count');
       t.ok(t.$$('#nav .cat-empty').length === 1, 'empty category hint');
-    }
+    },
   },
   {
-    area, name: 'collapse a category hides its folders, persists, and j skips it',
-    page: 'newtab', fixture: withCats,
+    area,
+    name: 'collapse a category hides its folders, persists, and j skips it',
+    page: 'newtab',
+    fixture: withCats,
     async run(t) {
       t.click(t.catHeader('Daily working').querySelector('.cat-toggle'));
       await t.settle();
@@ -55,11 +70,13 @@ export default [
       t.key(t.d, 'j');
       await t.settle();
       t.eq(t.$('.head h2')?.textContent, 'GITHUB - PIN', 'j skips collapsed folders');
-    }
+    },
   },
   {
-    area, name: 'folder menu: Move to <category> and Remove from category',
-    page: 'newtab', fixture: withCats,
+    area,
+    name: 'folder menu: Move to <category> and Remove from category',
+    page: 'newtab',
+    fixture: withCats,
     async run(t) {
       t.context(t.nav('Shop API'));
       t.ok(!t.menuLabels().includes('Move to Daily working'), 'current category not offered');
@@ -70,21 +87,25 @@ export default [
       t.menu('Remove from category');
       await t.settle();
       t.ok(!t.settings().folderCat['30'], 'removed');
-    }
+    },
   },
   {
-    area, name: 'drag a folder onto a folder in another category adopts that category',
-    page: 'newtab', fixture: withCats,
+    area,
+    name: 'drag a folder onto a folder in another category adopts that category',
+    page: 'newtab',
+    fixture: withCats,
     async run(t) {
       t.drag(t.nav('GITHUB - PIN'), t.nav('Sprint board'), 'before');
       await t.settle();
       t.eq(t.settings().folderCat['40'], 'c1', 'category adopted');
       t.eq(sidebar(t).slice(0, 4), ['[Daily working]', 'GITHUB - PIN', 'Sprint board', 'Shop API'], 'position');
-    }
+    },
   },
   {
-    area, name: 'Alt+Arrow moves a folder only inside its category',
-    page: 'newtab', fixture: withCats,
+    area,
+    name: 'Alt+Arrow moves a folder only inside its category',
+    page: 'newtab',
+    fixture: withCats,
     async run(t) {
       t.key(t.nav('Shop API'), 'ArrowDown', { altKey: true });
       await t.settle();
@@ -92,21 +113,29 @@ export default [
       t.key(t.nav('Shop API'), 'ArrowUp', { altKey: true });
       await t.settle();
       t.eq(t.settings().order.slice(0, 2), ['30', '20'], 'moved up inside category');
-    }
+    },
   },
   {
-    area, name: 'drag a category header to reorder categories',
-    page: 'newtab', fixture: withCats,
+    area,
+    name: 'drag a category header to reorder categories',
+    page: 'newtab',
+    fixture: withCats,
     async run(t) {
       t.drag(t.catHeader('Tools'), t.catHeader('Daily working'), 'before');
       await t.settle();
-      t.eq(t.settings().categories.map(c => c.id), ['c2', 'c1'], 'new order');
+      t.eq(
+        t.settings().categories.map((c) => c.id),
+        ['c2', 'c1'],
+        'new order',
+      );
       t.ok(sidebar(t).indexOf('[Tools]') < sidebar(t).indexOf('[Daily working]'), 'rendered order');
-    }
+    },
   },
   {
-    area, name: 'category menu: color, rename, Move down',
-    page: 'newtab', fixture: withCats,
+    area,
+    name: 'category menu: color, rename, Move down',
+    page: 'newtab',
+    fixture: withCats,
     async run(t) {
       t.click(t.catHeader('Daily working').querySelector('.more'));
       t.click(t.$('.menu .sw[data-color="blue"]'));
@@ -121,20 +150,48 @@ export default [
       t.click(t.catHeader('Daily').querySelector('.more'));
       t.menu('Move down');
       await t.settle();
-      t.eq(t.settings().categories.map(c => c.id), ['c2', 'c1'], 'moved down');
-    }
+      t.eq(
+        t.settings().categories.map((c) => c.id),
+        ['c2', 'c1'],
+        'moved down',
+      );
+    },
   },
   {
-    area, name: 'delete category keeps its folders (they move to No category)',
-    page: 'newtab', fixture: withCats,
+    area,
+    name: 'delete category keeps its folders (they move to No category)',
+    page: 'newtab',
+    fixture: withCats,
     async run(t) {
       t.click(t.catHeader('Daily working').querySelector('.more'));
       t.menu('Delete category…');
       await t.settle();
-      t.eq(t.settings().categories.map(c => c.id), ['c2'], 'category gone');
+      t.eq(
+        t.settings().categories.map((c) => c.id),
+        ['c2'],
+        'category gone',
+      );
       t.ok(!Object.values(t.settings().folderCat).includes('c1'), 'assignments cleared');
       t.ok(t.nav('Sprint board') && t.nav('Shop API'), 'folders still listed');
       t.ok(t.node('20') && t.node('30'), 'bookmarks untouched');
-    }
-  }
+    },
+  },
+  {
+    area: 'categories',
+    name: 'a hidden tab picks up settings changed in another tab when it is shown',
+    page: 'newtab',
+    fixture: () => base(),
+    async run(t) {
+      let hidden = true;
+      Object.defineProperty(t.d, 'hidden', { configurable: true, get: () => hidden });
+      const next = { ...t.store.settings, categories: [{ id: 'cOps', name: 'Ops', closed: false }], folderCat: { 30: 'cOps' } };
+      await t.w.chrome.storage.local.set({ settings: next });
+      await t.settle();
+      t.ok(!t.catHeader('Ops'), 'no re-render while hidden');
+      hidden = false;
+      t.d.dispatchEvent(new t.w.Event('visibilitychange'));
+      await t.until(() => t.catHeader('Ops'), 'category header');
+      t.ok(!!t.catHeader('Ops'), 'new category shows after the tab is shown');
+    },
+  },
 ];

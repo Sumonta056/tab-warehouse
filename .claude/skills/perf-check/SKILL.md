@@ -44,15 +44,15 @@ Process memory is reported but not checked: Chrome keeps freed pages for reuse, 
 3. For object detail use the Chrome DevTools MCP: `take_heapsnapshot` before and after, compare `Detached` nodes.
 4. Fix, add a regression scenario if the behaviour changed, run `./tests/run.sh` and this check again.
 
-### Baseline (2026-10-22, Chrome for Testing 1243, Apple Silicon)
+### Baseline (2026-10-22, after the sort and listener fixes, Chrome for Testing 1243, Apple Silicon)
 
 | State                        | JS heap | DOM nodes | Listeners | Process |
 | ---------------------------- | ------- | --------- | --------- | ------- |
-| Home, no bookmarks           | 1.0 MB  | 479       | 324       | 52 MB   |
-| 1000 links, after 300 cycles | 2.0 MB  | 2464      | 1170      | 93 MB   |
-| 5000 links, after 300 cycles | 3.5 MB  | 7864      | 3170      | 139 MB  |
+| Home, no bookmarks           | 0.9 MB  | 244       | 38        | 47 MB   |
+| 1000 links, after 300 cycles | 1.9 MB  | 2231      | 884       | 89 MB   |
+| 5000 links, after 300 cycles | 3.5 MB  | 7631      | 2884      | 148 MB  |
 
-Folder render: 4 ms at 50 rows, 17.5 ms at 250 rows. Update this table when a change moves the numbers on purpose.
+Folder render: 3.9 ms at 50 rows, 16 ms at 250 rows. Sorting 5000 links in Node: env 10 ms, name 10 ms, url 9 ms, host 12 ms. Update this table when a change moves the numbers on purpose.
 
 ## 2. Security checklist
 
@@ -64,17 +64,17 @@ grep -nE "https?://" *.js lib/*.js
 grep -n '"permissions"\|content_security_policy\|host_permissions' manifest.json
 ```
 
-| Rule                                                                                                                                                 | Where                                 |
-| ---------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
-| Bookmark titles/URLs never reach `innerHTML`; only `svgIcon()` uses it, with fixed strings.                                                          | `lib/core.js`                         |
-| No `content_security_policy` key in the manifest (keep the strict MV3 default). No remote scripts.                                                   | `manifest.json`                       |
-| Each permission is used and is the narrowest one. `tabs` is only needed to read tabs other than the active one; the popup needs only the active tab. | `manifest.json`, `popup.js`           |
-| Links opened from the page use `rel="noopener"`.                                                                                                     | `newtab.js`, `home.js`                |
-| CSS `url("…")` only gets `canvas.toDataURL` output, never user text.                                                                                 | `home.js`, `lib/core.js sideLookVars` |
-| Import validates the shape of `preferences` (envRules, hostMap, folders) before `saveSettings`.                                                      | `lib/transfer.js`                     |
-| HTML export escapes titles and URLs.                                                                                                                 | `lib/transfer.js esc`                 |
-| Remote requests from Home (gstatic, default icon URLs, "Icon from URL") are known and listed.                                                        | `home.js`, `lib/core.js googleIcon`   |
-| `chrome.storage.local` stays under 10 MB (no `unlimitedStorage`); write failures show a correct message.                                             | `home.js setHomeBg / saveIcons`       |
+| Rule                                                                                                                                                                  | Where                                 |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
+| Bookmark titles/URLs never reach `innerHTML`; only `svgIcon()` uses it, with fixed strings.                                                                           | `lib/core.js`                         |
+| No `content_security_policy` key in the manifest (keep the strict MV3 default). No remote scripts.                                                                    | `manifest.json`                       |
+| Each permission is used and is the narrowest one. The popup reads the active tab through `activeTab`; do not add `tabs` back (it shows "Read your browsing history"). | `manifest.json`, `popup.js`           |
+| Links opened from the page use `rel="noopener"`.                                                                                                                      | `newtab.js`, `home.js`                |
+| CSS `url("…")` only gets `canvas.toDataURL` output, never user text.                                                                                                  | `home.js`, `lib/core.js sideLookVars` |
+| Import validates the shape of `preferences` (envRules, hostMap, folders) before `saveSettings`.                                                                       | `lib/transfer.js`                     |
+| HTML export escapes titles and URLs.                                                                                                                                  | `lib/transfer.js esc`                 |
+| Remote requests from Home (gstatic, default icon URLs, "Icon from URL") are known and listed.                                                                         | `home.js`, `lib/core.js googleIcon`   |
+| `chrome.storage.local` stays under 10 MB (no `unlimitedStorage`); write failures show a correct message.                                                              | `home.js setHomeBg / saveIcons`       |
 
 ## Report format
 

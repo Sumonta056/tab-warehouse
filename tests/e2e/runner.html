@@ -1,25 +1,58 @@
 <!doctype html>
 <html lang="en">
-<head>
-<meta charset="utf-8">
-<title>E2E running…</title>
-<style>
-  body { font: 13px/1.5 ui-monospace, Menlo, monospace; background: #111; color: #ddd; margin: 0; display: grid; grid-template-columns: 1fr 1280px; height: 100vh; }
-  #log { overflow: auto; padding: 12px; }
-  #results { list-style: none; padding: 0; margin: 0; }
-  .pass { color: #6fd99a; }
-  .fail { color: #ff8a80; white-space: pre-wrap; }
-  #summary { white-space: pre-wrap; word-break: break-all; color: #f2cc60; }
-  iframe { width: 1280px; height: 800px; border: 0; border-left: 1px solid #333; background: #1b1b1b; }
-</style>
-</head>
-<body>
-<div id="log">
-  <p>Tab Warehouse e2e. Add <code>?only=text</code> to run matching scenarios.</p>
-  <ul id="results"></ul>
-  <pre id="summary"></pre>
-</div>
-<iframe id="frame" title="App under test"></iframe>
-<script type="module" src="/tests/e2e/runner.js"></script>
-</body>
+  <head>
+    <meta charset="utf-8" />
+    <title>E2E running…</title>
+    <style>
+      body {
+        font:
+          13px/1.5 ui-monospace,
+          Menlo,
+          monospace;
+        background: #111;
+        color: #ddd;
+        margin: 0;
+        display: grid;
+        grid-template-columns: 1fr 1280px;
+        height: 100vh;
+      }
+      #log {
+        overflow: auto;
+        padding: 12px;
+      }
+      #results {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+      .pass {
+        color: #6fd99a;
+      }
+      .fail {
+        color: #ff8a80;
+        white-space: pre-wrap;
+      }
+      #summary {
+        white-space: pre-wrap;
+        word-break: break-all;
+        color: #f2cc60;
+      }
+      iframe {
+        width: 1280px;
+        height: 800px;
+        border: 0;
+        border-left: 1px solid #333;
+        background: #1b1b1b;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="log">
+      <p>Tab Warehouse e2e. Add <code>?only=text</code> to run matching scenarios.</p>
+      <ul id="results"></ul>
+      <pre id="summary"></pre>
+    </div>
+    <iframe id="frame" title="App under test"></iframe>
+    <script type="module" src="/tests/e2e/runner.js"></script>
+  </body>
 </html>
