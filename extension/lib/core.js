@@ -110,6 +110,19 @@ export async function saveSettings(patch) {
   return next;
 }
 
+export async function loadLinkMeta() {
+  const { linkMeta } = await chrome.storage.local.get('linkMeta');
+  return linkMeta || {};
+}
+export async function setLinkMeta(id, m) {
+  const all = await loadLinkMeta();
+  const clean = cleanMeta(m);
+  if (clean) all[id] = clean;
+  else delete all[id];
+  await chrome.storage.local.set({ linkMeta: all });
+  return all;
+}
+
 /* ---------- URL helpers ---------- */
 export function hostOf(url) {
   try {
@@ -397,6 +410,38 @@ export function sortLinks(links, sort, rules) {
   }
 }
 
+export const PRIS = ['high', 'med', 'low'];
+export const PRI_NAMES = { high: 'High', med: 'Medium', low: 'Low' };
+export const NOTE_MAX = 200;
+
+export function cleanMeta(m) {
+  if (!m || typeof m !== 'object') return null;
+  const out = {};
+  const note = typeof m.note === 'string' ? m.note.trim().slice(0, NOTE_MAX) : '';
+  if (note) out.note = note;
+  if (PRIS.includes(m.pri)) out.pri = m.pri;
+  return Object.keys(out).length ? out : null;
+}
+
+export function priGroups(sorted, meta) {
+  const groups = [...PRIS, null].map((pri) => ({ pri, links: [] }));
+  for (const bm of sorted) {
+    const i = PRIS.indexOf(meta[bm.id]?.pri);
+    groups[i < 0 ? PRIS.length : i].links.push(bm);
+  }
+  return groups.filter((g) => g.links.length);
+}
+
+export function priFirst(sorted, meta) {
+  return priGroups(sorted, meta).flatMap((g) => g.links);
+}
+
+export function matchLink(bm, note, q) {
+  if (!q) return true;
+  const hay = `${bm.title} ${bm.url} ${note || ''}`.toLowerCase();
+  return q.split(/\s+/).every((t) => hay.includes(t));
+}
+
 /* ---------- env matrix ---------- */
 // Groups links by path (ignoring host) → rows with one cell per env. Links without an env go to `rest`.
 export function buildMatrix(links, rules) {
@@ -438,8 +483,35 @@ export function h(tag, attrs = {}, ...children) {
   return el;
 }
 
+export function priPicker(value, onPick) {
+  const box = h('div', { class: 'pri-pick', role: 'group', 'aria-label': 'Priority' });
+  const draw = (v) =>
+    box.replaceChildren(
+      ...[null, ...PRIS].map((p) =>
+        h(
+          'button',
+          {
+            type: 'button',
+            class: `${p ? `pri-${p}` : ''} ${v === p ? 'on' : ''}`,
+            'aria-pressed': String(v === p),
+            dataset: { pri: p || 'none' },
+            onClick: () => {
+              draw(p);
+              onPick(p);
+            },
+          },
+          p ? h('span', { class: 'pri-dot' }) : null,
+          p ? PRI_NAMES[p] : 'None',
+        ),
+      ),
+    );
+  draw(value || null);
+  return box;
+}
+
 export function svgIcon(name) {
   const paths = {
+    note: '<path d="M4 4h16v12l-4 4H4z"/><path d="M16 20v-4h4"/>',
     search: '<circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>',
     grip: '<circle cx="9" cy="6" r="1.4"/><circle cx="15" cy="6" r="1.4"/><circle cx="9" cy="12" r="1.4"/><circle cx="15" cy="12" r="1.4"/><circle cx="9" cy="18" r="1.4"/><circle cx="15" cy="18" r="1.4"/>',
     more: '<circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/>',

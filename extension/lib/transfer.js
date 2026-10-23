@@ -1,5 +1,5 @@
 // Export / import. JSON carries bookmarks + warehouse preferences; HTML is the Netscape format Chrome itself imports/exports.
-import { saveSettings, ENVS, SORTS } from './core.js';
+import { saveSettings, ENVS, SORTS, cleanMeta, loadLinkMeta } from './core.js';
 
 const stamp = () => new Date().toISOString().slice(0, 10);
 
@@ -16,7 +16,9 @@ function download(name, text, type) {
 
 const linkOut = (l) => ({ title: l.title, url: l.url, dateAdded: l.dateAdded });
 
-export function exportJson(root, secs, settings) {
+export async function exportJson(root, secs, settings) {
+  const meta = await loadLinkMeta();
+  const out = (l) => ({ ...linkOut(l), ...(meta[l.id] || {}) });
   const byId = Object.fromEntries(secs.map((s) => [s.id, s.title]));
   const data = {
     format: 'sumonta-warehouse',
@@ -45,8 +47,8 @@ export function exportJson(root, secs, settings) {
     sections: secs.map((s) => ({
       title: s.title,
       unsorted: !!s.virtual,
-      links: s.links.map(linkOut),
-      parts: s.parts.map((pt) => ({ title: pt.title, links: pt.links.map(linkOut) })),
+      links: s.links.map(out),
+      parts: s.parts.map((pt) => ({ title: pt.title, links: pt.links.map(out) })),
     })),
   };
   download(`warehouse-${stamp()}.json`, JSON.stringify(data, null, 2), 'application/json');
@@ -99,6 +101,11 @@ export async function importFile(file, root, settings) {
     links = 0,
     skipped = 0;
   const titleToId = Object.create(null);
+  const metaIn = {};
+  const keepMeta = (id, l) => {
+    const m = cleanMeta(l);
+    if (m) metaIn[id] = m;
+  };
 
   for (const sec of parsed.sections) {
     let parentId;
@@ -114,15 +121,17 @@ export async function importFile(file, root, settings) {
       parentId = f.id;
     }
     titleToId[sec.title] = parentId;
-    const existing = new Set((parentId === root.id ? kids : kids.find((k) => k.id === parentId).children || []).filter((k) => k.url).map((k) => k.url));
+    const existing = new Map((parentId === root.id ? kids : kids.find((k) => k.id === parentId).children || []).filter((k) => k.url).map((k) => [k.url, k.id]));
     for (const l of sec.links) {
       if (!l.url) continue;
       if (existing.has(l.url)) {
+        keepMeta(existing.get(l.url), l);
         skipped++;
         continue;
       }
-      await chrome.bookmarks.create({ parentId, title: l.title || l.url, url: l.url });
-      existing.add(l.url);
+      const bm = await chrome.bookmarks.create({ parentId, title: l.title || l.url, url: l.url });
+      keepMeta(bm.id, l);
+      existing.set(l.url, bm.id);
       links++;
     }
     if (sec.unsorted) continue;
@@ -136,15 +145,17 @@ export async function importFile(file, root, settings) {
         parent.children.push(sf);
         folders++;
       }
-      const have = new Set((sf.children || []).filter((k) => k.url).map((k) => k.url));
+      const have = new Map((sf.children || []).filter((k) => k.url).map((k) => [k.url, k.id]));
       for (const l of pt.links || []) {
         if (!l.url) continue;
         if (have.has(l.url)) {
+          keepMeta(have.get(l.url), l);
           skipped++;
           continue;
         }
-        await chrome.bookmarks.create({ parentId: sf.id, title: l.title || l.url, url: l.url });
-        have.add(l.url);
+        const bm = await chrome.bookmarks.create({ parentId: sf.id, title: l.title || l.url, url: l.url });
+        keepMeta(bm.id, l);
+        have.set(l.url, bm.id);
         links++;
       }
     }
@@ -177,6 +188,11 @@ export async function importFile(file, root, settings) {
       ...(p.board ? { board: { ...settings.board, ...p.board } } : {}),
     });
   }
+  if (Object.keys(metaIn).length) {
+    const all = await loadLinkMeta();
+    for (const [id, m] of Object.entries(metaIn)) all[id] ||= m;
+    await chrome.storage.local.set({ linkMeta: all });
+  }
   return { folders, links, skipped };
 }
 
@@ -192,7 +208,7 @@ const list = (v) => (Array.isArray(v) ? v : []);
 const cleanLinks = (v) =>
   list(v)
     .filter((l) => isObj(l) && isStr(l.url) && l.url)
-    .map((l) => ({ title: isStr(l.title) ? l.title : '', url: l.url }));
+    .map((l) => ({ title: isStr(l.title) ? l.title : '', url: l.url, ...cleanMeta(l) }));
 
 function cleanFolderPrefs(f) {
   if (!isObj(f)) return null;

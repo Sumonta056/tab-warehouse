@@ -917,10 +917,55 @@ img.wait {
 .grp.part .more:hover {
   background: var(--surface-2);
 }
-.grp.part.drop-into {
+.grp.part.drop-into,
+.grp.prig.drop-into {
   outline: 2px solid var(--accent);
   background: var(--accent-bg);
   color: var(--accent-text);
+}
+.grp.prig {
+  color: var(--pc, var(--muted));
+  border-radius: 6px;
+}
+.pri-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+.pri-filter .chip {
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.row .pri-bar {
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--pc);
+}
+.row .note {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 2px;
+  font-family: var(--sans);
+  font-size: calc(12px * var(--fs, 1));
+  line-height: 1.45;
+  color: var(--text-2);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.row .note svg {
+  flex: 0 0 auto;
+  width: 13px;
+  height: 13px;
+  margin-top: 2px;
+  color: var(--pri-med);
 }
 .newPart {
   margin-top: 8px;

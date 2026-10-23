@@ -26,6 +26,16 @@ import {
   sideLookVars,
   brandName,
   clampFont,
+  flatten,
+  PRIS,
+  PRI_NAMES,
+  NOTE_MAX,
+  priGroups,
+  priFirst,
+  matchLink,
+  priPicker,
+  loadLinkMeta,
+  setLinkMeta,
 } from './lib/core.js';
 import { renderHome, ensureHomeFolder, loadHomeAssets, homeBgUrl } from './home.js';
 import { renderSettings } from './settings.js';
@@ -43,6 +53,8 @@ let settings,
 let current = null; // selected section
 let query = ''; // global search (sidebar box)
 let filterQ = ''; // folder-local filter
+let priF = 'all';
+let linkMeta = {};
 let editingId = null;
 let openMenu = null;
 let drag = null; // { kind: 'link'|'folder', id, parentId }
@@ -70,6 +82,7 @@ async function boot() {
   await loadHomeAssets();
   applySideLook(settings.sideLook);
   applyFontSize(settings);
+  linkMeta = await loadLinkMeta();
   current = HOME;
   await refresh();
   bindGlobal();
@@ -85,10 +98,21 @@ async function refresh() {
   }
   root = resolveRoot(tree, settings);
   secs = sections(root, settings.order, [settings.home.folderId]);
+  await pruneLinkMeta();
   renderBrand();
   current = current?.home ? HOME : current?.settings ? SETTINGS : current?.board ? BOARD : secs.find((s) => s.id === current?.id) || HOME;
   renderNav();
   renderPage();
+}
+
+async function pruneLinkMeta() {
+  const ids = new Set(flatten(tree).map((b) => b.id));
+  const all = await loadLinkMeta();
+  const gone = Object.keys(all).filter((id) => !ids.has(id));
+  if (!gone.length) return;
+  gone.forEach((id) => delete all[id]);
+  linkMeta = all;
+  await chrome.storage.local.set({ linkMeta: all });
 }
 
 function renderBrand() {
@@ -386,6 +410,7 @@ async function moveToCategory(s, target) {
 async function select(s) {
   current = s;
   filterQ = '';
+  priF = 'all';
   settings.lastFolder = s.id;
   saveSettings({ lastFolder: s.id });
   renderNav();
@@ -590,14 +615,92 @@ function renderBody() {
   body.replaceChildren();
   const s = current,
     p = folderPrefs(s.id);
-  const match = (bm) => !filterQ || filterQ.split(/\s+/).every((t) => `${bm.title} ${bm.url}`.toLowerCase().includes(t));
+  const hasMeta = s.all.some((bm) => linkMeta[bm.id]);
+  if (!hasMeta) priF = 'all';
+  const priMatch = (bm) => {
+    const m = linkMeta[bm.id];
+    return priF === 'all' || (priF === 'note' ? !!m?.note : m?.pri === priF);
+  };
+  const match = (bm) => matchLink(bm, linkMeta[bm.id]?.note, filterQ) && priMatch(bm);
   const links = s.all.filter(match);
+  if (hasMeta && p.view !== 'matrix') body.append(priFilter());
   if (!s.all.length && !s.parts.length) body.append(h('div', { class: 'empty' }, 'Empty folder. Add a link or drag one in from another folder.'));
-  else if (filterQ && !links.length) body.append(h('div', { class: 'empty' }, 'Nothing matches the filter.'));
+  else if (filtering() && !links.length) body.append(h('div', { class: 'empty' }, 'Nothing matches the filter.'));
   else if (p.view === 'matrix') renderMatrix(body, links, s, p);
   else if (s.parts.length) renderParts(body, s, p, match);
   else renderList(body, links, s, p);
   if (!s.virtual && p.view !== 'matrix') body.append(h('button', { class: 'btn ghost sm newPart', onClick: () => newPart(s) }, svgIcon('plus'), 'New section'));
+}
+
+function filtering() {
+  return !!filterQ || priF !== 'all';
+}
+
+function priFilter() {
+  const opts = [['all', 'All'], ...PRIS.map((x) => [x, PRI_NAMES[x]]), ['note', 'Has note']];
+  return h(
+    'div',
+    { class: 'pri-filter', role: 'group', 'aria-label': 'Show' },
+    ...opts.map(([v, l]) =>
+      h(
+        'button',
+        {
+          class: `chip ${PRIS.includes(v) ? `pri-${v}` : ''} ${priF === v ? 'on' : ''}`,
+          'aria-pressed': String(priF === v),
+          dataset: { pri: v },
+          onClick: () => {
+            priF = v;
+            renderBody();
+          },
+        },
+        PRIS.includes(v) ? h('span', { class: 'pri-dot' }) : null,
+        l,
+      ),
+    ),
+  );
+}
+
+function priHeader(g, s, p, last) {
+  const key = `pri:${g.pri || 'none'}`;
+  const closed = !!p.closed[key];
+  const el = h(
+    'button',
+    {
+      class: `grp prig ${g.pri ? `pri-${g.pri}` : 'NONE'} ${closed ? 'closed' : ''}`,
+      'aria-expanded': closed ? 'false' : 'true',
+      dataset: { pri: g.pri || 'none' },
+      onClick: () => setFolderPrefs(s.id, { closed: { ...p.closed, [key]: !closed } }),
+    },
+    svgIcon('chevron'),
+    g.pri ? PRI_NAMES[g.pri] : 'Other',
+    h('span', { class: 'line' }),
+    String(g.links.length),
+  );
+  el.querySelector('svg').classList.add('chev');
+  el.addEventListener('dragover', (e) => {
+    if (drag?.kind !== 'link' || (linkMeta[drag.id]?.pri || null) === g.pri) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    clearMarks();
+    el.classList.add('drop-into');
+  });
+  el.addEventListener('dragleave', (e) => {
+    if (!el.contains(e.relatedTarget)) el.classList.remove('drop-into');
+  });
+  el.addEventListener('drop', async (e) => {
+    if (drag?.kind !== 'link') return;
+    e.preventDefault();
+    clearMarks();
+    const id = drag.id;
+    if (p.sort === 'manual' && last && last.id !== id) await chrome.bookmarks.move(id, { parentId: last.parentId, index: last.index + 1 });
+    await setPri(id, g.pri);
+  });
+  return el;
+}
+
+async function setPri(id, pri) {
+  linkMeta = await setLinkMeta(id, { ...linkMeta[id], pri });
+  renderBody();
 }
 
 function renderParts(body, s, p, match) {
@@ -605,10 +708,10 @@ function renderParts(body, s, p, match) {
   const groups = [...s.parts, { id: `none:${s.id}`, title: 'No section', node: s.node, links: s.links, none: true }];
   for (const g of groups) {
     const links = g.links.filter(match);
-    if (filterQ && !links.length) continue;
+    if (filtering() && !links.length) continue;
     const closed = !!p.closed[g.id];
     list.append(partHeader(g, s, p, closed, links.length));
-    if (!closed) sortLinks(links, p.sort, settings.envRules).forEach((bm) => list.append(renderRow(bm, s, p)));
+    if (!closed) priFirst(sortLinks(links, p.sort, settings.envRules), linkMeta).forEach((bm) => list.append(renderRow(bm, s, p)));
   }
   body.append(list);
   if (p.sort !== 'manual')
@@ -731,8 +834,16 @@ async function newPart(s) {
 /* ---------- list view ---------- */
 function renderList(body, links, s, p) {
   const list = h('div', { class: 'list' });
-  const sorted = sortLinks(links, p.sort, settings.envRules);
-  if (p.sort === 'env') {
+  const sorted = priFirst(sortLinks(links, p.sort, settings.envRules), linkMeta);
+  const pris = p.sort === 'env' ? [] : priGroups(sorted, linkMeta);
+  if (pris.some((g) => g.pri)) {
+    list.dataset.pri = 'groups';
+    for (const g of pris) {
+      const hdr = priHeader(g, s, p, g.links.at(-1));
+      list.append(hdr);
+      if (hdr.getAttribute('aria-expanded') === 'true') g.links.forEach((bm) => list.append(renderRow(bm, s, p)));
+    }
+  } else if (p.sort === 'env') {
     const groups = {};
     for (const bm of sorted) {
       const e = detectEnv(bm, settings.envRules) || 'NONE';
@@ -767,14 +878,17 @@ function renderList(body, links, s, p) {
 function renderRow(bm, s, p, { crumb = null, q = filterQ } = {}) {
   const env = detectEnv(bm, settings.envRules);
   const dup = sameAsUrl(bm.title, bm.url);
+  const meta = linkMeta[bm.id];
   const row = h('a', {
-    class: `row ${p.show === 'url' ? 'url-mode' : ''}`,
+    class: `row ${p.show === 'url' ? 'url-mode' : ''} ${meta?.pri ? `pri-${meta.pri}` : ''}`,
     href: bm.url,
     target: '_blank',
     rel: 'noopener',
     draggable: true,
     dataset: { id: bm.id },
   });
+  if (meta?.pri)
+    row.append(h('span', { class: 'pri-bar', title: `${PRI_NAMES[meta.pri]} priority` }, h('span', { class: 'sr' }, `${PRI_NAMES[meta.pri]} priority`)));
   row.append(h('span', { class: 'grip', 'aria-hidden': 'true' }, svgIcon('grip')));
   row.append(iconEl(bm, settings.showFavicons));
   const ttl = h('span', { class: 'ttl' });
@@ -787,6 +901,11 @@ function renderRow(bm, s, p, { crumb = null, q = filterQ } = {}) {
     if (!dup || !bm.title) highlight(url, displayUrl(bm.url), q);
   }
   const txt = h('span', { class: 'txt' }, ttl, url);
+  if (meta?.note) {
+    const note = h('span');
+    highlight(note, meta.note, q);
+    txt.append(h('span', { class: 'note' }, svgIcon('note'), note));
+  }
   if (crumb) txt.append(h('span', { class: 'crumb' }, crumb));
   row.append(txt);
   if (env) row.append(h('span', { class: `badge ${env}` }, env));
@@ -989,7 +1108,7 @@ function renderSearch() {
     for (const bm of s.all) {
       const part = s.parts.find((pt) => pt.id === bm.parentId);
       const crumb = part ? `${s.title} › ${part.title}` : s.title;
-      const hay = `${bm.title} ${bm.url} ${crumb}`.toLowerCase();
+      const hay = `${bm.title} ${bm.url} ${crumb} ${linkMeta[bm.id]?.note || ''}`.toLowerCase();
       if (terms.every((t) => hay.includes(t))) hits.push({ bm, s, crumb });
     }
   page.append(
@@ -1051,8 +1170,11 @@ function bindRowDrag(row, bm, s, p) {
     e.preventDefault();
     e.stopPropagation();
     const after = row.classList.contains('drop-after');
+    const id = drag.id;
     clearMarks();
-    await chrome.bookmarks.move(drag.id, { parentId: bm.parentId, index: bm.index + (after ? 1 : 0) });
+    await chrome.bookmarks.move(id, { parentId: bm.parentId, index: bm.index + (after ? 1 : 0) });
+    const pri = linkMeta[bm.id]?.pri || null;
+    if (row.closest('.list')?.dataset.pri === 'groups' && (linkMeta[id]?.pri || null) !== pri) await setPri(id, pri);
   });
 }
 
@@ -1061,16 +1183,27 @@ function clearMarks() {
 }
 
 /* ================= inline edit / add / rename ================= */
-function startEdit(bm, row) {
+function startEdit(bm, row, focusNote = false) {
   if (editingId) return;
   editingId = bm.id;
+  const meta = linkMeta[bm.id] || {};
+  let pri = meta.pri || null;
   const titleIn = h('input', { type: 'text', value: bm.title || '' });
   const urlIn = h('input', { type: 'url', class: 'url-in', value: bm.url || '' });
+  const noteIn = h('textarea', { class: 'note-in', rows: '2', maxlength: String(NOTE_MAX), placeholder: 'Why you saved it, what to check…' });
+  noteIn.value = meta.note || '';
   const form = h(
     'form',
     { class: 'edit', novalidate: true },
     h('label', {}, 'Title', titleIn),
     h('label', {}, 'URL', urlIn),
+    h(
+      'div',
+      { class: 'edit-pri' },
+      'Priority',
+      priPicker(pri, (v) => (pri = v)),
+    ),
+    h('label', {}, 'Note', noteIn),
     h(
       'div',
       { class: 'actions' },
@@ -1096,6 +1229,8 @@ function startEdit(bm, row) {
     editingId = null;
     try {
       await chrome.bookmarks.update(bm.id, { title: titleIn.value.trim(), url });
+      linkMeta = await setLinkMeta(bm.id, { pri, note: noteIn.value });
+      renderBody();
       toast('Saved');
     } catch (err) {
       toast(`Couldn't save: ${err.message}`);
@@ -1113,8 +1248,10 @@ function startEdit(bm, row) {
   row.removeAttribute('href');
   row.querySelector('.txt').replaceWith(form);
   row.querySelector('.acts')?.remove();
-  titleIn.focus();
-  titleIn.select();
+  row.querySelector('.pri-bar')?.remove();
+  const first = focusNote ? noteIn : titleIn;
+  first.focus();
+  first.select();
 }
 
 function addLink(s) {
@@ -1262,6 +1399,11 @@ function linkMenu(e, bm, row) {
     { label: 'Open in new tab', icon: 'external', run: () => chrome.tabs.create({ url: bm.url }) },
     { label: 'Copy URL', icon: 'copy', run: () => navigator.clipboard.writeText(bm.url).then(() => toast('URL copied')) },
     { label: 'Edit title / URL', icon: 'pencil', run: () => startEdit(bm, row) },
+    { label: linkMeta[bm.id]?.note ? 'Edit note' : 'Add note', icon: 'note', run: () => startEdit(bm, row, true) },
+    '-',
+    ...[...PRIS, null]
+      .filter((x) => x !== (linkMeta[bm.id]?.pri || null))
+      .map((x) => ({ label: x ? `Mark as ${PRI_NAMES[x]}` : 'Clear priority', run: () => setPri(bm.id, x) })),
     ...(derived.length ? ['-', ...derived.map((d) => ({ label: `Open on ${d.env}`, icon: 'external', run: () => chrome.tabs.create({ url: d.url }) }))] : []),
     ...(targets.length
       ? ['-', ...targets.map((g) => ({ label: `Move to ${g.title}`, run: () => chrome.bookmarks.move(bm.id, { parentId: g.node.id }) }))]
@@ -1331,10 +1473,15 @@ function folderMenu(e, s) {
 }
 
 async function deleteBookmark(bm) {
+  const meta = linkMeta[bm.id];
   await chrome.bookmarks.remove(bm.id);
+  if (meta) linkMeta = await setLinkMeta(bm.id, null);
   toast(`Deleted “${bm.title || displayUrl(bm.url)}”`, {
     label: 'Undo',
-    run: () => chrome.bookmarks.create({ parentId: bm.parentId, index: bm.index, title: bm.title, url: bm.url }),
+    run: async () => {
+      const back = await chrome.bookmarks.create({ parentId: bm.parentId, index: bm.index, title: bm.title, url: bm.url });
+      if (meta) linkMeta = await setLinkMeta(back.id, meta);
+    },
   });
 }
 
@@ -1539,6 +1686,13 @@ function bindGlobal() {
   chrome.storage.onChanged.addListener((ch, area) => {
     if (area !== 'local') return;
     if (ch.settings) settings = { ...settings, ...ch.settings.newValue };
+    if (ch.linkMeta) {
+      linkMeta = ch.linkMeta.newValue || {};
+      if (!editingId && !document.hidden) {
+        if (query) renderPage();
+        else if (current && !current.home && !current.settings && !current.board) renderBody();
+      }
+    }
     if (document.hidden) stale = true;
   });
   document.addEventListener('visibilitychange', async () => {

@@ -23,6 +23,13 @@ import {
   folderList,
   sections,
   sortLinks,
+  PRIS,
+  PRI_NAMES,
+  NOTE_MAX,
+  cleanMeta,
+  priGroups,
+  priFirst,
+  matchLink,
   buildMatrix,
   googleIcon,
   normalizeUrl,
@@ -269,6 +276,73 @@ describe('sortLinks', () => {
       links.map((x) => x.id),
       before,
     );
+  });
+});
+
+describe('link notes and priority', () => {
+  test('levels are High, Medium, Low in that order', () => {
+    assert.deepEqual(PRIS, ['high', 'med', 'low']);
+    assert.deepEqual(
+      PRIS.map((p) => PRI_NAMES[p]),
+      ['High', 'Medium', 'Low'],
+    );
+  });
+
+  test('cleanMeta keeps a known priority and a trimmed note', () => {
+    assert.deepEqual(cleanMeta({ note: '  check QA  ', pri: 'high' }), { note: 'check QA', pri: 'high' });
+    assert.deepEqual(cleanMeta({ pri: 'low' }), { pri: 'low' });
+    assert.deepEqual(cleanMeta({ note: 'only a note' }), { note: 'only a note' });
+  });
+
+  test('cleanMeta cuts the note to NOTE_MAX characters', () => {
+    assert.equal(NOTE_MAX, 200);
+    assert.equal(cleanMeta({ note: 'x'.repeat(250) }).note.length, NOTE_MAX);
+  });
+
+  test('cleanMeta drops bad values and returns null when nothing is left', () => {
+    assert.deepEqual(cleanMeta({ note: 'ok', pri: 'urgent' }), { note: 'ok' });
+    assert.deepEqual(cleanMeta({ note: 42, pri: 'med' }), { pri: 'med' });
+    assert.equal(cleanMeta({ note: '   ', pri: '' }), null);
+    assert.equal(cleanMeta({}), null);
+    assert.equal(cleanMeta(null), null);
+    assert.equal(cleanMeta('high'), null);
+  });
+
+  const links = [L('1', 'A'), L('2', 'B'), L('3', 'C'), L('4', 'D'), L('5', 'E')];
+  const meta = { 2: { pri: 'low' }, 3: { pri: 'high' }, 4: { note: 'no priority' }, 5: { pri: 'high' } };
+  const ids = (xs) => xs.map((x) => x.id);
+
+  test('priGroups: High, Medium, Low, Other; keeps the sort order inside each group; skips empty groups', () => {
+    const g = priGroups(links, meta);
+    assert.deepEqual(
+      g.map((x) => x.pri),
+      ['high', 'low', null],
+    );
+    assert.deepEqual(ids(g[0].links), ['3', '5']);
+    assert.deepEqual(ids(g[1].links), ['2']);
+    assert.deepEqual(ids(g[2].links), ['1', '4']);
+  });
+
+  test('priGroups: no priority anywhere → one Other group', () => {
+    const g = priGroups(links, { 4: { note: 'x' } });
+    assert.equal(g.length, 1);
+    assert.equal(g[0].pri, null);
+    assert.deepEqual(ids(g[0].links), ['1', '2', '3', '4', '5']);
+  });
+
+  test('priFirst: the same order as one flat list, input not changed', () => {
+    assert.deepEqual(ids(priFirst(links, meta)), ['3', '5', '2', '1', '4']);
+    assert.deepEqual(ids(links), ['1', '2', '3', '4', '5']);
+  });
+
+  test('matchLink: every term must match title, URL or note', () => {
+    const bm = L('9', 'Jenkins deploy', 'https://ci.example.io/job/web');
+    assert.equal(matchLink(bm, '', ''), true);
+    assert.equal(matchLink(bm, '', 'jenkins acme'), true);
+    assert.equal(matchLink(bm, 'Ask Rafi for the token', 'rafi'), true);
+    assert.equal(matchLink(bm, 'Ask Rafi for the token', 'jenkins token'), true);
+    assert.equal(matchLink(bm, '', 'rafi'), false);
+    assert.equal(matchLink(bm, undefined, 'jenkins'), true);
   });
 });
 

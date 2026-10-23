@@ -11,6 +11,7 @@ Every rule here has at least one test. If you change a rule, change its test in 
 | Home links and their order                                                                                                                                       | Bookmark folder `settings.home.folderId` (created in _Other bookmarks_) | settings                                       |
 | Sidebar order, categories, folder→category, section colors, per-folder prefs, env rules, host map, Home look, sidebar width, theme, sidebar look, Board grouping | `chrome.storage.local.settings`                                         | bookmarks                                      |
 | Home icon overrides (URL or 128 px data URL), keyed by bookmark id                                                                                               | `chrome.storage.local.homeIcons`                                        | settings                                       |
+| Link note (max 200 chars) and priority (`high`/`med`/`low`), keyed by bookmark id                                                                                | `chrome.storage.local.linkMeta`                                         | settings, bookmark titles                      |
 | Home background image (JPEG, max 1920 px)                                                                                                                        | `chrome.storage.local.homeBg`                                           | settings (it would be rewritten on every save) |
 
 - `loadSettings()` merges stored settings over `DEFAULT_SETTINGS`, and merges `home`, `sideLook` and `board` one level deep over `DEFAULT_HOME` / `DEFAULT_SIDE_LOOK` / `DEFAULT_BOARD`, so old stored objects gain new keys.
@@ -41,8 +42,8 @@ Every rule here has at least one test. If you change a rule, change its test in 
 - Tabs, in order: Appearance (your name, text size, accent color, sidebar background), Home page (links, background, clock, tiles, live preview), Bookmarks (root folder, site favicons, reset sidebar order), Environments (explanation + Try it, labels, sites, copy/paste), Backup (export JSON / HTML, import). ←/→ move between tabs. The last tab is remembered for the session.
 - Every change saves without a Save button. Toggles, swatches, the root folder and buttons save at once; sliders and color pickers save after 300 ms; Environments rows and the name save when a box loses focus; the name is trimmed and updates the header and tab title at once. The header status shows "Saving…" then "Saved".
 - Saves go through one queue so two quick saves never overwrite each other.
-- Settings changed in another tab: a hidden tab only marks itself stale; when it is shown again it reloads settings and Home assets and re-renders (test "a hidden tab picks up settings changed in another tab when it is shown"). A visible tab never re-renders on a storage event, so its own sliders and text boxes are not interrupted.
-- Backup › Import (JSON) keeps only valid preferences (`cleanImport()`): env rules need a text pattern and a known label; host rows keep only PROD/TEST/STAGE/LOCAL text values; folder prefs keep only a known sort, `list`/`matrix`, `title`/`url` and boolean `closed`; `board.group` is kept only when it is `cat` or `flat`; links need a text URL. Anything else is dropped, so a bad file cannot break the page.
+- Settings changed in another tab: a hidden tab only marks itself stale; when it is shown again it reloads settings and Home assets and re-renders (test "a hidden tab picks up settings changed in another tab when it is shown"). A visible tab never re-renders on a settings storage event, so its own sliders and text boxes are not interrupted. A `linkMeta` change (for example a save from the popup) re-renders only the folder list or search results, and not while a row is being edited.
+- Backup › Import (JSON) keeps only valid preferences (`cleanImport()`): env rules need a text pattern and a known label; host rows keep only PROD/TEST/STAGE/LOCAL text values; folder prefs keep only a known sort, `list`/`matrix`, `title`/`url` and boolean `closed`; `board.group` is kept only when it is `cat` or `flat`; links need a text URL; a link's `note`/`pri` pass through `cleanMeta()`. Anything else is dropped, so a bad file cannot break the page.
 - Settings re-render on bookmark changes and keep their tab and scroll position.
 
 ## Environments (labels and sites)
@@ -108,11 +109,25 @@ Every rule here has at least one test. If you change a rule, change its test in 
 - Sort per folder: manual (Chrome index), name (case-insensitive, numeric), URL, environment (PROD, TEST, STAGE, LOCAL, none; with collapsible env groups when there are no sections), date added (newest first), host.
 - Row drag-reorder only in Manual sort. Index rule for the same parent: pass the target's current index for "before" and `index + 1` for "after".
 - Env matrix: rows = same path across envs; `+ derive` uses the host map; Alt+click saves the derived link.
-- Folder filter matches title + URL, all terms must match; shows "Nothing matches the filter." when empty.
+- Folder filter matches title + URL + note, all terms must match; shows "Nothing matches the filter." when empty.
 - Edit form: `novalidate`; a URL without a scheme gets `https://`; Chrome errors show as a toast and keep the old value; Cancel/Escape discard.
 - Each row has Edit (pencil), Delete (trash, `aria-label="Delete link"`) and the ⋯ menu. Delete does not open the link.
 - Delete link → undo toast for 8 s (recreated at the same parent and index). Delete folder → `confirm()`.
-- Global search (sidebar box) searches every folder and section (not Home), shows a crumb `Folder › Section`, Escape clears it.
+- Global search (sidebar box) searches every folder and section (not Home), shows a crumb `Folder › Section`, Escape clears it. It also matches the link note.
+
+## Link notes and priority
+
+- `linkMeta = { [bookmarkId]: { note?, pri? } }` in `chrome.storage.local`. `cleanMeta()`: note trimmed and cut to 200 chars (`NOTE_MAX`); `pri` only `high`/`med`/`low` (`PRIS`, labels High/Medium/Low); an empty result removes the entry. Notes stay on this computer (bookmark ids differ per device); Backup JSON carries them.
+- Set in the popup (priority picker None/Low/Medium/High + note box, saved with the new bookmark id; nothing is stored when both are empty), in the row edit form (same picker + note), and in the row ⋯ menu: _Add note_ / _Edit note_ (opens the edit form with the note box focused), _Mark as High/Medium/Low_ (except the current one), _Clear priority_ (only when set).
+- Row: a 3 px stripe in the priority color at the left edge (`--pri-high` red, `--pri-med` yellow, `--pri-low` grey; never the env colors) and the note on its own line under the URL. Note text is rendered with `h()`/`highlight()`, never `innerHTML`.
+- Order: priority links always come first (High, Medium, Low, then the rest); the folder's sort applies inside each group (`priGroups`, `priFirst`).
+  - Plain folder, any sort except Environment, with at least one priority link: headers **High / Medium / Low / Other** (`Name  count`), empty groups skipped, collapsible per folder (`folders[id].closed['pri:<pri|none>']`).
+  - Folder with sections, or Environment sort: no priority headers; inside each section / env group, priority links come first.
+  - No priority link: the plain list, unchanged.
+- Drop a link on a priority header → it gets that priority; in Manual sort it also moves after the last link of that group. Drop before/after a row inside priority groups (Manual sort) → it moves there and takes that row's priority.
+- Filter buttons (All, High, Medium, Low, Has note) above the list, only when the folder has a link with a note or priority. They combine with the folder filter, reset to All when another folder opens, and an empty result says "Nothing matches the filter.". The folder filter also matches the note text.
+- Delete a link removes its entry; Undo restores the link and its note/priority under the new id (folder page, Board ✕ and popup Remove). Entries of links removed anywhere else are pruned on the next refresh.
+- Backup › Export JSON adds `note`/`pri` to each link. Import matches by URL: new links and existing links without a note get the imported one; an existing note is kept. HTML export has no notes.
 
 ## Sections (subfolders inside a folder)
 

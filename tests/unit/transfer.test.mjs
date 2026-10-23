@@ -100,3 +100,25 @@ describe('sortLinks keeps input order for equal keys', () => {
     );
   });
 });
+
+describe('cleanImport: link notes and priority', () => {
+  test('keeps a valid note and priority on each link, drops bad ones', () => {
+    const r = cleanImport({
+      sections: [
+        {
+          title: 'A',
+          links: [
+            { title: 'x', url: 'https://x.com/', note: ' check QA ', pri: 'high' },
+            { title: 'y', url: 'https://y.com/', note: 7, pri: 'urgent' },
+          ],
+          parts: [{ title: 'S', links: [{ title: 'z', url: 'https://z.com/', pri: 'low' }] }],
+        },
+      ],
+    });
+    assert.deepEqual(r.sections[0].links, [
+      { title: 'x', url: 'https://x.com/', note: 'check QA', pri: 'high' },
+      { title: 'y', url: 'https://y.com/' },
+    ]);
+    assert.deepEqual(r.sections[0].parts[0].links, [{ title: 'z', url: 'https://z.com/', pri: 'low' }]);
+  });
+});

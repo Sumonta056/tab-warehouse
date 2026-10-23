@@ -1,4 +1,20 @@
-import { loadSettings, saveSettings, applyTheme, getTree, resolveRoot, detectEnv, isGithub, hostOf, iconEl, h, svgIcon } from './lib/core.js';
+import {
+  loadSettings,
+  saveSettings,
+  applyTheme,
+  getTree,
+  resolveRoot,
+  detectEnv,
+  isGithub,
+  hostOf,
+  iconEl,
+  h,
+  svgIcon,
+  priPicker,
+  NOTE_MAX,
+  loadLinkMeta,
+  setLinkMeta,
+} from './lib/core.js';
 
 const $ = (s) => document.querySelector(s);
 const q = $('#q');
@@ -6,7 +22,8 @@ const list = $('#folders');
 const saveBtn = $('#save');
 $('#searchIcon').append(svgIcon('search'));
 
-let settings, root, tab, titleEl, targetEl, badgeEl;
+let settings, root, tab, titleEl, targetEl, badgeEl, noteEl;
+let pri = null;
 let folders = [],
   items = [],
   cursor = 0,
@@ -23,6 +40,7 @@ async function boot() {
   await loadFolders();
   selId = settings.lastSaveFolder;
   renderPage();
+  renderMeta();
   renderModes();
   renderFolders();
   await renderExists();
@@ -81,6 +99,25 @@ function renderPage() {
   badgeEl = h('span');
   page.replaceChildren(iconEl({ title: tab.title, url: tab.url }, settings.showFavicons), h('span', { class: 'txt' }, titleEl, targetEl), badgeEl);
   updateTarget();
+}
+
+function renderMeta() {
+  if (!tab?.url) return;
+  const count = h('span', { class: 'lbl' }, `0 / ${NOTE_MAX}`);
+  noteEl = h('textarea', {
+    id: 'note',
+    class: 'note-in',
+    rows: '2',
+    maxlength: String(NOTE_MAX),
+    placeholder: 'Why you saved it, what to check…',
+    onInput: () => (count.textContent = `${noteEl.value.length} / ${NOTE_MAX}`),
+  });
+  $('#meta').replaceChildren(
+    h('span', { class: 'lbl' }, 'Priority'),
+    priPicker(pri, (p) => (pri = p)),
+    h('label', { class: 'lbl note-lbl', for: 'note' }, h('span', {}, 'Note'), count),
+    noteEl,
+  );
 }
 
 function updateTarget() {
@@ -203,10 +240,13 @@ async function renderExists() {
 }
 
 async function remove(b) {
+  const meta = (await loadLinkMeta())[b.id];
   await chrome.bookmarks.remove(b.id);
+  if (meta) await setLinkMeta(b.id, null);
   await refresh();
   toast('Bookmark removed', async () => {
-    await chrome.bookmarks.create({ parentId: b.parentId, index: b.index, title: b.title, url: b.url });
+    const back = await chrome.bookmarks.create({ parentId: b.parentId, index: b.index, title: b.title, url: b.url });
+    if (meta) await setLinkMeta(back.id, meta);
     await refresh();
   });
 }
@@ -255,7 +295,8 @@ async function save() {
   updateSaveBtn();
   try {
     const parentId = x.create ? (await chrome.bookmarks.create({ parentId: root.id, title: x.create })).id : x.f.id;
-    await chrome.bookmarks.create({ parentId, title: titleEl.value.trim() || url, url });
+    const bm = await chrome.bookmarks.create({ parentId, title: titleEl.value.trim() || url, url });
+    if (pri || noteEl.value.trim()) await setLinkMeta(bm.id, { pri, note: noteEl.value });
     await saveSettings({ lastSaveFolder: parentId });
     status(`Saved to ${x.create || x.f.title}`);
     setTimeout(() => window.close(), 900);

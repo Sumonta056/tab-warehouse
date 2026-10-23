@@ -76,6 +76,13 @@
         font-size: 11px;
         color: var(--muted);
       }
+      .note-lbl {
+        display: flex;
+        justify-content: space-between;
+      }
+      #meta:empty {
+        display: none;
+      }
       .modes {
         display: flex;
         gap: 6px;
@@ -184,6 +191,7 @@
   </head>
   <body>
     <div class="page" id="page"></div>
+    <div class="sec" id="meta"></div>
     <div class="sec">
       <span class="lbl">Save</span>
       <div class="modes" id="modes"></div>
