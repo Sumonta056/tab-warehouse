@@ -41,16 +41,19 @@ Every rule here has at least one test. If you change a rule, change its test in 
 ## Settings
 
 - One settings button: the gear in the sidebar header (`#settingsBtn`). It opens the Settings view in the right pane (the sidebar stays); clicking it again, **Done**, or Escape (when focus is not in a text field) returns to the page that was open before, and focus goes back to the gear. The gear is marked `on` while Settings is open. There is no settings `<dialog>`.
-- Tabs, in order: Appearance (your name, text size, accent color, sidebar background), Home page (links, background, clock, tiles, live preview), Bookmarks (root folder, site favicons, reset sidebar order), Duplicates (duplicate links), Tags (explanation + Try it, your tags, tags by address, sites, copy/paste), Backup (export JSON / HTML, import). ←/→ move between tabs. The last tab is remembered for the session.
+- Tabs, in order: Appearance (your name, text size, accent color, sidebar background), Home page (links, background, clock, tiles, live preview), Bookmarks (root folder, site favicons, reset sidebar order), Duplicates (duplicate links), Tags (explanation + Try it, your tags, tags by address, sites, copy/paste), Backup (export JSON / HTML, import), Shortcuts (Chrome shortcuts, keys on this page). ←/→ move between tabs. The last tab is remembered for the session.
 - Every change saves without a Save button. Toggles, swatches, the root folder and buttons save at once; sliders and color pickers save after 300 ms; Tags rows and the name save when a box loses focus; the name is trimmed and updates the header and tab title at once. The header status shows "Saving…" then "Saved".
 - Saves go through one queue so two quick saves never overwrite each other.
 - Settings changed in another tab: a hidden tab only marks itself stale; when it is shown again it reloads settings and Home assets and re-renders (test "a hidden tab picks up settings changed in another tab when it is shown"). A visible tab never re-renders on a settings storage event, so its own sliders and text boxes are not interrupted. A `linkMeta` change (for example a save from the popup) re-renders only the folder list or search results, and not while a row is being edited.
 - Backup › Import (JSON) keeps only valid preferences (`cleanImport()`): custom tags pass through `cleanTags()`; env rules need a text pattern and a built-in or imported tag; host rows keep only text values for the built-in and imported tags (an old backup without `customTags` keeps only PROD/TEST/STAGE/LOCAL); folder prefs keep only a known sort, `list`/`matrix`, `title`/`url` and boolean `closed`; `board.group` is kept only when it is `cat` or `flat`; links need a text URL; a link's `note`/`pri` pass through `cleanMeta()`. Anything else is dropped, so a bad file cannot break the page.
 - Settings re-render on bookmark changes and keep their tab and scroll position.
+- Shortcuts tab (`keys`, last): card **Chrome shortcuts** (`#chromeKeys`) lists `chrome.commands.getAll()`, one row per command (`data-cmd=<name>`). The label is `commandLabel()`: `_execute_action` → "Open the save popup", `quick-save` → "Quick save (no popup)", `open` → "Open the popup (palette on this page)", any other command → its description. The keys are `<kbd>` pieces from `shortcutKeys()` (`Ctrl+Shift+K` splits on `+`; Mac `⇧⌘B` splits each modifier symbol and keeps the key whole); an empty shortcut shows "Not set". A last row "Search from the address bar" shows the manifest omnibox keyword (`tw`) and Space. The help line says Chrome does not let an extension change its own keys and that a key another extension uses is left Not set. **Change shortcuts** (`#keysChange`, ≥ 36 px) opens `chrome://extensions/shortcuts` with `chrome.tabs.create`. The keys are read again each time the tab renders and when the page becomes visible again.
+- Card **Keys on this page** (`#pageKeys`, marked "Fixed"): ⌘K/Ctrl+K command palette, ⌘/Ctrl+Enter background tab in the palette, `/` search box, `j`/`k` sidebar pages, Alt(⌥)+↑/↓ move the focused folder, rule or tag, Esc close/clear. ⌘ and ⌥ show on a Mac, Ctrl and Alt elsewhere (`navigator.platform`).
 
 ## Command palette
 
 - ⌘K / Ctrl+K anywhere on the new-tab page opens the palette (`#palette`, `role="dialog"`, `palette.js`) with focus in its box (`#palQ`, `role="combobox"`). It closes any open menu first. ⌘K no longer focuses the sidebar search; `/` still does.
+- ⌘K / Ctrl+K also comes as the Chrome command `open` (see _Open command_). When the command targets the tab of a Tab Warehouse page, that page opens the palette exactly like the keydown (`showPalette()`: close any open menu, then `openPalette()`). The page keeps its own ⌘K/Ctrl+K keydown handler, so the palette still opens when the command has no key.
 - Empty box: every sidebar folder (sidebar order), then the places: Home, Board and one `Settings › <tab>` item per Settings tab. Typing: links first (`searchLinks()`: title, URL, folder crumb, note and env label; every term must match; at most 30), then matching folders, then matching places. Matches are highlighted with `<mark>` via `highlight()`.
 - A link item shows its favicon/letter icon, the title (or the address), `Crumb · address` on one line (cut with …; the full URL is the tooltip) and its env or GH badge. A folder item says `n links` and "Folder"; a place says "Go to".
 - ↑/↓ move the active item (`aria-activedescendant`); the first item is active after each keystroke; the mouse also selects. Tab stays in the box.
@@ -66,6 +69,14 @@ Every rule here has at least one test. If you change a rule, change its test in 
 - The default row says "Search Tab Warehouse for <text>".
 - Enter (`omniboxTarget()`): a suggestion opens its URL; typed text that is not a `scheme://` address opens `newtab.html?q=<text>`. `disposition` picks the tab: `currentTab` → `chrome.tabs.update`, `newForegroundTab` → `chrome.tabs.create({ active: true })`, `newBackgroundTab` → `chrome.tabs.create({ active: false })`.
 - The new-tab page with `?q=<text>` puts the text in the sidebar search box and shows the global search results. Without `q` it opens Home as before.
+
+## Open command
+
+- Command `open` (`manifest.json`), suggested `⌘K` (mac) / `Ctrl+K`, description "Open the save popup, or the command palette on Tab Warehouse". `_execute_action` (`⌘⇧B`) and `quick-save` (`⌘⇧K`) stay as they are (4 suggested keys at most).
+- `background.js` takes the command's tab id (else the active tab's id) and calls `openCommand(tabId, { send, popup })`: it sends `{ type: 'open-palette', tabId }` with `chrome.runtime.sendMessage`. It never looks at `tab.url` (an overridden new tab reports `chrome://newtab/`, and the URL needs `activeTab`).
+- Each Tab Warehouse page reads its own tab id once (`chrome.tabs.getCurrent()`) and listens with `chrome.runtime.onMessage`. Only the page whose id matches (`isPaletteRequest()`) opens the palette and answers `true`; every other page does not answer.
+- An answer of `true` → palette, no popup. No answer, a rejected `sendMessage` (no listener) or any other answer → `chrome.action.openPopup()`. No tab id → the popup without asking a page. If `openPopup()` throws (for example no focused window), nothing happens: no badge, no error.
+- Many sites (GitHub, Slack, Notion) use ⌘K themselves and lose it while the extension has it. On Windows Chrome may keep Ctrl+K; then the command shows Not set and the user picks a key at `chrome://extensions/shortcuts`.
 
 ## Duplicate links
 
@@ -211,13 +222,23 @@ Every rule here has at least one test. If you change a rule, change its test in 
 - Shows the active tab title (editable), the full URL and its env badge. No tab → message, Save disabled.
 - **Open this page in** (`#switch`, under the page): when the tab's host is in a row of _Same site in each version_ (`switchTargets()`), one button per other filled box of that row: env badge, the same page on that host (`deriveUrl`: path, query and `#part` kept; `localhost…` gets `http:`; cut with …, the full URL is the tooltip) and the plain name (`ENV_NAMES`). Click opens it in a new tab right after the current one and closes the popup; Shift/⌘/Ctrl+click opens it in the background, keeps the popup open and shows "Opened in a background tab".
 - No site row but the page has an env label → the hint "To open this page in your other versions, add this site in Settings › Tags.". No site row and no label, or a row with no other box → the section is hidden.
-- Layout (top to bottom): page, **Open this page in**, options, _Already in_, folder search and list, then the bottom bar. The popup is at most 600 px tall (Chrome's limit); only the folder list shrinks and scrolls, so the bottom bar with **Save** is always visible without scrolling.
+- Layout (top to bottom): page, **Open this page in**, options, the _Already saved_ warning, folder search and list, then the bottom bar. The popup is at most 600 px tall (Chrome's limit); only the folder list shrinks and scrolls, so the bottom bar with **Save** is always visible without scrolling.
 - Options: row 1 is the priority picker with names (● None, ● High, ● Medium, ● Low). Row 2 splits the width in 3: a one-line note box (`#note`, max 200 chars, 2 parts) and the **Page** / **Site** switch (`#modes`, 1 part). Enter in the note box saves.
 - Bottom bar: the status line (only when there is text), the key hints, _Open Tab Warehouse_ and **Save to <folder>** (cut with …; the full label is the tooltip).
 - _Page_ saves the full URL; _Site_ saves `origin/` with the host as title and exists only for http(s) pages. A title you edited is kept when switching mode.
 - Folder list: root first, then every nested folder (indented); filter matches the full path. If no folder has exactly the typed name, the last item is _Create "<name>"_ (created under the root).
 - Preselects `settings.lastSaveFolder`, else the root. ↑/↓ move, Enter saves. After save: status "Saved to X", remember the folder, close after 0.9 s.
-- If the URL is already bookmarked: show up to 3 locations, one line each (`Already in <path>`, cut with …), with Remove (undo toast).
+- Already saved: the popup finds copies with `findSaved()` over the whole bookmark tree (`dupKey(url, true)`: tracking parameters, `#part` and a trailing `/` do not matter). On a match an orange warning box (`.dup-warn`, `--warn-bg/-fg/-line` tokens, never the env colors) shows up to 3 copies, one line each: "Already saved in <strong>path</strong>" (the folder path from the root, else the full path, cut with …) and Remove (undo toast). A copy whose address differs from the page also shows its own address (cut with …, the full URL is the tooltip). While a copy exists the button says **Save again to <folder>**; Enter still saves. Removing the last copy brings back **Save to <folder>**.
+
+## Quick save
+
+- Command `quick-save` (`manifest.json`), suggested `⌘⇧K` (mac) / `Ctrl+Shift+K`; `_execute_action` (`⌘⇧B`) stays the popup. The user can change both at `chrome://extensions/shortcuts`; Chrome skips a suggested key that another extension already has.
+- `background.js` reads the active tab, settings and the bookmark tree fresh and asks `quickSave(settings, tree, tab)`:
+  - no tab, or not an `http(s):`/`file:` page → `skip`: grey badge `–`, nothing saved.
+  - `findSaved()` finds a copy → `dup`: nothing is saved and `chrome.action.openPopup()` opens the popup with its _Already saved_ warning. If that throws, orange badge `!` with the title "Already in <full path>".
+  - else → `save`: a bookmark (title = tab title, else the URL) in `quickSaveTarget()`: `settings.lastSaveFolder` while it is still a folder under the root, else the root. Green badge `✓`, title "Saved to <folder>". A Chrome error gives the grey `–` with "Could not save: …".
+- Quick save never changes `settings.lastSaveFolder` (only the popup does) and stores no note or priority.
+- Badge (`quickSaveBadge()`): per tab, cleared after 2.5 s (`QUICK_BADGE_MS`), then the default action title comes back.
 
 ## Performance rules
 

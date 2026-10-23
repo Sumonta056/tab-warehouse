@@ -1,4 +1,16 @@
-import { loadSettings, getTree, resolveRoot, sections, loadLinkMeta, omniboxSuggestions, omniboxTarget } from './lib/core.js';
+import {
+  loadSettings,
+  getTree,
+  resolveRoot,
+  sections,
+  loadLinkMeta,
+  omniboxSuggestions,
+  omniboxTarget,
+  quickSave,
+  quickSaveBadge,
+  QUICK_BADGE_MS,
+  openCommand,
+} from './lib/core.js';
 
 chrome.omnibox.setDefaultSuggestion({ description: 'Search Tab Warehouse for <match>%s</match>' });
 
@@ -12,4 +24,53 @@ chrome.omnibox.onInputEntered.addListener((text, disposition) => {
   const url = omniboxTarget(text, chrome.runtime.getURL('newtab.html'));
   if (disposition === 'currentTab') chrome.tabs.update({ url });
   else chrome.tabs.create({ url, active: disposition === 'newForegroundTab' });
+});
+
+const badgeTimers = new Map();
+const quiet = (p) => p?.catch?.(() => {});
+
+function flashBadge(tabId, { text, color, title }) {
+  const at = tabId == null ? {} : { tabId };
+  quiet(chrome.action.setBadgeBackgroundColor({ ...at, color }));
+  quiet(chrome.action.setBadgeText({ ...at, text }));
+  quiet(chrome.action.setTitle({ ...at, title }));
+  clearTimeout(badgeTimers.get(tabId));
+  badgeTimers.set(
+    tabId,
+    setTimeout(() => {
+      badgeTimers.delete(tabId);
+      quiet(chrome.action.setBadgeText({ ...at, text: '' }));
+      quiet(chrome.action.setTitle({ ...at, title: chrome.runtime.getManifest().action.default_title }));
+    }, QUICK_BADGE_MS),
+  );
+}
+
+async function quickSaveTab() {
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  const [settings, tree] = await Promise.all([loadSettings(), getTree()]);
+  let r = quickSave(settings, tree, tab);
+  if (r.kind === 'dup') {
+    try {
+      await chrome.action.openPopup();
+      return;
+    } catch {}
+  }
+  if (r.kind === 'save') {
+    try {
+      await chrome.bookmarks.create({ parentId: r.parentId, title: r.title, url: r.url });
+    } catch (e) {
+      r = { kind: 'error', message: e.message };
+    }
+  }
+  flashBadge(tab?.id, quickSaveBadge(r));
+}
+
+async function openTab(tab) {
+  const id = tab?.id ?? (await chrome.tabs.query({ active: true, currentWindow: true }))[0]?.id;
+  return openCommand(id, { send: (msg) => chrome.runtime.sendMessage(msg), popup: () => chrome.action.openPopup() });
+}
+
+chrome.commands.onCommand.addListener((command, tab) => {
+  if (command === 'quick-save') return quickSaveTab();
+  if (command === 'open') return openTab(tab);
 });

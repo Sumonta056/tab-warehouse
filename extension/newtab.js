@@ -37,6 +37,7 @@ import {
   loadLinkMeta,
   setLinkMeta,
   searchLinks,
+  isPaletteRequest,
 } from './lib/core.js';
 import { renderHome, ensureHomeFolder, loadHomeAssets, homeBgUrl } from './home.js';
 import { renderSettings, setSettingsTab } from './settings.js';
@@ -89,6 +90,7 @@ async function boot() {
   current = HOME;
   await refresh();
   bindGlobal();
+  bindPaletteCommand();
   bindHomeButtons();
   bindResizer();
   const q0 = new URLSearchParams(location.search).get('q')?.trim();
@@ -1688,6 +1690,21 @@ function applyFontSize(s) {
 }
 
 /* ================= global ================= */
+function showPalette() {
+  closeMenu();
+  openPalette(paletteCtx);
+}
+
+async function bindPaletteCommand() {
+  const tabId = (await chrome.tabs.getCurrent?.())?.id;
+  if (tabId == null) return;
+  chrome.runtime.onMessage?.addListener((msg, sender, respond) => {
+    if (!isPaletteRequest(msg, tabId)) return;
+    showPalette();
+    respond(true);
+  });
+}
+
 function bindGlobal() {
   $('#settingsBtn').addEventListener('click', openSettings);
   $('#newFolderBtn').addEventListener('click', newFolder);
@@ -1726,8 +1743,7 @@ function bindGlobal() {
     }
     if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
       e.preventDefault();
-      closeMenu();
-      openPalette(paletteCtx);
+      showPalette();
       return;
     }
     if (e.key === '/' && document.activeElement === document.body) {

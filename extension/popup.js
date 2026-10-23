@@ -18,6 +18,7 @@ import {
   loadLinkMeta,
   setLinkMeta,
   switchTargets,
+  findSaved,
 } from './lib/core.js';
 
 const $ = (s) => document.querySelector(s);
@@ -35,7 +36,8 @@ let folders = [],
   mode = 'page',
   query = '',
   titleEdited = false,
-  busy = false;
+  busy = false,
+  dup = false;
 
 async function boot() {
   settings = await loadSettings();
@@ -247,7 +249,7 @@ function setCursor(i) {
 
 function updateSaveBtn() {
   const x = items[cursor];
-  const label = !x ? 'Save' : x.create ? `Create "${x.create}" and save` : `Save to ${x.f.title}`;
+  const label = !x ? 'Save' : x.create ? `Create "${x.create}" and save` : `${dup ? 'Save again' : 'Save'} to ${x.f.title}`;
   saveBtn.replaceChildren(svgIcon('save'), h('span', {}, label));
   saveBtn.title = label;
   saveBtn.disabled = busy || !x || !targetUrl();
@@ -255,26 +257,41 @@ function updateSaveBtn() {
 
 async function renderExists() {
   const box = $('#exists');
-  box.replaceChildren();
   const url = targetUrl();
-  if (!url) return;
   let hits = [];
-  try {
-    hits = (await chrome.bookmarks.search({ url })).filter((b) => b.url);
-  } catch {
-    return;
+  if (url) {
+    try {
+      hits = findSaved(await getTree(), url);
+    } catch {
+      hits = [];
+    }
   }
-  for (const b of hits.slice(0, 3)) {
-    const parent = folders.find((f) => f.id === b.parentId);
-    box.append(
-      h(
-        'div',
-        { class: 'exists' },
-        h('span', {}, 'Already in ', h('strong', {}, parent?.path || 'another folder')),
-        h('button', { class: 'btn sm', onClick: () => remove(b) }, 'Remove'),
-      ),
-    );
-  }
+  if (url !== targetUrl()) return;
+  box.replaceChildren();
+  dup = hits.length > 0;
+  updateSaveBtn();
+  if (!dup) return;
+  box.append(
+    h(
+      'div',
+      { class: 'dup-warn', role: 'note' },
+      ...hits
+        .slice(0, 3)
+        .map((b) =>
+          h(
+            'div',
+            { class: 'exists' },
+            h(
+              'span',
+              { class: 'where' },
+              h('span', { class: 'path' }, 'Already saved in ', h('strong', {}, folders.find((f) => f.id === b.parentId)?.path || b.path || 'another folder')),
+              b.url !== url && h('span', { class: 'addr', title: b.url }, b.url),
+            ),
+            h('button', { class: 'btn sm', onClick: () => remove(b) }, 'Remove'),
+          ),
+        ),
+    ),
+  );
 }
 
 async function remove(b) {

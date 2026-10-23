@@ -1468,6 +1468,46 @@ img.wait {
 .dup-empty {
   margin: 0;
 }
+.keys-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+}
+.keys-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 36px;
+  border-top: 1px solid var(--line);
+}
+.keys-row:first-child {
+  border-top: 0;
+}
+.keys-what {
+  color: var(--text-2);
+  font-size: calc(13px * var(--fs, 1));
+}
+.keys {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.keys-combo {
+  display: inline-flex;
+  gap: 3px;
+}
+.keys-or,
+.keys-none {
+  color: var(--muted);
+  font-size: calc(12px * var(--fs, 1));
+}
+.keys-actions {
+  margin-top: 12px;
+}
 .set-f {
   display: grid;
   grid-template-columns: 140px minmax(0, 1fr);

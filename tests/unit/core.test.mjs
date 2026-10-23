@@ -57,6 +57,7 @@ import {
   tagNames,
   tagPlain,
 } from '../../extension/lib/core.js';
+import { commandLabel, shortcutKeys } from '../../extension/lib/core.js';
 
 const SAMPLE_ENV_RULES = [
   { pattern: 'localhost', env: 'LOCAL' },
@@ -888,5 +889,171 @@ describe('clampFont', () => {
   test('bad values fall back to 100', () => {
     assert.equal(clampFont(undefined), 100);
     assert.equal(clampFont('big'), 100);
+  });
+});
+
+describe('shortcuts', () => {
+  test('shortcutKeys splits Windows and Linux keys on +', () => {
+    assert.deepEqual(shortcutKeys('Ctrl+Shift+K'), ['Ctrl', 'Shift', 'K']);
+    assert.deepEqual(shortcutKeys('Alt+Shift+Down'), ['Alt', 'Shift', 'Down']);
+  });
+  test('shortcutKeys splits Mac modifier symbols and keeps the key whole', () => {
+    assert.deepEqual(shortcutKeys('⇧⌘B'), ['⇧', '⌘', 'B']);
+    assert.deepEqual(shortcutKeys('⌥⇧Space'), ['⌥', '⇧', 'Space']);
+    assert.deepEqual(shortcutKeys('F5'), ['F5']);
+  });
+  test('an empty shortcut has no keys', () => {
+    assert.deepEqual(shortcutKeys(''), []);
+    assert.deepEqual(shortcutKeys(undefined), []);
+  });
+  test('commandLabel names the known commands and falls back to the description', () => {
+    assert.equal(commandLabel({ name: '_execute_action', description: '' }), 'Open the save popup');
+    assert.equal(commandLabel({ name: 'quick-save', description: 'Save current tab without the popup' }), 'Quick save (no popup)');
+    assert.equal(commandLabel({ name: 'other', description: 'Do a thing' }), 'Do a thing');
+    assert.equal(commandLabel({ name: 'other' }), 'other');
+    assert.equal(commandLabel({ name: 'open', description: 'x' }), 'Open the popup (palette on this page)');
+  });
+});
+
+describe('open command', async () => {
+  const { isPaletteRequest, openCommand, PALETTE_MSG } = await import('../../extension/lib/core.js');
+  const spy = (send) => {
+    const calls = { sent: [], popup: 0 };
+    return {
+      calls,
+      deps: {
+        send: (m) => (calls.sent.push(m), send(m)),
+        popup: async () => {
+          calls.popup++;
+        },
+      },
+    };
+  };
+  test('isPaletteRequest matches only the open-palette message for this tab', () => {
+    assert.equal(PALETTE_MSG, 'open-palette');
+    assert.equal(isPaletteRequest({ type: 'open-palette', tabId: 5 }, 5), true);
+    assert.equal(isPaletteRequest({ type: 'open-palette', tabId: 6 }, 5), false);
+    assert.equal(isPaletteRequest({ type: 'other', tabId: 5 }, 5), false);
+    assert.equal(isPaletteRequest({ type: 'open-palette' }, undefined), false);
+    assert.equal(isPaletteRequest(null, 5), false);
+  });
+  test('a page that answers true gets the palette and no popup', async () => {
+    const { calls, deps } = spy(async () => true);
+    assert.equal(await openCommand(5, deps), 'palette');
+    assert.deepEqual(calls.sent, [{ type: 'open-palette', tabId: 5 }]);
+    assert.equal(calls.popup, 0);
+  });
+  test('no listener (rejected or thrown), or any other answer, opens the popup', async () => {
+    for (const send of [
+      () => Promise.reject(new Error('Receiving end does not exist.')),
+      () => {
+        throw new Error('sync');
+      },
+      async () => undefined,
+      async () => 'yes',
+    ]) {
+      const { calls, deps } = spy(send);
+      assert.equal(await openCommand(5, deps), 'popup');
+      assert.equal(calls.popup, 1);
+    }
+  });
+  test('without a tab id it does not ask a page and opens the popup', async () => {
+    const { calls, deps } = spy(async () => true);
+    assert.equal(await openCommand(undefined, deps), 'popup');
+    assert.deepEqual(calls.sent, []);
+  });
+  test('a popup that cannot open is ignored', async () => {
+    const r = await openCommand(5, {
+      send: async () => undefined,
+      popup: async () => {
+        throw new Error('no window');
+      },
+    });
+    assert.equal(r, 'none');
+  });
+});
+
+describe('quick save', async () => {
+  const { findSaved, quickSaveTarget, quickSave, quickSaveBadge } = await import('../../extension/lib/core.js');
+  const tree = () => ({
+    id: '0',
+    title: '',
+    children: [
+      {
+        id: '1',
+        title: 'Bookmarks bar',
+        children: [
+          {
+            id: '10',
+            title: 'My Links',
+            children: [
+              { id: '30', title: 'Shop API', children: [{ id: '31', title: 'Shop', url: 'https://shop.example.com/api/x' }] },
+              { id: '40', title: 'Empty', children: [] },
+              { id: '60', title: 'Loose', url: 'https://loose.example.com/' },
+            ],
+          },
+        ],
+      },
+      { id: '2', title: 'Other bookmarks', children: [{ id: '70', title: 'Home', children: [{ id: '71', title: 'Ex', url: 'https://example.com/' }] }] },
+    ],
+  });
+  const settings = { rootName: 'My Links', lastSaveFolder: null };
+
+  test('findSaved: an exact address matches, with its folder path', () => {
+    const hits = findSaved(tree(), 'https://shop.example.com/api/x');
+    assert.deepEqual(
+      hits.map((b) => [b.id, b.path]),
+      [['31', 'Bookmarks bar › My Links › Shop API']],
+    );
+  });
+  test('findSaved: tracking parameters, #part and a trailing slash still match', () => {
+    assert.deepEqual(
+      findSaved(tree(), 'https://shop.example.com/api/x/?utm_source=mail&gclid=1#top').map((b) => b.id),
+      ['31'],
+    );
+    assert.deepEqual(
+      findSaved(tree(), 'https://example.com').map((b) => b.id),
+      ['71'],
+    );
+  });
+  test('findSaved: another page or another query does not match', () => {
+    assert.deepEqual(findSaved(tree(), 'https://shop.example.com/api/y'), []);
+    assert.deepEqual(findSaved(tree(), 'https://shop.example.com/api/x?id=2'), []);
+  });
+  test('quickSaveTarget: the last save folder while it exists, else the root', () => {
+    assert.equal(quickSaveTarget({ ...settings, lastSaveFolder: '40' }, tree()), '40');
+    assert.equal(quickSaveTarget({ ...settings, lastSaveFolder: '999' }, tree()), '10');
+    assert.equal(quickSaveTarget({ ...settings, lastSaveFolder: '60' }, tree()), '10');
+    assert.equal(quickSaveTarget({ ...settings, lastSaveFolder: '70' }, tree()), '10');
+    assert.equal(quickSaveTarget(settings, tree()), '10');
+  });
+  test('quickSave: saves a new page into the target folder with the tab title', () => {
+    assert.deepEqual(quickSave({ ...settings, lastSaveFolder: '40' }, tree(), { title: 'New', url: 'https://new.example.com/a' }), {
+      kind: 'save',
+      parentId: '40',
+      folder: 'Empty',
+      title: 'New',
+      url: 'https://new.example.com/a',
+    });
+    assert.equal(quickSave(settings, tree(), { title: '', url: 'file:///x.html' }).title, 'file:///x.html');
+  });
+  test('quickSave: an address that is already saved is a duplicate', () => {
+    const r = quickSave(settings, tree(), { title: 'Shop', url: 'https://shop.example.com/api/x#top' });
+    assert.equal(r.kind, 'dup');
+    assert.deepEqual(
+      r.hits.map((b) => b.id),
+      ['31'],
+    );
+  });
+  test('quickSave: no tab or a page that is not http(s)/file is skipped', () => {
+    assert.deepEqual(quickSave(settings, tree(), undefined), { kind: 'skip' });
+    assert.deepEqual(quickSave(settings, tree(), { url: 'chrome://extensions/' }), { kind: 'skip' });
+    assert.deepEqual(quickSave(settings, tree(), { url: '' }), { kind: 'skip' });
+  });
+  test('quickSaveBadge: ✓ green, ! orange with the path, – grey', () => {
+    assert.deepEqual(quickSaveBadge({ kind: 'save', folder: 'Empty' }), { text: '✓', color: '#1e8e3e', title: 'Saved to Empty' });
+    assert.deepEqual(quickSaveBadge({ kind: 'dup', hits: [{ path: 'A › B' }] }), { text: '!', color: '#e8710a', title: 'Already in A › B' });
+    assert.equal(quickSaveBadge({ kind: 'skip' }).text, '–');
+    assert.equal(quickSaveBadge({ kind: 'error', message: 'x' }).title, 'Could not save: x');
   });
 });

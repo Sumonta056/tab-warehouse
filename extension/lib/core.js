@@ -333,6 +333,29 @@ export function clampFont(v) {
   return Math.round(Math.max(FONT_SCALE.min, Math.min(FONT_SCALE.max, n)));
 }
 
+export const COMMAND_LABELS = {
+  _execute_action: 'Open the save popup',
+  'quick-save': 'Quick save (no popup)',
+  open: 'Open the popup (palette on this page)',
+};
+
+export function commandLabel(cmd) {
+  return COMMAND_LABELS[cmd?.name] || cmd?.description || cmd?.name || '';
+}
+
+export function shortcutKeys(shortcut) {
+  const s = (shortcut || '').trim();
+  if (!s) return [];
+  if (s.includes('+'))
+    return s
+      .split('+')
+      .map((k) => k.trim())
+      .filter(Boolean);
+  const mods = s.match(/^[⌘⇧⌥⌃]*/)[0];
+  const rest = s.slice(mods.length);
+  return [...mods, ...(rest ? [rest] : [])];
+}
+
 export function clampSideWidth(w) {
   const n = Number(w);
   if (!Number.isFinite(n)) return SIDE_WIDTH.initial;
@@ -602,6 +625,65 @@ export function findDuplicates(links, loose = false) {
     byKey.get(k).push(bm);
   }
   return [...byKey].filter(([, list]) => list.length > 1).map(([key, list]) => ({ key, links: list.sort((a, b) => (a.dateAdded || 0) - (b.dateAdded || 0)) }));
+}
+
+export function findSaved(tree, url) {
+  const key = dupKey(url, true);
+  const out = [];
+  const walk = (n, path) => {
+    for (const c of n.children || []) {
+      if (c.url) {
+        if (dupKey(c.url, true) === key) out.push({ ...c, path: path.join(' › ') });
+      } else walk(c, [...path, c.title || '(untitled)']);
+    }
+  };
+  walk(tree, []);
+  return out;
+}
+
+export function quickSaveTarget(settings, tree) {
+  const root = resolveRoot(tree, settings);
+  const last = settings.lastSaveFolder && findById(root, settings.lastSaveFolder);
+  return last && !last.url ? last.id : root.id;
+}
+
+export function quickSave(settings, tree, tab) {
+  if (!tab?.url || !/^(https?|file):/i.test(tab.url)) return { kind: 'skip' };
+  const hits = findSaved(tree, tab.url);
+  if (hits.length) return { kind: 'dup', hits };
+  const parentId = quickSaveTarget(settings, tree);
+  const folder = findById(tree, parentId);
+  return { kind: 'save', parentId, folder: folder.title || 'Bookmarks', title: tab.title || tab.url, url: tab.url };
+}
+
+export const QUICK_BADGE_MS = 2500;
+
+export function quickSaveBadge(r) {
+  if (r.kind === 'save') return { text: '✓', color: '#1e8e3e', title: `Saved to ${r.folder}` };
+  if (r.kind === 'dup') return { text: '!', color: '#e8710a', title: `Already in ${r.hits[0].path}` };
+  if (r.kind === 'error') return { text: '–', color: '#5f6368', title: `Could not save: ${r.message}` };
+  return { text: '–', color: '#5f6368', title: 'This page cannot be saved' };
+}
+
+export const PALETTE_MSG = 'open-palette';
+
+export function isPaletteRequest(msg, tabId) {
+  return msg?.type === PALETTE_MSG && tabId != null && msg.tabId === tabId;
+}
+
+export async function openCommand(tabId, { send, popup }) {
+  if (tabId != null) {
+    const ok = await Promise.resolve()
+      .then(() => send({ type: PALETTE_MSG, tabId }))
+      .catch(() => false);
+    if (ok === true) return 'palette';
+  }
+  try {
+    await popup();
+    return 'popup';
+  } catch {
+    return 'none';
+  }
 }
 
 /* ---------- env matrix ---------- */

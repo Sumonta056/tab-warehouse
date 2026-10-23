@@ -37,6 +37,9 @@
   --tag-grey-fg: #b8b8b8;
   --red-fg: #ff8a80;
   --yellow-fg: #f2cc60;
+  --warn-bg: #36260c;
+  --warn-fg: #ffc46b;
+  --warn-line: #6e4b14;
   --pri-high: var(--red-fg);
   --pri-med: var(--yellow-fg);
   --pri-low: var(--muted-2);
