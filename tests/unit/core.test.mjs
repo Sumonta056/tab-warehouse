@@ -31,6 +31,7 @@ import {
   priFirst,
   matchLink,
   dupKey,
+  searchLinks,
   findDuplicates,
   buildMatrix,
   googleIcon,
@@ -345,6 +346,28 @@ describe('link notes and priority', () => {
     assert.equal(matchLink(bm, 'Ask Rafi for the token', 'jenkins token'), true);
     assert.equal(matchLink(bm, '', 'rafi'), false);
     assert.equal(matchLink(bm, undefined, 'jenkins'), true);
+  });
+});
+
+describe('searchLinks', () => {
+  const tree = F('r', 'R', [
+    F('a', 'Shop', [
+      L('1', 'Checkout', 'https://shop.example.com/cart'),
+      F('p', 'Old', [L('2', 'Legacy cart', 'https://old.example.com/cart', { parentId: 'p' })]),
+    ]),
+    F('b', 'Docs', [L('3', 'Guide', 'https://docs.example.com/')]),
+  ]);
+  const secs = sections(tree, []);
+  const ids = (hits) => hits.map((x) => x.bm.id);
+
+  test('every term must match title, URL, folder crumb, note or label', () => {
+    assert.deepEqual(ids(searchLinks(secs, 'cart')), ['1', '2']);
+    assert.deepEqual(ids(searchLinks(secs, 'shop old')), ['2']);
+    assert.deepEqual(searchLinks(secs, 'shop old')[0].crumb, 'Shop › Old');
+    assert.deepEqual(ids(searchLinks(secs, 'refund', { 3: { note: 'Refund policy' } })), ['3']);
+    assert.deepEqual(ids(searchLinks(secs, 'prod', {}, [{ pattern: 'shop.example', env: 'PROD' }])), ['1']);
+    assert.deepEqual(ids(searchLinks(secs, 'CART Legacy')), ['2']);
+    assert.deepEqual(ids(searchLinks(secs, 'nothing')), []);
   });
 });
 

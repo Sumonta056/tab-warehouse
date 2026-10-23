@@ -46,6 +46,16 @@ Every rule here has at least one test. If you change a rule, change its test in 
 - Backup › Import (JSON) keeps only valid preferences (`cleanImport()`): env rules need a text pattern and a known label; host rows keep only PROD/TEST/STAGE/LOCAL text values; folder prefs keep only a known sort, `list`/`matrix`, `title`/`url` and boolean `closed`; `board.group` is kept only when it is `cat` or `flat`; links need a text URL; a link's `note`/`pri` pass through `cleanMeta()`. Anything else is dropped, so a bad file cannot break the page.
 - Settings re-render on bookmark changes and keep their tab and scroll position.
 
+## Command palette
+
+- ⌘K / Ctrl+K anywhere on the new-tab page opens the palette (`#palette`, `role="dialog"`, `palette.js`) with focus in its box (`#palQ`, `role="combobox"`). It closes any open menu first. ⌘K no longer focuses the sidebar search; `/` still does.
+- Empty box: every sidebar folder (sidebar order), then the places: Home, Board and one `Settings › <tab>` item per Settings tab. Typing: links first (`searchLinks()`: title, URL, folder crumb, note and env label; every term must match; at most 30), then matching folders, then matching places. Matches are highlighted with `<mark>` via `highlight()`.
+- A link item shows its favicon/letter icon, the title (or the address), `Crumb · address` on one line (cut with …; the full URL is the tooltip) and its env or GH badge. A folder item says `n links` and "Folder"; a place says "Go to".
+- ↑/↓ move the active item (`aria-activedescendant`); the first item is active after each keystroke; the mouse also selects. Tab stays in the box.
+- Enter (or click) on a link opens it in this tab (`chrome.tabs.update`). ⌘/Ctrl/Shift+Enter (or ⌘-click) opens it in a background tab (`chrome.tabs.create({ active: false })`) with the toast "Opened in a background tab". On a folder it opens the folder page; on a place it opens Home, the Board or that Settings tab. Opening anything clears a global search first.
+- Escape or a click outside the box closes the palette and gives focus back to where it was. Escape in the palette does not also close Settings.
+- No result: "Nothing matches. Try part of a name, host or note.".
+
 ## Duplicate links
 
 - Settings › Duplicates (its own tab, after Bookmarks) has the **Duplicate links (n)** card (`#dupCard`). It checks every link under the root folder, in any depth, except the Home folder. n = number of groups.
@@ -121,7 +131,7 @@ Every rule here has at least one test. If you change a rule, change its test in 
 - Edit form: `novalidate`; a URL without a scheme gets `https://`; Chrome errors show as a toast and keep the old value; Cancel/Escape discard.
 - Each row has Edit (pencil), Delete (trash, `aria-label="Delete link"`) and the ⋯ menu. Delete does not open the link.
 - Delete link → undo toast for 8 s (recreated at the same parent and index). Delete folder → `confirm()`.
-- Global search (sidebar box) searches every folder and section (not Home), shows a crumb `Folder › Section`, Escape clears it. It also matches the link note.
+- Global search (sidebar box) searches every folder and section (not Home), shows a crumb `Folder › Section`, Escape clears it. It also matches the link note and the link's env label (`searchLinks()`, shared with the command palette). `/` (when nothing is focused) focuses the box; the hint in the box shows `/`.
 
 ## Link notes and priority
 

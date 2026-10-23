@@ -186,7 +186,9 @@ Coming soon.
 | Keys                              | Action                                       |
 | --------------------------------- | -------------------------------------------- |
 | `⌘⇧B` / `Ctrl+Shift+B`            | Open the save popup                          |
-| `⌘K` / `Ctrl+K` or `/`            | Search all folders                           |
+| `⌘K` / `Ctrl+K`                   | Open the command palette                     |
+| `⌘Enter` (in the palette)         | Open the link in a background tab            |
+| `/`                               | Search all folders                           |
 | `Enter` (in search)               | Open the first result                        |
 | `Esc`                             | Clear search or filter; close Settings       |
 | `j` / `k`                         | Next / previous: Home, Board, folders        |

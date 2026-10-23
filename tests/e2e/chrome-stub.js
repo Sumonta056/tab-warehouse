@@ -164,6 +164,10 @@
         H.tabs.push(o);
         return { id: H.tabs.length };
       },
+      async update(o) {
+        H.tabs.push({ ...o, update: true });
+        return { id: 0 };
+      },
       async query() {
         return H.activeTab ? [clone(H.activeTab)] : [];
       },

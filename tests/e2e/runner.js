@@ -7,8 +7,9 @@ import environments from './scenarios/environments.js';
 import board from './scenarios/board.js';
 import notes from './scenarios/notes.js';
 import duplicates from './scenarios/duplicates.js';
+import palette from './scenarios/palette.js';
 
-const ALL = [...newtab, ...sections, ...categories, ...home, ...popup, ...environments, ...board, ...notes, ...duplicates];
+const ALL = [...newtab, ...sections, ...categories, ...home, ...popup, ...environments, ...board, ...notes, ...duplicates, ...palette];
 const frame = document.getElementById('frame');
 const out = document.getElementById('results');
 const summary = document.getElementById('summary');

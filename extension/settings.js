@@ -71,6 +71,10 @@ const cleanHost = (v) => {
   return /^[a-z][a-z0-9+.-]*:\/\//.test(v) ? hostOf(v) : v.replace(/\/.*$/, '');
 };
 
+export function setSettingsTab(key) {
+  if (TABS.some(([k]) => k === key)) tab = key;
+}
+
 export function renderSettings(page, ctx) {
   const status = h('span', { class: 'set-status', role: 'status' }, 'Changes save automatically');
   const save = async (patch) => {

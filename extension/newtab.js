@@ -36,9 +36,11 @@ import {
   priPicker,
   loadLinkMeta,
   setLinkMeta,
+  searchLinks,
 } from './lib/core.js';
 import { renderHome, ensureHomeFolder, loadHomeAssets, homeBgUrl } from './home.js';
-import { renderSettings } from './settings.js';
+import { renderSettings, setSettingsTab } from './settings.js';
+import { openPalette } from './palette.js';
 import { renderBoard } from './board.js';
 
 const $ = (s) => document.querySelector(s);
@@ -1102,15 +1104,7 @@ function rowMenu(e, r, s) {
 
 /* ---------- global search ---------- */
 function renderSearch() {
-  const terms = query.split(/\s+/).filter(Boolean);
-  const hits = [];
-  for (const s of secs)
-    for (const bm of s.all) {
-      const part = s.parts.find((pt) => pt.id === bm.parentId);
-      const crumb = part ? `${s.title} › ${part.title}` : s.title;
-      const hay = `${bm.title} ${bm.url} ${crumb} ${linkMeta[bm.id]?.note || ''}`.toLowerCase();
-      if (terms.every((t) => hay.includes(t))) hits.push({ bm, s, crumb });
-    }
+  const hits = searchLinks(secs, query, linkMeta, settings.envRules);
   page.append(
     h(
       'div',
@@ -1560,6 +1554,37 @@ const settingsCtx = {
   done: () => closeSettings(),
 };
 
+const paletteCtx = {
+  get secs() {
+    return secs;
+  },
+  get settings() {
+    return settings;
+  },
+  get linkMeta() {
+    return linkMeta;
+  },
+  openUrl(url, bg) {
+    if (bg) {
+      chrome.tabs.create({ url, active: false });
+      toast('Opened in a background tab');
+    } else chrome.tabs.update({ url });
+  },
+  go(where) {
+    if (query) clearQuery();
+    select(where === 'board' ? BOARD : HOME);
+  },
+  select(s) {
+    if (query) clearQuery();
+    select(s);
+  },
+  openSettings(key) {
+    setSettingsTab(key);
+    if (current?.settings && !query) renderPage();
+    else openSettings();
+  },
+};
+
 const boardCtx = {
   get settings() {
     return settings;
@@ -1668,8 +1693,9 @@ function bindGlobal() {
     }
     if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
       e.preventDefault();
-      qInput.focus();
-      qInput.select();
+      closeMenu();
+      openPalette(paletteCtx);
+      return;
     }
     if (e.key === '/' && document.activeElement === document.body) {
       e.preventDefault();
