@@ -167,7 +167,7 @@ function renderMeta() {
         dueBtn.setAttribute('aria-expanded', String(open));
         dueBtn.classList.toggle('on', open);
         document.body.classList.toggle('due-open', open);
-        if (open) dueEl.date.focus();
+        if (open) dueEl.focus();
         else dueEl.reset();
       },
     },

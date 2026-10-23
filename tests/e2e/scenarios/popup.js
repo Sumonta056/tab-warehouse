@@ -265,7 +265,7 @@ export default [
       t.click(btn);
       t.ok(!t.$('#duePick').hidden, 'picker shown');
       t.eq(btn.getAttribute('aria-expanded'), 'true', 'expanded');
-      t.eq(t.d.activeElement, t.$('#meta .due-date'), 'date box focused');
+      t.eq(t.d.activeElement, t.$('#meta .due-q'), 'Today chip focused');
       t.type(t.$('#meta .due-date'), '2026-04-10');
       t.click(btn);
       t.ok(t.$('#duePick').hidden, 'hidden again');
@@ -273,6 +273,58 @@ export default [
       await t.settle();
       const saved = t.node('10').children.find((c) => c.url === tab.url);
       t.eq(t.store.linkMeta?.[saved?.id], undefined, 'a hidden date is not saved');
+    },
+  },
+  {
+    area,
+    name: 'due date: quick chips set the date, the summary says it, Pick a date and Add a time show the boxes',
+    page: 'popup',
+    fixture: () => base({ activeTab: tab }),
+    async run(t) {
+      t.click(t.$('#dueBtn'));
+      const chips = [...t.$$('#duePick .due-q')].map((b) => b.textContent);
+      t.eq(chips, ['Today', 'Tomorrow', 'Next week', 'Pick a date…'], 'chips in order');
+      t.ok(t.$('#duePick .due-row').hidden, 'date and time boxes hidden');
+      t.ok(t.$('#duePick .due-sum').hidden, 'no summary without a date');
+      const tomorrow = t.$$('#duePick .due-q')[1];
+      t.click(tomorrow);
+      const d = new Date();
+      d.setDate(d.getDate() + 1);
+      const ymd = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      t.eq(t.$('#meta .due-date').value, ymd, 'date is tomorrow');
+      t.eq(tomorrow.getAttribute('aria-pressed'), 'true', 'Tomorrow marked');
+      t.ok(!t.$('#duePick .due-sum').hidden, 'summary shown');
+      t.ok(t.$('#duePick .due-now').classList.contains('soon'), 'summary colored as soon');
+      t.ok(/^Due \w{3} \d{1,2} \w{3}$/.test(t.$('#duePick .due-now').textContent), `summary label (${t.$('#duePick .due-now').textContent})`);
+      t.ok(t.$('#duePick .due-q').getBoundingClientRect().height >= 28, 'chips at least 28 px');
+      t.click(t.$('#duePick .due-add-time'));
+      t.ok(!t.$('#duePick .due-row').hidden, 'boxes shown by Add a time');
+      t.eq(t.d.activeElement, t.$('#meta .due-time'), 'time box focused');
+      t.ok(t.$('#duePick .due-add-time').hidden, 'Add a time hidden once the boxes show');
+      t.ok(t.$('#duePick .due-quick').hidden, 'chips hidden while the boxes show');
+      t.type(t.$('#meta .due-time'), '10:00');
+      t.click(t.$('#save'));
+      await t.settle();
+      const saved = t.node('10').children.find((c) => c.url === tab.url);
+      t.eq(t.store.linkMeta?.[saved?.id]?.due, `${ymd}T10:00`, 'date and time stored');
+    },
+  },
+  {
+    area,
+    name: 'due date: Pick a date shows the date box and focuses it; clear hides the boxes again',
+    page: 'popup',
+    fixture: () => base({ activeTab: tab }),
+    async run(t) {
+      t.click(t.$('#dueBtn'));
+      t.click(t.$('#duePick .due-pick-date'));
+      t.ok(!t.$('#duePick .due-row').hidden, 'boxes shown');
+      t.eq(t.d.activeElement, t.$('#meta .due-date'), 'date box focused');
+      t.type(t.$('#meta .due-date'), '2030-04-10');
+      t.eq(t.$('#duePick .due-now').textContent, 'Due 10 Apr 2030', 'summary');
+      t.ok(![...t.$$('#duePick .due-q')].some((b) => b.getAttribute('aria-pressed') === 'true'), 'no quick chip marked');
+      t.click(t.$('#meta .due-clr'));
+      t.ok(t.$('#duePick .due-row').hidden && t.$('#duePick .due-sum').hidden, 'boxes and summary hidden');
+      t.ok(!t.$('#duePick .due-quick').hidden, 'chips back');
     },
   },
   {
@@ -297,6 +349,10 @@ export default [
       check('closed');
       t.click(t.$('#dueBtn'));
       check('open');
+      t.click(t.$$('#duePick .due-q')[1]);
+      check('open with a date');
+      t.click(t.$('#duePick .due-add-time'));
+      check('open with the date and time boxes');
     },
   },
   {

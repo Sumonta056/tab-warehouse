@@ -262,16 +262,92 @@ select {
 .due-pick {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 .due-pick[hidden] {
   display: none;
 }
 .due-row {
   display: grid;
-  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr) 28px;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
   gap: 6px;
   align-items: center;
+}
+.due-row[hidden],
+.due-sum[hidden],
+.due-add-time[hidden],
+.due-quick[hidden] {
+  display: none;
+}
+.due-quick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.due-q {
+  min-height: 28px;
+  padding: 0 10px;
+  background: var(--surface);
+}
+.due-q[aria-pressed='true'] {
+  border-color: var(--accent);
+  background: var(--accent-bg);
+  color: var(--accent-text);
+  font-weight: 600;
+}
+.due-pick-date {
+  border-style: dashed;
+  background: transparent;
+}
+.due-sum {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  min-height: 28px;
+}
+.due-now {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-size: calc(12px * var(--fs, 1));
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.due-now svg {
+  width: 12px;
+  height: 12px;
+}
+.due-now.overdue {
+  color: var(--tag-red-fg);
+  background: var(--tag-red-bg);
+}
+.due-now.today {
+  color: var(--tag-yellow-fg);
+  background: var(--tag-yellow-bg);
+}
+.due-now.soon {
+  color: var(--accent-text);
+  background: var(--accent-bg);
+}
+.due-add-time {
+  min-height: 28px;
+  padding: 0 6px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--accent);
+  font-size: calc(12px * var(--fs, 1));
+}
+.due-add-time:hover {
+  background: var(--surface-2);
+}
+.due-sum .due-cal {
+  margin-left: auto;
 }
 .due-in {
   min-height: 32px;

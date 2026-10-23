@@ -1,6 +1,7 @@
 import { test, describe, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  dueQuickDate,
   ENVS,
   brandName,
   clampFont,
@@ -437,6 +438,13 @@ describe('due dates', () => {
     assert.equal(dueLabel('2026-10-29T10:00', NOW), 'Due Thu 29 Oct 10:00');
     assert.equal(dueLabel('2026-12-11', NOW), 'Due 11 Dec 2026');
     assert.equal(dueLabel('bad', NOW), '');
+  });
+
+  test('dueQuickDate: today, tomorrow and next week cross month and year ends', () => {
+    assert.equal(dueQuickDate(0, NOW), '2026-10-24');
+    assert.equal(dueQuickDate(1, NOW), '2026-10-25');
+    assert.equal(dueQuickDate(7, NOW), '2026-10-31');
+    assert.equal(dueQuickDate(1, new Date(2026, 11, 31, 23, 30)), '2027-01-01');
   });
 
   test('gcalUrl: an all-day event ends on the next day', () => {
