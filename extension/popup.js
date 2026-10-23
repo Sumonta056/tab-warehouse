@@ -135,20 +135,18 @@ async function openEnv(url, bg) {
 
 function renderMeta() {
   if (!tab?.url) return;
-  const count = h('span', { class: 'lbl' }, `0 / ${NOTE_MAX}`);
-  noteEl = h('textarea', {
+  noteEl = h('input', {
     id: 'note',
-    class: 'note-in',
-    rows: '2',
+    class: 'field note-line',
+    type: 'text',
+    autocomplete: 'off',
     maxlength: String(NOTE_MAX),
-    placeholder: 'Why you saved it, what to check…',
-    onInput: () => (count.textContent = `${noteEl.value.length} / ${NOTE_MAX}`),
+    placeholder: 'Add a note…',
+    'aria-label': 'Note',
   });
   $('#meta').replaceChildren(
-    h('span', { class: 'lbl' }, 'Priority'),
     priPicker(pri, (p) => (pri = p)),
-    h('label', { class: 'lbl note-lbl', for: 'note' }, h('span', {}, 'Note'), count),
-    noteEl,
+    h('div', { class: 'opt-row' }, noteEl, h('div', { class: 'modes', id: 'modes', role: 'group', 'aria-label': 'Save' })),
   );
 }
 
@@ -169,19 +167,24 @@ function updateBadge() {
 
 function renderModes() {
   const c = $('#modes');
+  if (!c) return;
   const site = siteUrl();
   c.replaceChildren(
-    h('button', { class: `chip ${mode === 'page' ? 'on' : ''}`, 'aria-pressed': String(mode === 'page'), onClick: () => setMode('page') }, 'This page'),
+    h(
+      'button',
+      { class: `chip ${mode === 'page' ? 'on' : ''}`, 'aria-pressed': String(mode === 'page'), title: 'Save this page', onClick: () => setMode('page') },
+      'Page',
+    ),
     h(
       'button',
       {
         class: `chip ${mode === 'site' ? 'on' : ''}`,
         'aria-pressed': String(mode === 'site'),
         disabled: !site,
-        title: site || 'This page has no website address',
+        title: site ? `Save the whole site: ${site}` : 'This page has no website address',
         onClick: () => setMode('site'),
       },
-      'Whole site',
+      'Site',
     ),
   );
 }
@@ -243,7 +246,9 @@ function setCursor(i) {
 
 function updateSaveBtn() {
   const x = items[cursor];
-  saveBtn.replaceChildren(svgIcon('save'), !x ? 'Save' : x.create ? `Create "${x.create}" and save` : `Save to ${x.f.title}`);
+  const label = !x ? 'Save' : x.create ? `Create "${x.create}" and save` : `Save to ${x.f.title}`;
+  saveBtn.replaceChildren(svgIcon('save'), h('span', {}, label));
+  saveBtn.title = label;
   saveBtn.disabled = busy || !x || !targetUrl();
 }
 

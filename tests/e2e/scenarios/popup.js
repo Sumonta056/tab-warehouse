@@ -1,4 +1,4 @@
-import { base } from '../fixtures.js';
+import { base, F } from '../fixtures.js';
 
 const area = 'popup';
 const tab = { title: 'Deploy app PROD', url: 'https://deploy.prod.example.com/applications/x?view=tree' };
@@ -104,7 +104,7 @@ export default [
     page: 'popup',
     fixture: () => base({ activeTab: tab }),
     async run(t) {
-      t.click(t.$$('#modes .chip').find((c) => c.textContent === 'Whole site'));
+      t.click(t.$$('#modes .chip').find((c) => c.textContent === 'Site'));
       await t.settle();
       t.eq(t.$('#page .target').textContent, 'https://deploy.prod.example.com/', 'origin');
       t.eq(t.$('#page .field').value, 'deploy.prod.example.com', 'host title');
@@ -120,7 +120,7 @@ export default [
     fixture: () => base({ activeTab: tab }),
     async run(t) {
       t.type(t.$('#page .field'), 'My title');
-      t.click(t.$$('#modes .chip').find((c) => c.textContent === 'Whole site'));
+      t.click(t.$$('#modes .chip').find((c) => c.textContent === 'Site'));
       await t.settle();
       t.eq(t.$('#page .field').value, 'My title', 'kept');
     },
@@ -131,10 +131,10 @@ export default [
     page: 'popup',
     fixture: () => base({ activeTab: { title: 'Local file', url: 'file:///Users/me/notes.html' } }),
     async run(t) {
-      t.ok(t.$$('#modes .chip').find((c) => c.textContent === 'Whole site')?.disabled, 'file:// disabled');
+      t.ok(t.$$('#modes .chip').find((c) => c.textContent === 'Site')?.disabled, 'file:// disabled');
       t.H.activeTab = { title: 'Extensions', url: 'chrome://extensions/' };
       await t.reload('popup');
-      t.ok(t.$$('#modes .chip').find((c) => c.textContent === 'Whole site')?.disabled, 'chrome:// disabled');
+      t.ok(t.$$('#modes .chip').find((c) => c.textContent === 'Site')?.disabled, 'chrome:// disabled');
     },
   },
   {
@@ -151,6 +151,50 @@ export default [
       t.click(t.toast()?.querySelector('button'));
       await t.settle();
       t.eq(t.node('30').children[0]?.url, 'https://shop.example.com/api/x', 'restored at index 0');
+    },
+  },
+  {
+    area,
+    name: 'compact layout: named priority, one-line note beside Page/Site, Save visible with many folders',
+    page: 'popup',
+    fixture: () =>
+      base({
+        activeTab: { title: 'Shop PROD', url: 'https://shop.example.com/api/x' },
+        extraRoot: Array.from({ length: 30 }, (_, i) => F(String(900 + i), `Folder ${i + 1}`)),
+      }),
+    async run(t) {
+      t.eq(
+        t.$$('#meta .pri-pick button').map((b) => b.textContent),
+        ['None', 'High', 'Medium', 'Low'],
+        'priority names shown',
+      );
+      t.eq(t.$('#note').tagName, 'INPUT', 'note is one line');
+      t.eq(t.$('#note').maxLength, 200, 'note max length');
+      const note = t.$('#note').getBoundingClientRect();
+      const modes = t.$('#modes').getBoundingClientRect();
+      t.ok(Math.abs(note.top - modes.top) < 2, 'note and Page/Site share a row');
+      t.ok(note.width > modes.width * 1.8, 'note takes 2 of 3 parts');
+      t.ok(t.$('#exists .exists'), 'already-in line shown');
+      const body = t.d.body.getBoundingClientRect();
+      const save = t.$('#save').getBoundingClientRect();
+      t.ok(body.height <= 600, `popup fits Chrome's 600 px (${Math.round(body.height)})`);
+      t.ok(save.bottom <= body.bottom && save.top >= 0, 'Save visible without scrolling');
+      const list = t.$('#folders');
+      t.ok(list.scrollHeight > list.clientHeight, 'folder list scrolls instead');
+    },
+  },
+  {
+    area,
+    name: 'Enter in the note box saves',
+    page: 'popup',
+    fixture: () => base({ activeTab: tab }),
+    async run(t) {
+      t.type(t.$('#note'), 'Check logs');
+      t.key(t.$('#note'), 'Enter');
+      await t.settle();
+      const saved = t.node('10').children.find((c) => c.url === tab.url);
+      t.ok(saved, 'saved to the selected folder');
+      t.eq(t.store.linkMeta?.[saved?.id]?.note, 'Check logs', 'note stored');
     },
   },
   {

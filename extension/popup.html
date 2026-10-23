@@ -7,14 +7,19 @@
     <style>
       body {
         width: 420px;
+        max-height: 600px;
         display: flex;
         flex-direction: column;
+        overflow: hidden;
+      }
+      body > * {
+        flex: 0 0 auto;
       }
       .page {
         display: flex;
         gap: 10px;
         align-items: flex-start;
-        padding: 14px 14px 10px;
+        padding: 12px 14px 10px;
         border-bottom: 1px solid var(--line);
       }
       .page .ico {
@@ -67,7 +72,7 @@
         word-break: break-all;
       }
       .sec {
-        padding: 10px 14px;
+        padding: 8px 14px;
         display: flex;
         flex-direction: column;
         gap: 8px;
@@ -75,10 +80,6 @@
       .lbl {
         font-size: 11px;
         color: var(--muted);
-      }
-      .note-lbl {
-        display: flex;
-        justify-content: space-between;
       }
       .switch {
         border-bottom: 1px solid var(--line);
@@ -130,12 +131,43 @@
       #meta:empty {
         display: none;
       }
+      .opt-row {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+      }
+      .note-line {
+        grid-column: span 2;
+        font-size: 13px;
+        font-weight: 400;
+      }
       .modes {
-        display: flex;
-        gap: 6px;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        padding: 2px;
+        border: 1px solid var(--line-2);
+        border-radius: 8px;
+        background: var(--surface);
+      }
+      .modes .chip {
+        min-height: 30px;
+        padding: 0 6px;
+        border: 0;
+        border-radius: 6px;
+      }
+      .modes .chip:disabled {
+        opacity: 0.4;
+        cursor: default;
+      }
+      .pick {
+        flex: 1 1 auto;
+        min-height: 0;
+        padding-top: 0;
       }
       .folders {
-        max-height: 260px;
+        flex: 1 1 auto;
+        min-height: 96px;
+        max-height: 320px;
         overflow-y: auto;
         display: flex;
         flex-direction: column;
@@ -182,7 +214,8 @@
       }
       .exists {
         margin: 0 14px 8px;
-        padding: 8px 10px;
+        min-height: 32px;
+        padding: 2px 4px 2px 10px;
         border-radius: 8px;
         background: var(--surface);
         border: 1px solid var(--line-2);
@@ -192,19 +225,47 @@
         font-size: 12px;
         color: var(--text-2);
       }
-      .exists button {
-        margin-left: auto;
+      .exists > span {
+        flex: 1 1 auto;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
-      .actions {
-        padding: 10px 14px 14px;
+      .bar {
         display: flex;
         flex-direction: column;
-        gap: 8px;
+        gap: 6px;
+        padding: 10px 14px 12px;
+        border-top: 1px solid var(--line);
       }
-      .actions .btn.primary {
+      .bar-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .hints {
+        flex: 1 1 auto;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+        font-size: 11px;
+        color: var(--muted);
+      }
+      .bar .btn.primary {
+        flex: 0 1 auto;
+        min-width: 0;
+        max-width: 240px;
         justify-content: center;
+        white-space: nowrap;
       }
-      .actions .btn.primary:disabled {
+      .bar .btn.primary span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .bar .btn.primary:disabled {
         opacity: 0.5;
         cursor: default;
       }
@@ -212,26 +273,20 @@
         font-size: 12px;
         color: var(--local-fg);
         text-align: center;
-        min-height: 16px;
+      }
+      .status:empty {
+        display: none;
       }
       .status.err {
         color: #ff9a8a;
       }
-      .foot {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 6px 14px;
-        border-top: 1px solid var(--line);
-        font-size: 11px;
-        color: var(--muted);
-      }
-      .foot button {
-        margin-left: auto;
+      #openBoard {
+        min-height: 28px;
+        padding: 0;
         color: var(--accent);
-        min-height: 32px;
         background: transparent;
         border: 0;
+        font-size: 11px;
         font-weight: 500;
       }
     </style>
@@ -240,12 +295,8 @@
     <div class="page" id="page"></div>
     <div class="sec switch" id="switch" hidden></div>
     <div class="sec" id="meta"></div>
-    <div class="sec">
-      <span class="lbl">Save</span>
-      <div class="modes" id="modes"></div>
-    </div>
     <div id="exists"></div>
-    <div class="sec">
+    <div class="sec pick">
       <label class="search">
         <span class="sr">Find or create folder</span>
         <span id="searchIcon"></span>
@@ -253,14 +304,15 @@
       </label>
       <div class="folders" id="folders" role="listbox" aria-label="Folders"></div>
     </div>
-    <div class="actions">
-      <button class="btn primary" id="save"></button>
+    <div class="bar">
       <div class="status" id="status" role="status"></div>
-    </div>
-    <div class="foot">
-      <span><span class="kbd">↑↓</span> folder</span>
-      <span><span class="kbd">↵</span> save</span>
-      <button id="openBoard">Open Tab Warehouse</button>
+      <div class="bar-row">
+        <div class="hints">
+          <span><span class="kbd">↑↓</span> folder · <span class="kbd">↵</span> save</span>
+          <button id="openBoard">Open Tab Warehouse</button>
+        </div>
+        <button class="btn primary" id="save"></button>
+      </div>
     </div>
     <script type="module" src="popup.js"></script>
   </body>

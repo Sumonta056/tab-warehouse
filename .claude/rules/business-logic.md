@@ -162,7 +162,7 @@ Every rule here has at least one test. If you change a rule, change its test in 
 ## Link notes and priority
 
 - `linkMeta = { [bookmarkId]: { note?, pri? } }` in `chrome.storage.local`. `cleanMeta()`: note trimmed and cut to 200 chars (`NOTE_MAX`); `pri` only `high`/`med`/`low` (`PRIS`, labels High/Medium/Low); an empty result removes the entry. Notes stay on this computer (bookmark ids differ per device); Backup JSON carries them.
-- Set in the popup (priority picker None/Low/Medium/High + note box, saved with the new bookmark id; nothing is stored when both are empty), in the row edit form (same picker + note), and in the row ⋯ menu: _Add note_ / _Edit note_ (opens the edit form with the note box focused), _Mark as High/Medium/Low_ (except the current one), _Clear priority_ (only when set).
+- Set in the popup (priority picker None/High/Medium/Low + one-line note box, saved with the new bookmark id; nothing is stored when both are empty), in the row edit form (same picker + note), and in the row ⋯ menu: _Add note_ / _Edit note_ (opens the edit form with the note box focused), _Mark as High/Medium/Low_ (except the current one), _Clear priority_ (only when set).
 - Row: a 3 px stripe in the priority color at the left edge (`--pri-high` red, `--pri-med` yellow, `--pri-low` grey; never the env colors) and the note on its own line under the URL. Note text is rendered with `h()`/`highlight()`, never `innerHTML`.
 - Order: priority links always come first (High, Medium, Low, then the rest); the folder's sort applies inside each group (`priGroups`, `priFirst`).
   - Plain folder, any sort except Environment, with at least one priority link: headers **High / Medium / Low / Other** (`Name  count`), empty groups skipped, collapsible per folder (`folders[id].closed['pri:<pri|none>']`).
@@ -201,10 +201,13 @@ Every rule here has at least one test. If you change a rule, change its test in 
 - Shows the active tab title (editable), the full URL and its env badge. No tab → message, Save disabled.
 - **Open this page in** (`#switch`, under the page): when the tab's host is in a row of _Same site in each version_ (`switchTargets()`), one button per other filled box of that row: env badge, the same page on that host (`deriveUrl`: path, query and `#part` kept; `localhost…` gets `http:`; cut with …, the full URL is the tooltip) and the plain name (`ENV_NAMES`). Click opens it in a new tab right after the current one and closes the popup; Shift/⌘/Ctrl+click opens it in the background, keeps the popup open and shows "Opened in a background tab".
 - No site row but the page has an env label → the hint "To open this page in your other versions, add this site in Settings › Environments.". No site row and no label, or a row with no other box → the section is hidden.
-- _This page_ saves the full URL; _Whole site_ saves `origin/` with the host as title and exists only for http(s) pages. A title you edited is kept when switching mode.
+- Layout (top to bottom): page, **Open this page in**, options, _Already in_, folder search and list, then the bottom bar. The popup is at most 600 px tall (Chrome's limit); only the folder list shrinks and scrolls, so the bottom bar with **Save** is always visible without scrolling.
+- Options: row 1 is the priority picker with names (● None, ● High, ● Medium, ● Low). Row 2 splits the width in 3: a one-line note box (`#note`, max 200 chars, 2 parts) and the **Page** / **Site** switch (`#modes`, 1 part). Enter in the note box saves.
+- Bottom bar: the status line (only when there is text), the key hints, _Open Tab Warehouse_ and **Save to <folder>** (cut with …; the full label is the tooltip).
+- _Page_ saves the full URL; _Site_ saves `origin/` with the host as title and exists only for http(s) pages. A title you edited is kept when switching mode.
 - Folder list: root first, then every nested folder (indented); filter matches the full path. If no folder has exactly the typed name, the last item is _Create "<name>"_ (created under the root).
 - Preselects `settings.lastSaveFolder`, else the root. ↑/↓ move, Enter saves. After save: status "Saved to X", remember the folder, close after 0.9 s.
-- If the URL is already bookmarked: show up to 3 locations with Remove (undo toast).
+- If the URL is already bookmarked: show up to 3 locations, one line each (`Already in <path>`, cut with …), with Remove (undo toast).
 
 ## Performance rules
 
