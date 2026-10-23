@@ -1,9 +1,9 @@
 import { base, F, L } from '../fixtures.js';
 
 const area = 'notes';
-const tab = { title: 'Argo app PROD', url: 'https://deploy.prod.example.com/applications/x?view=tree' };
+const tab = { title: 'Deploy app PROD', url: 'https://deploy.prod.example.com/applications/x?view=tree' };
 const META = {
-  32: { note: 'Ask Rafi for the token', pri: 'high' },
+  32: { note: 'Ask Sam for the token', pri: 'high' },
   33: { pri: 'high' },
   34: { pri: 'med' },
 };
@@ -62,7 +62,7 @@ export default [
       t.eq(t.rowIds(), ['32', '33', '34', '31'], 'manual order inside groups');
       t.ok(t.row('32').querySelector('.pri-bar'), 'stripe on High row');
       t.ok(!t.row('31').querySelector('.pri-bar'), 'no stripe on Other row');
-      t.eq(t.row('32').querySelector('.note')?.textContent, 'Ask Rafi for the token', 'note line');
+      t.eq(t.row('32').querySelector('.note')?.textContent, 'Ask Sam for the token', 'note line');
       t.click(t.$('.toolbar select'));
       t.$('.toolbar select').value = 'name';
       t.$('.toolbar select').dispatchEvent(new t.w.Event('change', { bubbles: true }));
@@ -110,7 +110,7 @@ export default [
       t.click(chip(t, 'low'));
       await t.settle();
       t.eq(t.$('#page .empty')?.textContent, 'Nothing matches the filter.', 'empty Low');
-      await t.folder('Sprint board');
+      await t.folder('Sprint tasks');
       await t.folder('Shop API');
       t.eq(chip(t, 'all').getAttribute('aria-pressed'), 'true', 'back to All');
       t.eq(t.rowIds().length, 4, 'all rows');
@@ -123,11 +123,11 @@ export default [
     fixture: () => withMeta(),
     async run(t) {
       await t.folder('Shop API');
-      t.type(t.$('.toolbar input[type=search]'), 'rafi');
+      t.type(t.$('.toolbar input[type=search]'), 'sam');
       await t.settle();
       t.eq(t.rowIds(), ['32'], 'folder filter');
       t.ok(t.row('32').querySelector('.note mark'), 'note text highlighted');
-      t.type(t.$('#q'), 'rafi token');
+      t.type(t.$('#q'), 'sam token');
       await t.settle();
       t.eq(t.rowIds(), ['32'], 'global search');
     },
@@ -138,7 +138,7 @@ export default [
     page: 'newtab',
     fixture: () => withMeta({ 22: { pri: 'high' } }),
     async run(t) {
-      await t.folder('Sprint board');
+      await t.folder('Sprint tasks');
       t.eq(t.$$('#page .grp.prig').length, 0, 'no priority headers');
       t.eq(t.rowIds(), ['24', '22', '21'], 'High first in No section');
     },
@@ -151,9 +151,9 @@ export default [
       const f = base({
         extraRoot: [
           F('80', 'Mixed', [
-            L('81', 'a PROD', 'https://www.example.com/a'),
-            L('82', 'b PROD', 'https://www.example.com/b'),
-            L('83', 'c TEST', 'https://test.example.com/c'),
+            L('81', 'a PROD', 'https://www.example.org/a'),
+            L('82', 'b PROD', 'https://www.example.org/b'),
+            L('83', 'c TEST', 'https://test.example.org/c'),
           ]),
         ],
         settings: { folders: { 80: { sort: 'env' } } },
@@ -260,7 +260,7 @@ export default [
       t.click(t.toast()?.querySelector('button'));
       await t.settle();
       const back = t.node('30').children[1];
-      t.eq(back?.url, 'https://shop-test.example.com/api/x', 'link restored');
+      t.eq(back?.url, 'https://test.shop.example.com/api/x', 'link restored');
       t.eq(t.store.linkMeta[back.id], META[32], 'note restored by new id');
     },
   },
@@ -304,7 +304,7 @@ export default [
             title: 'Shop API',
             links: [
               { title: 'Shop PROD', url: 'https://shop.example.com/api/x', note: 'theirs', pri: 'high' },
-              { title: 'Shop TEST', url: 'https://shop-test.example.com/api/x', pri: 'low' },
+              { title: 'Shop TEST', url: 'https://test.shop.example.com/api/x', pri: 'low' },
               { title: 'New', url: 'https://new.example.com/', note: 'fresh' },
             ],
           },

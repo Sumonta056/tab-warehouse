@@ -300,7 +300,7 @@ export default [
       t.click(t.$('.toast button'));
       await t.settle();
       const back = t.node('30').children[1];
-      t.eq([back.title, back.url], ['Shop TEST', 'https://shop-test.example.com/api/x'], 'restored at index 1');
+      t.eq([back.title, back.url], ['Shop TEST', 'https://test.shop.example.com/api/x'], 'restored at index 1');
       t.ok(card(t, back.id), 'card back');
     },
   },

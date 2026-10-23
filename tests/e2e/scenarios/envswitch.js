@@ -16,13 +16,13 @@ export default [
       t.eq(
         rows(t),
         [
-          ['TEST', 'https://shop-test.example.com/api/x?id=7', 'Test'],
-          ['STAGE', 'https://shop-stage.example.com/api/x?id=7', 'Staging'],
+          ['TEST', 'https://test.shop.example.com/api/x?id=7', 'Test'],
+          ['STAGE', 'https://stage.shop.example.com/api/x?id=7', 'Staging'],
           ['LOCAL', 'http://localhost:8080/api/x?id=7', 'Your computer'],
         ],
         'rows',
       );
-      t.eq(t.$('#switch .env-go').title, 'https://shop-test.example.com/api/x?id=7', 'full URL as tooltip');
+      t.eq(t.$('#switch .env-go').title, 'https://test.shop.example.com/api/x?id=7', 'full URL as tooltip');
     },
   },
   {
@@ -33,7 +33,7 @@ export default [
     async run(t) {
       t.click(t.$('#switch .env-go[data-env="STAGE"]'));
       await t.settle();
-      t.eq(t.tabs.at(-1), { url: 'https://shop-stage.example.com/api/x', index: 4, active: true }, 'opened next to this tab');
+      t.eq(t.tabs.at(-1), { url: 'https://stage.shop.example.com/api/x', index: 4, active: true }, 'opened next to this tab');
       t.ok(t.H.closed, 'popup closed');
     },
   },
@@ -45,7 +45,7 @@ export default [
     async run(t) {
       t.$('#switch .env-go[data-env="TEST"]').dispatchEvent(new t.w.MouseEvent('click', { bubbles: true, shiftKey: true }));
       await t.settle();
-      t.eq(t.tabs.at(-1), { url: 'https://shop-test.example.com/api/x', index: 4, active: false }, 'background tab');
+      t.eq(t.tabs.at(-1), { url: 'https://test.shop.example.com/api/x', index: 4, active: false }, 'background tab');
       t.ok(!t.H.closed, 'popup stays open');
       t.eq(t.$('#status').textContent, 'Opened in a background tab', 'status');
     },
@@ -54,16 +54,16 @@ export default [
     area,
     name: 'env switch: empty boxes in the site row are skipped',
     page: 'popup',
-    fixture: () => at('https://www.example.com/news'),
+    fixture: () => at('https://www.example.org/news'),
     async run(t) {
-      t.eq(rows(t), [['TEST', 'https://test.example.com/news', 'Test']], 'only TEST');
+      t.eq(rows(t), [['TEST', 'https://test.example.org/news', 'Test']], 'only TEST');
     },
   },
   {
     area,
     name: 'env switch: a labelled page without a site row shows a hint; a plain page shows nothing',
     page: 'popup',
-    fixture: () => at('https://deploy.prod.example.com/applications/x', 'Argo app PROD'),
+    fixture: () => at('https://deploy.prod.example.com/applications/x', 'Deploy app PROD'),
     async run(t) {
       t.ok(!t.$('#switch').hidden, 'hint shown');
       t.eq(t.$('#switch .switch-hint')?.textContent, 'To open this page in your other versions, add this site in Settings › Environments.', 'hint');

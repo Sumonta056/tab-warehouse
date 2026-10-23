@@ -60,14 +60,14 @@ const SAMPLE_ENV_RULES = [
   { pattern: 'dev.', env: 'TEST' },
   { pattern: 'shop.example.com', env: 'PROD' },
   { pattern: 'api.example.com', env: 'PROD' },
-  { pattern: 'www.example.com', env: 'PROD' },
+  { pattern: 'www.example.org', env: 'PROD' },
   { pattern: 'console.aws.amazon.com', env: 'PROD' },
   { pattern: 'prod', env: 'PROD' },
 ];
 const SAMPLE_HOST_MAP = [
-  { PROD: 'shop.example.com', TEST: 'shop-test.example.com', STAGE: 'shop-stage.example.com', LOCAL: 'localhost:8080' },
+  { PROD: 'shop.example.com', TEST: 'test.shop.example.com', STAGE: 'stage.shop.example.com', LOCAL: 'localhost:8080' },
   { PROD: 'api.example.com', TEST: 'api-test.example.com', STAGE: '', LOCAL: 'localhost:8080' },
-  { PROD: 'www.example.com', TEST: 'test.example.com', STAGE: '', LOCAL: '' },
+  { PROD: 'www.example.org', TEST: 'test.example.org', STAGE: '', LOCAL: '' },
 ];
 
 const L = (id, title, url, extra = {}) => ({ id, title, url, ...extra });
@@ -75,7 +75,7 @@ const F = (id, title, children = [], extra = {}) => ({ id, title, children, ...e
 
 describe('URL helpers', () => {
   test('hostOf lowercases host and keeps port; bad URL gives empty string', () => {
-    assert.equal(hostOf('https://Shop.example.com/x'), 'shop.example.com');
+    assert.equal(hostOf('https://Shop.EXAMPLE.com/x'), 'shop.example.com');
     assert.equal(hostOf('http://localhost:8080/a'), 'localhost:8080');
     assert.equal(hostOf('not a url'), '');
     assert.equal(hostOf(undefined), '');
@@ -114,11 +114,11 @@ describe('detectEnv', () => {
   test('host rules win in order', () => {
     assert.equal(env('http://localhost:3000'), 'LOCAL');
     assert.equal(env('http://127.0.0.1:5000'), 'LOCAL');
-    assert.equal(env('https://shop-stage.example.com'), 'STAGE');
-    assert.equal(env('https://shop-test.example.com'), 'TEST');
+    assert.equal(env('https://stage.shop.example.com'), 'STAGE');
+    assert.equal(env('https://test.shop.example.com'), 'TEST');
     assert.equal(env('https://api-dev.x.com'), 'TEST');
     assert.equal(env('https://shop.example.com/global'), 'PROD');
-    assert.equal(env('https://deploy-green.prod.example.net'), 'PROD');
+    assert.equal(env('https://blue.prod.example.net'), 'PROD');
   });
   test('first matching rule wins (stage beats prod in the same host)', () => {
     assert.equal(env('https://stage.prod.example.com'), 'STAGE');
@@ -133,7 +133,7 @@ describe('detectEnv', () => {
     assert.equal(env('https://github.com/x', 'Repo'), '');
   });
   test('custom rules are honoured and case-insensitive on pattern', () => {
-    assert.equal(detectEnv({ url: 'https://qa.example.org' }, [{ pattern: 'QA.', env: 'TEST' }]), 'TEST');
+    assert.equal(detectEnv({ url: 'https://qa.example.io' }, [{ pattern: 'QA.', env: 'TEST' }]), 'TEST');
   });
 });
 
@@ -142,15 +142,15 @@ describe('switchTargets', () => {
     assert.deepEqual(switchTargets('https://shop.example.com/a/b?c=1#x', SAMPLE_HOST_MAP), {
       from: 'PROD',
       to: [
-        { env: 'TEST', url: 'https://shop-test.example.com/a/b?c=1#x' },
-        { env: 'STAGE', url: 'https://shop-stage.example.com/a/b?c=1#x' },
+        { env: 'TEST', url: 'https://test.shop.example.com/a/b?c=1#x' },
+        { env: 'STAGE', url: 'https://stage.shop.example.com/a/b?c=1#x' },
         { env: 'LOCAL', url: 'http://localhost:8080/a/b?c=1#x' },
       ],
     });
   });
 
   test('skips empty boxes; host case does not matter', () => {
-    assert.deepEqual(switchTargets('https://WWW.example.com/x', SAMPLE_HOST_MAP), { from: 'PROD', to: [{ env: 'TEST', url: 'https://test.example.com/x' }] });
+    assert.deepEqual(switchTargets('https://WWW.example.org/x', SAMPLE_HOST_MAP), { from: 'PROD', to: [{ env: 'TEST', url: 'https://test.example.org/x' }] });
   });
 
   test('null when the site has no row or the URL is not valid', () => {
@@ -162,7 +162,7 @@ describe('switchTargets', () => {
 
 describe('deriveUrl', () => {
   test('swaps host and keeps path + query', () => {
-    assert.equal(deriveUrl('https://shop.example.com/a/b?c=1', 'TEST', SAMPLE_HOST_MAP), 'https://shop-test.example.com/a/b?c=1');
+    assert.equal(deriveUrl('https://shop.example.com/a/b?c=1', 'TEST', SAMPLE_HOST_MAP), 'https://test.shop.example.com/a/b?c=1');
   });
   test('localhost target switches to http', () => {
     assert.equal(deriveUrl('https://shop.example.com/a', 'LOCAL', SAMPLE_HOST_MAP), 'http://localhost:8080/a');
@@ -180,7 +180,7 @@ describe('bookmark tree helpers', () => {
     F('1', 'Bookmarks bar', [
       F('10', 'My Links', [
         F('11', 'Shop API', [L('111', 'a', 'https://a.com')]),
-        F('12', 'Tasks', [L('121', 'b', 'https://b.com'), F('122', 'Blocked', [L('1221', 'c', 'https://c.com')])]),
+        F('12', 'Sprint tasks', [L('121', 'b', 'https://b.com'), F('122', 'Blocked', [L('1221', 'c', 'https://c.com')])]),
         L('13', 'loose', 'https://loose.com'),
       ]),
     ]),
@@ -207,8 +207,8 @@ describe('bookmark tree helpers', () => {
       r.map((x) => [x.id, x.path]),
       [
         ['111', 'Shop API'],
-        ['121', 'Tasks'],
-        ['1221', 'Tasks › Blocked'],
+        ['121', 'Sprint tasks'],
+        ['1221', 'Sprint tasks › Blocked'],
         ['13', ''],
       ],
     );
@@ -218,7 +218,7 @@ describe('bookmark tree helpers', () => {
       folderList(findById(tree, '10')).map((f) => [f.title, f.depth]),
       [
         ['Shop API', 0],
-        ['Tasks', 0],
+        ['Sprint tasks', 0],
         ['Blocked', 1],
       ],
     );
@@ -281,7 +281,7 @@ describe('sections()', () => {
 describe('sortLinks', () => {
   const links = [
     L('1', 'Beta', 'https://b.com/2', { index: 2, dateAdded: 10 }),
-    L('2', 'alpha', 'https://shop-test.example.com/1', { index: 0, dateAdded: 30 }),
+    L('2', 'alpha', 'https://test.shop.example.com/1', { index: 0, dateAdded: 30 }),
     L('3', 'Gamma', 'http://localhost:8080/1', { index: 1, dateAdded: 20 }),
     L('4', 'item 10', 'https://a.com/10', { index: 3, dateAdded: 5 }),
     L('5', 'item 9', 'https://a.com/9', { index: 4, dateAdded: 1 }),
@@ -363,13 +363,13 @@ describe('link notes and priority', () => {
   });
 
   test('matchLink: every term must match title, URL or note', () => {
-    const bm = L('9', 'Jenkins deploy', 'https://ci.example.io/job/web');
+    const bm = L('9', 'Build deploy', 'https://ci.example.com/job/web');
     assert.equal(matchLink(bm, '', ''), true);
-    assert.equal(matchLink(bm, '', 'jenkins acme'), true);
-    assert.equal(matchLink(bm, 'Ask Rafi for the token', 'rafi'), true);
-    assert.equal(matchLink(bm, 'Ask Rafi for the token', 'jenkins token'), true);
-    assert.equal(matchLink(bm, '', 'rafi'), false);
-    assert.equal(matchLink(bm, undefined, 'jenkins'), true);
+    assert.equal(matchLink(bm, '', 'build example'), true);
+    assert.equal(matchLink(bm, 'Ask Sam for the token', 'sam'), true);
+    assert.equal(matchLink(bm, 'Ask Sam for the token', 'build token'), true);
+    assert.equal(matchLink(bm, '', 'sam'), false);
+    assert.equal(matchLink(bm, undefined, 'build'), true);
   });
 });
 
@@ -433,7 +433,7 @@ describe('duplicates', () => {
 describe('buildMatrix', () => {
   test('groups the same path across envs; no-env links go to rest', () => {
     const { rows, rest } = buildMatrix(
-      [L('1', 'p', 'https://shop.example.com/api/x?q=1'), L('2', 't', 'https://shop-test.example.com/api/x'), L('3', 'n', 'https://github.com/a')],
+      [L('1', 'p', 'https://shop.example.com/api/x?q=1'), L('2', 't', 'https://test.shop.example.com/api/x'), L('3', 'n', 'https://github.com/a')],
       SAMPLE_ENV_RULES,
     );
     assert.equal(rows.length, 1);
@@ -635,11 +635,11 @@ describe('no built-in company or personal data', () => {
     const s = await loadSettings();
     assert.equal(s.rootName, '');
     assert.deepEqual([s.envRules, s.hostMap], [[], []]);
-    assert.doesNotMatch(JSON.stringify(s), /acme\.no|shop|My Links|sumonta|gitbook|vercel/i);
+    assert.doesNotMatch(JSON.stringify(s), /shop\.example|My Links|Sprint tasks|sumonta|gitbook|vercel/i);
   });
   test('letterIcon has no company special cases', () => {
-    assert.equal(letterIcon({ url: 'https://shop.example.com/x', title: 'Shop API' }), 'La');
-    assert.equal(letterIcon({ url: 'https://www.example.com/', title: 'News' }), 'Ne');
+    assert.equal(letterIcon({ url: 'https://shop.example.com/x', title: 'Shop API' }), 'Sh');
+    assert.equal(letterIcon({ url: 'https://www.example.org/', title: 'News' }), 'Ne');
     assert.equal(letterIcon({ url: 'https://github.com/a', title: 'Repo' }), 'gh');
   });
 });

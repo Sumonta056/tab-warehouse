@@ -61,7 +61,7 @@ export default [
       t.eq(t.kids('70'), ['71', '72', '73'], 'links unchanged');
       t.eq(t.store.homeIcons, { 71: 'https://icons.example.com/gh.png' }, 'icons unchanged');
       t.eq(t.settings().rootName, 'My Links', 'saved root folder name kept');
-      t.eq(t.navTitles()[0], 'Sprint board', 'sidebar still uses the saved root folder');
+      t.eq(t.navTitles()[0], 'Sprint tasks', 'sidebar still uses the saved root folder');
       t.ok(!t.$('#home .home-empty'), 'no help text when Home has links');
     },
   },

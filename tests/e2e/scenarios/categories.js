@@ -63,9 +63,9 @@ export default [
       t.click(t.catHeader('Daily working').querySelector('.cat-toggle'));
       await t.settle();
       t.eq(t.settings().categories[0].closed, true, 'saved');
-      t.ok(!t.nav('Sprint board') && !t.nav('Shop API'), 'folders hidden');
+      t.ok(!t.nav('Sprint tasks') && !t.nav('Shop API'), 'folders hidden');
       await t.reload();
-      t.ok(!t.nav('Sprint board'), 'still collapsed after reload');
+      t.ok(!t.nav('Sprint tasks'), 'still collapsed after reload');
       t.d.activeElement?.blur();
       t.key(t.d, 'j');
       await t.settle();
@@ -99,10 +99,10 @@ export default [
     page: 'newtab',
     fixture: withCats,
     async run(t) {
-      t.drag(t.nav('GITHUB - PIN'), t.nav('Sprint board'), 'before');
+      t.drag(t.nav('GITHUB - PIN'), t.nav('Sprint tasks'), 'before');
       await t.settle();
       t.eq(t.settings().folderCat['40'], 'c1', 'category adopted');
-      t.eq(sidebar(t).slice(0, 4), ['[Daily working]', 'GITHUB - PIN', 'Sprint board', 'Shop API'], 'position');
+      t.eq(sidebar(t).slice(0, 4), ['[Daily working]', 'GITHUB - PIN', 'Sprint tasks', 'Shop API'], 'position');
     },
   },
   {
@@ -176,7 +176,7 @@ export default [
         'category gone',
       );
       t.ok(!Object.values(t.settings().folderCat).includes('c1'), 'assignments cleared');
-      t.ok(t.nav('Sprint board') && t.nav('Shop API'), 'folders still listed');
+      t.ok(t.nav('Sprint tasks') && t.nav('Shop API'), 'folders still listed');
       t.ok(t.node('20') && t.node('30'), 'bookmarks untouched');
     },
   },

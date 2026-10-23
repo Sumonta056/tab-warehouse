@@ -1,7 +1,7 @@
 import { base } from '../fixtures.js';
 
 const area = 'popup';
-const tab = { title: 'Argo app PROD', url: 'https://deploy.prod.example.com/applications/x?view=tree' };
+const tab = { title: 'Deploy app PROD', url: 'https://deploy.prod.example.com/applications/x?view=tree' };
 const folders = (t) => t.$$('#folders .folder').map((b) => b.childNodes[0]?.textContent);
 const selected = (t) => t.$('#folders .folder.on')?.childNodes[0]?.textContent;
 
@@ -12,7 +12,7 @@ export default [
     page: 'popup',
     fixture: () => base({ activeTab: tab }),
     async run(t) {
-      t.eq(t.$('#page .field').value, 'Argo app PROD', 'title');
+      t.eq(t.$('#page .field').value, 'Deploy app PROD', 'title');
       t.eq(t.$('#page .target').textContent, tab.url, 'full URL');
       t.eq(t.$('#page .badge')?.textContent, 'PROD', 'badge');
     },
@@ -23,7 +23,7 @@ export default [
     page: 'popup',
     fixture: () => base({ activeTab: tab }),
     async run(t) {
-      t.eq(folders(t), ['My Links', 'Sprint board', 'Blocked', 'Shop API', 'GITHUB - PIN', 'Empty'], 'list');
+      t.eq(folders(t), ['My Links', 'Sprint tasks', 'Blocked', 'Shop API', 'GITHUB - PIN', 'Empty'], 'list');
       t.eq(selected(t), 'My Links', 'root selected when nothing saved yet');
     },
   },
@@ -79,7 +79,7 @@ export default [
       t.key(t.$('#q'), 'ArrowDown');
       t.eq(selected(t), 'Blocked', 'two down');
       t.key(t.$('#q'), 'ArrowUp');
-      t.eq(selected(t), 'Sprint board', 'one up');
+      t.eq(selected(t), 'Sprint tasks', 'one up');
     },
   },
   {

@@ -22,7 +22,7 @@ export default [
       await openPal(t);
       t.ok(t.$('#palette .pal[role="dialog"]'), 'dialog open');
       t.eq(t.d.activeElement, t.$('#palQ'), 'focus in the box');
-      t.eq(items(t).slice(0, 3), ['Sprint board', 'Shop API', 'GITHUB - PIN'], 'folders first');
+      t.eq(items(t).slice(0, 3), ['Sprint tasks', 'Shop API', 'GITHUB - PIN'], 'folders first');
       t.ok(items(t).includes('Home') && items(t).includes('Settings › Duplicates'), 'places listed');
       t.eq(t.$('#palQ').getAttribute('aria-activedescendant'), 'pal-o-0', 'first item active');
       t.key(t.$('#palQ'), 'Escape');
@@ -52,7 +52,7 @@ export default [
       t.eq(t.$('#palList .pal-item.sel .pal-t').textContent, 'Shop TEST', 'second selected');
       t.key(t.$('#palQ'), 'Enter');
       await t.settle();
-      t.eq(t.tabs.at(-1), { url: 'https://shop-test.example.com/api/x', update: true }, 'opened in this tab');
+      t.eq(t.tabs.at(-1), { url: 'https://test.shop.example.com/api/x', update: true }, 'opened in this tab');
       t.ok(!t.$('#palette'), 'closed after Enter');
     },
   },
@@ -63,10 +63,10 @@ export default [
     fixture: () => base(),
     async run(t) {
       await openPal(t);
-      await search(t, 'TASK-160');
+      await search(t, '#160');
       t.key(t.$('#palQ'), 'Enter', { metaKey: true });
       await t.settle();
-      t.eq(t.tabs.at(-1), { url: 'https://tasks.example.com/t/TASK-160', active: false }, 'background tab');
+      t.eq(t.tabs.at(-1), { url: 'https://tracker.example.com/issues/160', active: false }, 'background tab');
       t.eq(t.toast()?.textContent, 'Opened in a background tab', 'toast');
     },
   },
@@ -77,12 +77,12 @@ export default [
     fixture: () => base(),
     async run(t) {
       await openPal(t);
-      await search(t, 'tasks task');
+      await search(t, 'sprint tasks');
       const folder = t.$$('#palList .pal-item').find((o) => o.dataset.kind === 'folder');
-      t.eq(folder?.querySelector('.pal-t').textContent, 'Sprint board', 'folder found');
+      t.eq(folder?.querySelector('.pal-t').textContent, 'Sprint tasks', 'folder found');
       t.click(folder);
       await t.settle();
-      t.eq(t.$('.head h2')?.textContent, 'Sprint board', 'folder page open');
+      t.eq(t.$('.head h2')?.textContent, 'Sprint tasks', 'folder page open');
       await openPal(t);
       await search(t, 'settings dup');
       t.eq(items(t), ['Settings › Duplicates'], 'one place');

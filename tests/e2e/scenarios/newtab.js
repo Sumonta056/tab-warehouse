@@ -38,7 +38,7 @@ export default [
       t.eq(btn.getAttribute('aria-label'), 'Home', 'accessible name');
       t.ok(btn.classList.contains('on'), 'Home is selected');
       t.ok(t.$('#home'), 'Home page is rendered');
-      t.eq(t.navTitles(), ['Sprint board', 'Shop API', 'GITHUB - PIN', 'Empty', 'Unsorted'], 'sidebar items');
+      t.eq(t.navTitles(), ['Sprint tasks', 'Shop API', 'GITHUB - PIN', 'Empty', 'Unsorted'], 'sidebar items');
       t.ok(!t.$('.side .hint'), 'no drag hint text');
       t.ok(!t.$('.side').textContent.includes("Chrome's bookmark tree"), 'hint text removed');
     },
@@ -254,7 +254,7 @@ export default [
     page: 'newtab',
     fixture: () => base(),
     async run(t) {
-      t.eq(t.nav('Sprint board').querySelector('.n').textContent, '3', 'Tasks count');
+      t.eq(t.nav('Sprint tasks').querySelector('.n').textContent, '3', 'Sprint tasks count');
       t.eq(t.nav('Unsorted').querySelector('.n').textContent, '1', 'Unsorted count');
       t.eq(t.nav('Empty').querySelector('.n').textContent, '0', 'Empty count');
     },
@@ -306,13 +306,13 @@ export default [
     page: 'newtab',
     fixture: () => base(),
     async run(t) {
-      t.drag(t.nav('GITHUB - PIN'), t.nav('Sprint board'), 'before');
+      t.drag(t.nav('GITHUB - PIN'), t.nav('Sprint tasks'), 'before');
       await t.settle();
       t.eq(t.settings().order.slice(0, 2), ['40', '20'], 'saved order');
       t.eq(t.kids('10'), ['20', '30', '40', '50', '60'], 'Chrome order unchanged');
-      t.eq(t.navTitles().slice(0, 2), ['GITHUB - PIN', 'Sprint board'], 'sidebar shows new order');
+      t.eq(t.navTitles().slice(0, 2), ['GITHUB - PIN', 'Sprint tasks'], 'sidebar shows new order');
       await t.reload();
-      t.eq(t.navTitles().slice(0, 2), ['GITHUB - PIN', 'Sprint board'], 'order survives reload');
+      t.eq(t.navTitles().slice(0, 2), ['GITHUB - PIN', 'Sprint tasks'], 'order survives reload');
     },
   },
   {
@@ -321,7 +321,7 @@ export default [
     page: 'newtab',
     fixture: () => base(),
     async run(t) {
-      t.key(t.nav('Sprint board'), 'ArrowDown', { altKey: true });
+      t.key(t.nav('Sprint tasks'), 'ArrowDown', { altKey: true });
       await t.settle();
       t.eq(t.settings().order.slice(0, 2), ['30', '20'], 'moved down');
       t.key(t.nav('Shop API'), 'ArrowUp', { altKey: true });
@@ -500,10 +500,10 @@ export default [
       await t.folder('Shop API');
       t.click(t.row('32').querySelector('.act[aria-label="Edit title and URL"]'));
       t.ok(t.$('.edit')?.noValidate, 'form has novalidate');
-      t.$('.edit input.url-in').value = 'shop-test.example.com/other';
+      t.$('.edit input.url-in').value = 'test.shop.example.com/other';
       t.click(t.$('.edit button[type="submit"]'));
       await t.settle();
-      t.eq(t.node('32').url, 'https://shop-test.example.com/other', 'saved');
+      t.eq(t.node('32').url, 'https://test.shop.example.com/other', 'saved');
     },
   },
   {
@@ -550,7 +550,7 @@ export default [
       t.click(t.toast()?.querySelector('button'));
       await t.settle();
       const back = t.node('30').children[1];
-      t.eq([back?.title, back?.url], ['Shop TEST', 'https://shop-test.example.com/api/x'], 'restored at index 1');
+      t.eq([back?.title, back?.url], ['Shop TEST', 'https://test.shop.example.com/api/x'], 'restored at index 1');
     },
   },
   {
@@ -576,7 +576,7 @@ export default [
       t.click(t.toast()?.querySelector('button'));
       await t.settle();
       const back = t.node('30').children[1];
-      t.eq([back?.title, back?.url], ['Shop TEST', 'https://shop-test.example.com/api/x'], 'restored at index 1');
+      t.eq([back?.title, back?.url], ['Shop TEST', 'https://test.shop.example.com/api/x'], 'restored at index 1');
     },
   },
   {
@@ -593,7 +593,7 @@ export default [
         `derive items (${labels.join(', ')})`,
       );
       t.menu('Open on TEST');
-      t.eq(t.tabs.at(-1)?.url, 'https://shop-test.example.com/api/x', 'opened derived URL');
+      t.eq(t.tabs.at(-1)?.url, 'https://test.shop.example.com/api/x', 'opened derived URL');
     },
   },
   {
@@ -602,8 +602,8 @@ export default [
     page: 'newtab',
     fixture: () => base(),
     async run(t) {
-      await t.folder('Sprint board');
-      t.context(t.nav('Sprint board'));
+      await t.folder('Sprint tasks');
+      t.context(t.nav('Sprint tasks'));
       t.menu('Open all (3)');
       t.eq(t.tabs.length, 3, 'three tabs');
       t.ok(
@@ -650,10 +650,10 @@ export default [
     page: 'newtab',
     fixture: () => base(),
     async run(t) {
-      t.type(t.$('#q'), 'TASK-100');
+      t.type(t.$('#q'), '#100');
       await t.settle();
       t.eq(t.rowIds(), ['24'], 'one hit');
-      t.eq(t.row('24').querySelector('.crumb')?.textContent, 'Sprint board › Blocked', 'crumb');
+      t.eq(t.row('24').querySelector('.crumb')?.textContent, 'Sprint tasks › Blocked', 'crumb');
       t.key(t.$('#q'), 'Escape');
       await t.settle();
       t.ok(t.$('#home'), 'back to Home after Escape');
@@ -672,7 +672,7 @@ export default [
       t.d.activeElement?.blur();
       t.key(t.d, 'j');
       await t.settle();
-      t.eq(t.$('.head h2')?.textContent, 'Sprint board', 'j from the Board goes to first folder');
+      t.eq(t.$('.head h2')?.textContent, 'Sprint tasks', 'j from the Board goes to first folder');
       t.d.activeElement?.blur();
       t.key(t.d, 'k');
       await t.settle();

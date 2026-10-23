@@ -3,10 +3,10 @@ import { base, F, L } from '../fixtures.js';
 const area = 'sections';
 const twoSections = () =>
   base({
-    tasks: F('20', 'Sprint board', [
-      L('21', 'Read title TASK-160', 'https://tasks.example.com/t/TASK-160'),
-      L('22', 'Keyboard TASK-150', 'https://tasks.example.com/t/TASK-150'),
-      F('23', 'Blocked', [L('24', 'Old TASK-100', 'https://tasks.example.com/t/TASK-100')]),
+    tasks: F('20', 'Sprint tasks', [
+      L('21', 'Read title #160', 'https://tracker.example.com/issues/160'),
+      L('22', 'Keyboard #150', 'https://tracker.example.com/issues/150'),
+      F('23', 'Blocked', [L('24', 'Old #100', 'https://tracker.example.com/issues/100')]),
       F('25', 'In progress', []),
     ]),
   });
@@ -18,7 +18,7 @@ export default [
     page: 'newtab',
     fixture: () => base(),
     async run(t) {
-      await t.folder('Sprint board');
+      await t.folder('Sprint tasks');
       t.eq(
         t.$$('#page .grp.part .part-toggle').map((b) => b.textContent),
         ['Blocked', 'No section'],
@@ -44,7 +44,7 @@ export default [
     page: 'newtab',
     fixture: () => base(),
     async run(t) {
-      await t.folder('Sprint board');
+      await t.folder('Sprint tasks');
       t.click(t.part('Blocked').querySelector('.part-toggle'));
       await t.settle();
       t.eq(t.settings().folders['20'].closed['23'], true, 'saved');
@@ -58,7 +58,7 @@ export default [
     page: 'newtab',
     fixture: () => base(),
     async run(t) {
-      await t.folder('Sprint board');
+      await t.folder('Sprint tasks');
       t.answer('In progress');
       t.click(t.$('.newPart'));
       await t.settle();
@@ -75,7 +75,7 @@ export default [
     page: 'newtab',
     fixture: () => base(),
     async run(t) {
-      await t.folder('Sprint board');
+      await t.folder('Sprint tasks');
       t.drag(t.row('21'), t.part('Blocked'));
       await t.settle();
       t.eq(t.node('21').parentId, '23', 'moved into Blocked');
@@ -90,10 +90,10 @@ export default [
     page: 'newtab',
     fixture: () => base(),
     async run(t) {
-      await t.folder('Sprint board');
+      await t.folder('Sprint tasks');
       t.drag(t.row('22'), t.row('24'), 'before');
       await t.settle();
-      t.eq(t.kids('23'), ['22', '24'], 'inserted before TASK-100');
+      t.eq(t.kids('23'), ['22', '24'], 'inserted before #100');
     },
   },
   {
@@ -102,7 +102,7 @@ export default [
     page: 'newtab',
     fixture: twoSections,
     async run(t) {
-      await t.folder('Sprint board');
+      await t.folder('Sprint tasks');
       t.context(t.row('24'));
       const labels = t.menuLabels();
       t.ok(labels.includes('Move to In progress') && labels.includes('Move to No section') && !labels.includes('Move to Blocked'), labels.join(', '));
@@ -117,7 +117,7 @@ export default [
     page: 'newtab',
     fixture: () => base(),
     async run(t) {
-      await t.folder('Sprint board');
+      await t.folder('Sprint tasks');
       t.click(t.part('Blocked').querySelector('.more'));
       t.click(t.$('.menu .sw[data-color="red"]'));
       await t.settle();
@@ -136,7 +136,7 @@ export default [
     page: 'newtab',
     fixture: () => base(),
     async run(t) {
-      await t.folder('Sprint board');
+      await t.folder('Sprint tasks');
       t.answer('Stuck');
       t.click(t.part('Blocked').querySelector('.more'));
       t.menu('Rename section');
@@ -150,7 +150,7 @@ export default [
     page: 'newtab',
     fixture: twoSections,
     async run(t) {
-      await t.folder('Sprint board');
+      await t.folder('Sprint tasks');
       t.click(t.part('Blocked').querySelector('.more'));
       t.menu('Move down');
       await t.settle();
@@ -175,7 +175,7 @@ export default [
     page: 'newtab',
     fixture: twoSections,
     async run(t) {
-      await t.folder('Sprint board');
+      await t.folder('Sprint tasks');
       t.drag(t.part('In progress'), t.part('Blocked'), 'before');
       await t.settle();
       t.eq(
@@ -196,7 +196,7 @@ export default [
     page: 'newtab',
     fixture: () => base(),
     async run(t) {
-      await t.folder('Sprint board');
+      await t.folder('Sprint tasks');
       t.click(t.part('Blocked').querySelector('.more'));
       t.menu('Delete section…');
       await t.settle();
@@ -210,8 +210,8 @@ export default [
     page: 'newtab',
     fixture: () => base(),
     async run(t) {
-      await t.folder('Sprint board');
-      t.type(t.$('.toolbar input[type="search"]'), 'TASK-100');
+      await t.folder('Sprint tasks');
+      t.type(t.$('.toolbar input[type="search"]'), '#100');
       await t.settle();
       t.eq(
         t.$$('#page .grp.part .part-toggle').map((b) => b.textContent),
@@ -227,12 +227,12 @@ export default [
     page: 'newtab',
     fixture: () =>
       base({
-        tasks: F('20', 'Sprint board', [
-          F('23', 'Blocked', [L('24', 'Shop PROD', 'https://shop.example.com/api/y'), L('26', 'Shop TEST', 'https://shop-test.example.com/api/y')]),
+        tasks: F('20', 'Sprint tasks', [
+          F('23', 'Blocked', [L('24', 'Shop PROD', 'https://shop.example.com/api/y'), L('26', 'Shop TEST', 'https://test.shop.example.com/api/y')]),
         ]),
       }),
     async run(t) {
-      await t.folder('Sprint board');
+      await t.folder('Sprint tasks');
       t.click(t.$$('.seg button').find((b) => b.textContent === 'Env matrix'));
       await t.settle();
       t.eq(t.$$('.matrix tbody tr').length, 1, 'matrix row from section links');

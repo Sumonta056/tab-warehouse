@@ -19,7 +19,7 @@ Exit code 0 = all green. The e2e part prints `pass N / fail M / total T` and one
 ```
 tests/unit/core.test.mjs        pure functions in lib/core.js (node --test)
 tests/e2e/chrome-stub.js        fake chrome.bookmarks / storage / tabs / runtime (state lives in the runner page)
-tests/e2e/fixtures.js           base() tree: My Links > Sprint board (+Blocked), Shop API (4 envs), GITHUB - PIN, Empty, Loose; Other bookmarks > Home
+tests/e2e/fixtures.js           base() tree: My Links > Sprint tasks (+Blocked), Shop API (4 envs), GITHUB - PIN, Empty, Loose; Other bookmarks > Home
 tests/e2e/runner.html|js        loads newtab.html / popup.html in an iframe per scenario, helpers on `t`
 tests/e2e/scenarios/*.js        newtab (folders), sections, categories, home, popup
 tests/serve.py                  no-cache static server used by run.sh and for visual debugging
