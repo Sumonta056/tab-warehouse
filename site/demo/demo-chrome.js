@@ -104,9 +104,16 @@
     sideLook: { mode: 'image', color: '#141414', dark: 85, blur: 14 },
   });
 
+  const sampleLinkMeta = (ids) => ({
+    [ids['chrome.bookmarks API']]: { note: 'Source of truth for every change', pri: 'high' },
+    [ids['Manifest V3 overview']]: { pri: 'high' },
+    [ids['HTML drag and drop API']]: { note: 'Same-parent move index quirk', pri: 'med' },
+  });
+
   const fresh = () => {
     let next = 0;
     const ids = {};
+    const linkIds = {};
     const day = 86400000;
     const stamp = (node, parentId, index) => {
       node.id = String(next++);
@@ -114,13 +121,19 @@
       node.dateAdded = Date.now() - (200 - next) * day;
       if (parentId !== undefined) node.parentId = parentId;
       if (node.children) ids[node.title] ||= node.id;
+      if (node.url) linkIds[node.title] ||= node.id;
       (node.children || []).forEach((c, i) => stamp(c, node.id, i));
     };
     const tree = sampleTree();
     stamp(tree);
     return {
       tree,
-      store: { settings: sampleSettings(ids), homeIcons: {}, homeBg: new URL('bg.jpg', document.currentScript?.src || location.href).href },
+      store: {
+        settings: sampleSettings(ids),
+        linkMeta: sampleLinkMeta(linkIds),
+        homeIcons: {},
+        homeBg: new URL('bg.jpg', document.currentScript?.src || location.href).href,
+      },
       nextId: 1000,
       activeTab: { id: 1, title: 'Checkout · Shop TEST', url: 'https://test.shop.example.com/checkout/payment?step=2' },
       listeners: [],

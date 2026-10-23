@@ -230,6 +230,30 @@
 
         <div class="wrap feature">
           <div class="txt">
+            <h3>Notes and priority</h3>
+            <p>Give a link a short note and a priority when you save it, or later from its menu. Important links stay at the top of the folder.</p>
+            <ul>
+              <li>Priority High, Medium or Low, with a colored stripe</li>
+              <li>Priority links come first, under High, Medium and Low headers</li>
+              <li>Filter buttons: High, Medium, Low or Has note</li>
+              <li>Search also finds the text in your notes</li>
+            </ul>
+            <a class="more" href="#demo" data-demo="newtab">Try it in the demo →</a>
+          </div>
+          <figure class="frame">
+            <img
+              src="screenshots/notes.png"
+              alt="Docs folder with High, Medium and Other groups; High and Medium rows have a colored stripe and a note under the URL"
+              loading="lazy"
+              width="1800"
+              height="1007"
+              data-zoom
+            />
+          </figure>
+        </div>
+
+        <div class="wrap feature flip">
+          <div class="txt">
             <h3>Board</h3>
             <p>
               See every folder at once, as a column of cards. Columns sit in lanes by category, or in one long row. Sections show as small headers inside each
@@ -255,7 +279,7 @@
           </figure>
         </div>
 
-        <div class="wrap feature flip">
+        <div class="wrap feature">
           <div class="txt">
             <h3>Env matrix</h3>
             <p>
@@ -280,7 +304,7 @@
           </figure>
         </div>
 
-        <div class="wrap feature">
+        <div class="wrap feature flip">
           <div class="txt">
             <h3>Categories and drag and drop</h3>
             <p>
@@ -306,7 +330,7 @@
           </figure>
         </div>
 
-        <div class="wrap feature flip">
+        <div class="wrap feature">
           <div class="txt">
             <h3>Search everything</h3>
             <p>
@@ -336,6 +360,7 @@
               <li>Save the page, or the whole site (<code>origin/</code>)</li>
               <li>Shows the env badge before you save</li>
               <li>Tells you if the URL is already saved</li>
+              <li>Add a priority and a short note</li>
             </ul>
             <ol class="flow" aria-label="How saving works">
               <li><span class="kbd-big">⌘⇧B</span><span>Open the popup on any page</span></li>
@@ -355,10 +380,10 @@
           <figure class="frame narrow">
             <img
               src="screenshots/popup.png"
-              alt="The save popup with the page title, a TEST badge, a folder list and a Save button"
+              alt="The save popup with the page title, a TEST badge, High priority picked, a short note, a folder list and a Save button"
               loading="lazy"
               width="840"
-              height="1268"
+              height="1574"
               data-zoom
             />
           </figure>
@@ -557,7 +582,7 @@
                 </tr>
                 <tr>
                   <td><code>storage</code></td>
-                  <td>Save sidebar order, env rules and the Home look</td>
+                  <td>Save sidebar order, env rules, link notes and the Home look</td>
                 </tr>
                 <tr>
                   <td><code>favicon</code></td>

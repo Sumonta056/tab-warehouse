@@ -99,6 +99,16 @@ Developers keep the same page open in many versions: live, test, staging and `lo
 
 ![A folder with a Checkout section and PROD, TEST, STAGE and LOCAL badges](site/screenshots/sections.png)
 
+### Notes and priority
+
+- Give a link a short note (up to 200 characters) and a priority: High, Medium or Low. Set them in the popup when you save, in the edit form, or from the row menu.
+- Priority links come first, under **High**, **Medium** and **Low** headers, with a colored stripe. Your sort still applies inside each group. In folders with sections, priority links go first inside each section.
+- Filter buttons: High, Medium, Low or Has note. The folder filter and search also find the text in your notes.
+- Drop a link on a priority header to give it that priority.
+- Notes stay on this computer. Backup › Export JSON includes them.
+
+![Docs folder with High, Medium and Other groups, a colored stripe and a note under the URL](site/screenshots/notes.png)
+
 ### Environments
 
 - **Labels**: "if the address contains `-test.` show TEST". The first matching rule wins. Without rules, words like PROD or TEST in the title still work.
@@ -116,8 +126,9 @@ Developers keep the same page open in many versions: live, test, staging and `lo
 - Save the current tab into any folder, or create a new folder by typing its name.
 - Save the full page or the whole site (`origin/`).
 - Shows the env badge, remembers the last folder, and tells you if the URL is already saved.
+- Add a priority and a short note before you save.
 
-<img src="site/screenshots/popup.png" alt="The save popup with a TEST badge and the folder list" width="360">
+<img src="site/screenshots/popup.png" alt="The save popup with a TEST badge, a priority picker, a note box and the folder list" width="360">
 
 ### Settings and backup
 
@@ -189,15 +200,15 @@ Coming soon.
 Tab Warehouse has no server, no account, no analytics and no tracking. It does not send your bookmarks anywhere.
 
 - Links, titles and folders stay in **Chrome's bookmarks**.
-- Preferences (sidebar order, categories, env rules, Home look) stay in **`chrome.storage.local`** on your machine.
+- Preferences (sidebar order, categories, env rules, Home look) and link notes stay in **`chrome.storage.local`** on your machine. Chrome sync does not copy them.
 - The only images loaded from the network are the official Google app icons (from `ssl.gstatic.com`), any icon URL you add yourself, and the icon of a Home link that Chrome has no icon for. For that last case the extension asks Google's favicon service (`www.google.com/s2/favicons`) and sends it only the host name of that link. Local addresses (localhost, IP addresses) are never sent.
 
-| Permission  | Why it is needed                                                        |
-| ----------- | ----------------------------------------------------------------------- |
-| `bookmarks` | Read and edit your bookmarks — the core of the extension                |
-| `storage`   | Save sidebar order, per-folder preferences, env rules and the Home look |
-| `favicon`   | Show site icons from Chrome's own favicon cache                         |
-| `activeTab` | Read the current tab's title and URL, only when you open the popup      |
+| Permission  | Why it is needed                                                                    |
+| ----------- | ----------------------------------------------------------------------------------- |
+| `bookmarks` | Read and edit your bookmarks — the core of the extension                            |
+| `storage`   | Save sidebar order, per-folder preferences, env rules, link notes and the Home look |
+| `favicon`   | Show site icons from Chrome's own favicon cache                                     |
+| `activeTab` | Read the current tab's title and URL, only when you open the popup                  |
 
 ## How it works
 
