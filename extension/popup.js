@@ -14,6 +14,8 @@ import {
   NOTE_MAX,
   loadLinkMeta,
   setLinkMeta,
+  switchTargets,
+  ENV_NAMES,
 } from './lib/core.js';
 
 const $ = (s) => document.querySelector(s);
@@ -40,6 +42,7 @@ async function boot() {
   await loadFolders();
   selId = settings.lastSaveFolder;
   renderPage();
+  renderSwitch();
   renderMeta();
   renderModes();
   renderFolders();
@@ -99,6 +102,35 @@ function renderPage() {
   badgeEl = h('span');
   page.replaceChildren(iconEl({ title: tab.title, url: tab.url }, settings.showFavicons), h('span', { class: 'txt' }, titleEl, targetEl), badgeEl);
   updateTarget();
+}
+
+function renderSwitch() {
+  if (!tab?.url) return;
+  const box = $('#switch');
+  const sw = switchTargets(tab.url, settings.hostMap);
+  if (sw?.to.length)
+    box.replaceChildren(
+      h('span', { class: 'lbl' }, 'Open this page in'),
+      ...sw.to.map(({ env, url }) =>
+        h(
+          'button',
+          { class: 'env-go', title: url, dataset: { env }, onClick: (e) => openEnv(url, e.shiftKey || e.metaKey || e.ctrlKey) },
+          h('span', { class: `badge ${env}` }, env),
+          h('span', { class: 'u' }, url),
+          h('span', { class: 'n' }, ENV_NAMES[env]),
+        ),
+      ),
+    );
+  else if (!sw && detectEnv({ title: tab.title, url: tab.url }, settings.envRules))
+    box.replaceChildren(h('span', { class: 'switch-hint' }, 'To open this page in your other versions, add this site in Settings › Environments.'));
+  else return;
+  box.hidden = false;
+}
+
+async function openEnv(url, bg) {
+  await chrome.tabs.create({ url, index: tab.index + 1, active: !bg });
+  if (bg) status('Opened in a background tab');
+  else window.close();
 }
 
 function renderMeta() {

@@ -173,6 +173,8 @@ Every rule here has at least one test. If you change a rule, change its test in 
 ## Popup (save current tab)
 
 - Shows the active tab title (editable), the full URL and its env badge. No tab → message, Save disabled.
+- **Open this page in** (`#switch`, under the page): when the tab's host is in a row of _Same site in each version_ (`switchTargets()`), one button per other filled box of that row: env badge, the same page on that host (`deriveUrl`: path, query and `#part` kept; `localhost…` gets `http:`; cut with …, the full URL is the tooltip) and the plain name (`ENV_NAMES`). Click opens it in a new tab right after the current one and closes the popup; Shift/⌘/Ctrl+click opens it in the background, keeps the popup open and shows "Opened in a background tab".
+- No site row but the page has an env label → the hint "To open this page in your other versions, add this site in Settings › Environments.". No site row and no label, or a row with no other box → the section is hidden.
 - _This page_ saves the full URL; _Whole site_ saves `origin/` with the host as title and exists only for http(s) pages. A title you edited is kept when switching mode.
 - Folder list: root first, then every nested folder (indented); filter matches the full path. If no folder has exactly the typed name, the last item is _Create "<name>"_ (created under the root).
 - Preselects `settings.lastSaveFolder`, else the root. ↑/↓ move, Enter saves. After save: status "Saved to X", remember the folder, close after 0.9 s.

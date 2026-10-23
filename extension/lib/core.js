@@ -223,6 +223,19 @@ const GOOGLE_APPS = {
 };
 const GOOGLE_DOCS = { document: 'docs', spreadsheets: 'sheets', presentation: 'slides', forms: 'forms' };
 
+export function switchTargets(url, hostMap) {
+  const host = hostOf(url);
+  const row = host && hostMap.find((r) => ENVS.some((e) => (r[e] || '').toLowerCase() === host));
+  if (!row) return null;
+  const from = ENVS.find((e) => (row[e] || '').toLowerCase() === host);
+  return {
+    from,
+    to: ENVS.filter((e) => e !== from && row[e])
+      .map((env) => ({ env, url: deriveUrl(url, env, hostMap) }))
+      .filter((x) => x.url),
+  };
+}
+
 export function googleIcon(url) {
   const host = hostOf(url);
   let app = GOOGLE_APPS[host];

@@ -16,6 +16,7 @@ import {
   sameAsUrl,
   detectEnv,
   deriveUrl,
+  switchTargets,
   findById,
   findFolderByTitle,
   resolveRoot,
@@ -133,6 +134,29 @@ describe('detectEnv', () => {
   });
   test('custom rules are honoured and case-insensitive on pattern', () => {
     assert.equal(detectEnv({ url: 'https://qa.example.org' }, [{ pattern: 'QA.', env: 'TEST' }]), 'TEST');
+  });
+});
+
+describe('switchTargets', () => {
+  test('lists the other versions of this page from its site row', () => {
+    assert.deepEqual(switchTargets('https://shop.example.com/a/b?c=1#x', SAMPLE_HOST_MAP), {
+      from: 'PROD',
+      to: [
+        { env: 'TEST', url: 'https://shop-test.example.com/a/b?c=1#x' },
+        { env: 'STAGE', url: 'https://shop-stage.example.com/a/b?c=1#x' },
+        { env: 'LOCAL', url: 'http://localhost:8080/a/b?c=1#x' },
+      ],
+    });
+  });
+
+  test('skips empty boxes; host case does not matter', () => {
+    assert.deepEqual(switchTargets('https://WWW.example.com/x', SAMPLE_HOST_MAP), { from: 'PROD', to: [{ env: 'TEST', url: 'https://test.example.com/x' }] });
+  });
+
+  test('null when the site has no row or the URL is not valid', () => {
+    assert.equal(switchTargets('https://example.com/', SAMPLE_HOST_MAP), null);
+    assert.equal(switchTargets('not a url', SAMPLE_HOST_MAP), null);
+    assert.equal(switchTargets('https://shop.example.com/', []), null);
   });
 });
 

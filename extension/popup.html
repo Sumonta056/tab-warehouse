@@ -80,6 +80,53 @@
         display: flex;
         justify-content: space-between;
       }
+      .switch {
+        border-bottom: 1px solid var(--line);
+        gap: 2px;
+      }
+      .switch[hidden] {
+        display: none;
+      }
+      .switch .lbl {
+        margin-bottom: 4px;
+      }
+      .env-go {
+        display: grid;
+        grid-template-columns: 52px minmax(0, 1fr) auto;
+        gap: 8px;
+        align-items: center;
+        min-height: 32px;
+        padding: 0 8px;
+        border: 1px solid transparent;
+        border-radius: 6px;
+        background: transparent;
+        text-align: left;
+      }
+      .env-go:hover,
+      .env-go:focus-visible {
+        background: var(--surface-2);
+        border-color: var(--line-2);
+      }
+      .env-go .badge {
+        margin-top: 0;
+        justify-self: start;
+      }
+      .env-go .u {
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--text-2);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .env-go .n,
+      .switch-hint {
+        font-size: 11px;
+        color: var(--muted);
+      }
+      .switch-hint {
+        font-size: 12px;
+      }
       #meta:empty {
         display: none;
       }
@@ -191,6 +238,7 @@
   </head>
   <body>
     <div class="page" id="page"></div>
+    <div class="sec switch" id="switch" hidden></div>
     <div class="sec" id="meta"></div>
     <div class="sec">
       <span class="lbl">Save</span>
