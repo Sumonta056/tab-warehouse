@@ -301,7 +301,7 @@ python3 -I tests/serve.py 8799
 
 ## Changelog
 
-- **Unreleased** — Quick save (`⌘K` / `Ctrl+K`) without the popup; the popup warns when a page is already saved and offers **Save again**; Settings › Shortcuts shows the Chrome keys and the keys of the page; the command palette moves to `⌘⇧K` / `Ctrl+Shift+K`.
+- **2.5.0** — Due dates on links with an optional Google Calendar event; quick save (`⌘K` / `Ctrl+K`) without the popup; the popup warns when a page is already saved and offers **Save again**; Settings › Shortcuts; the command palette moves to `⌘⇧K` / `Ctrl+Shift+K`. Details in [CHANGELOG.md](CHANGELOG.md).
 - **2.4.0** — Full history in [CHANGELOG.md](CHANGELOG.md).
   - Command palette (⌘K) and `tw` search from the address bar.
   - Link notes and priority, a duplicate finder and your own tags (QA, UAT …).

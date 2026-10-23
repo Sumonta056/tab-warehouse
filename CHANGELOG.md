@@ -7,9 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.5.0] - 2026-10-24
+
+Tab Warehouse 2.5.0 helps you save faster and not forget what you saved. It adds due dates on links, quick save without the popup, a warning when a page is already saved, and a Shortcuts tab in Settings.
+
+### Added
+
+**Due dates**
+
+- Give a link a due date, with a time if you want one. Set it in the popup (press **Due**), in the row edit form or from the row ⋯ menu.
+- Each row shows a due chip: red when overdue, highlighted in the next 7 days, plain after that.
+- Filter buttons **Overdue** and **Has due date** find the links you forgot.
+- **Also add to Google Calendar** opens a filled-in Google Calendar event after you save. Google sends the reminder. The row menu has _Add to Google Calendar_ for links you saved earlier.
+- Backup JSON carries the due date. No new permission.
+
+**Saving**
+
+- Quick save: ⌘K / Ctrl+K saves the current tab into the last folder you used, without the popup. The toolbar icon shows a green ✓. If the page is already saved, the popup opens instead.
+- The popup tells you when the page is already saved (it ignores tracking parameters, `#part` and a trailing `/`), shows where, and lets you remove a copy. The button then says **Save again**.
+
+**Settings**
+
+- Settings › Shortcuts lists your Chrome keys, opens Chrome's shortcut page and shows the keys of the new tab page.
+
 ### Changed
 
-- The command palette opens with ⌘⇧K / Ctrl+Shift+K, also right after a new tab opens with the cursor in the address bar. ⌘K / Ctrl+K is now quick save (save the tab without the popup).
+- The command palette now opens with ⌘⇧K / Ctrl+Shift+K. It is a Chrome shortcut, so you can pick another key at `chrome://extensions/shortcuts`, and it works right after a new tab opens with the cursor in the address bar. ⌘K / Ctrl+K is now quick save.
+- The website has a Due dates section, the new keys, the Shortcuts tab and a **Star this project** button.
+- Dev: `tools/set-shortcuts.js`, run in the console of `chrome://extensions`, sets ⌘K and ⌘⇧K on Tab Warehouse and clears those keys from other extensions. It does not ship.
 
 ## [2.4.0] - 2026-10-23
 
@@ -178,7 +203,8 @@ Tab Warehouse 2.2.0 is a bookmark manager and new tab page for developers. It sh
 
 - Column board, popup search.
 
-[Unreleased]: https://github.com/Sumonta056/tab-warehouse/compare/v2.4.0...HEAD
+[Unreleased]: https://github.com/Sumonta056/tab-warehouse/compare/v2.5.0...HEAD
+[2.5.0]: https://github.com/Sumonta056/tab-warehouse/compare/v2.4.0...v2.5.0
 [2.4.0]: https://github.com/Sumonta056/tab-warehouse/compare/v2.3.0...v2.4.0
 [2.3.0]: https://github.com/Sumonta056/tab-warehouse/compare/v2.2.0...v2.3.0
 [2.2.0]: https://github.com/Sumonta056/tab-warehouse/releases/tag/v2.2.0

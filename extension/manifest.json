@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Tab Warehouse — Bookmark Manager for Developers",
   "short_name": "Tab Warehouse",
-  "version": "2.4.0",
+  "version": "2.5.0",
   "description": "Bookmark manager and new tab page for developers: folders, full URLs, PROD/TEST/STAGE/LOCAL env tags, env matrix, drag and drop.",
   "permissions": ["bookmarks", "storage", "favicon", "activeTab"],
   "background": {
