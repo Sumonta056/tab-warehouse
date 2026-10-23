@@ -1300,9 +1300,10 @@ function startEdit(bm, row, focus = null) {
   row.querySelector('.txt').replaceWith(form);
   row.querySelector('.acts')?.remove();
   row.querySelector('.pri-bar')?.remove();
-  const first = focus === 'note' ? noteIn : focus === 'due' ? dueIn.date : titleIn;
+  if (focus === 'due') return dueIn.focus();
+  const first = focus === 'note' ? noteIn : titleIn;
   first.focus();
-  if (first !== dueIn.date) first.select();
+  first.select();
 }
 
 function addLink(s) {

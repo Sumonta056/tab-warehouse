@@ -86,7 +86,7 @@ export default [
       t.menu('Set due date');
       await t.settle();
       const date = t.$('#page .edit .due-date');
-      t.eq(t.d.activeElement, date, 'date box focused');
+      t.eq(t.d.activeElement, t.$('#page .edit .due-q'), 'Today chip focused');
       t.type(date, '2030-04-10');
       t.type(t.$('#page .edit .due-time'), '10:00');
       t.click(t.$('#page .edit button[type=submit]'));
