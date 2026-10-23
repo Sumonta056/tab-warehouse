@@ -1,6 +1,6 @@
 # Chrome Web Store listing
 
-Copy these fields into the Developer Dashboard. Images are in `store/`. Build the upload with `./tools/package.sh --store`.
+Copy these fields into the Developer Dashboard. Images are in `store/`. Build the upload with `./tools/package.sh --store`. Text matches version 2.4.0.
 
 ## Package
 
@@ -26,8 +26,9 @@ Built for developers who keep the same page open in many versions: live, test, s
 
 WHY TAB WAREHOUSE
 • Every URL in full. Nothing is cut, so you always see which host you are about to open.
-• Environment tags. Each link gets a PROD, TEST, STAGE or LOCAL badge from rules you write.
-• Env matrix. See the same page across all environments in one table, and jump from TEST to PROD in one click.
+• Tags. Each link gets a PROD, TEST, STAGE or LOCAL badge, or a tag of your own such as QA, from rules you write.
+• Tag matrix. See the same page across all versions in one table, and jump from TEST to PROD in one click.
+• Find any link fast. Press Ctrl+K (⌘K on Mac) on the new tab page, or type "tw" and a space in the address bar.
 • No lock-in. Your links stay real Chrome bookmarks. They sync with your Google account and show in Chrome's bookmark manager. Remove the extension and nothing is lost.
 
 HOME
@@ -46,15 +47,25 @@ BOARD
 • Drag cards between folders and sections. Add, delete and filter links in place.
 
 FOLDER PAGE
-• Sort by manual order, name, URL, environment, date added or host.
+• Sort by manual order, name, URL, tag, date added or host.
 • Sections: split a folder into groups such as "In progress" or "Blocked". Each section is a real subfolder.
+• Notes and priority: give a link a one-line note and a High, Medium or Low priority. Priority links come first.
 • Inline edit, right-click menus, a filter, Open all and Copy all URLs.
+
+FIND LINKS
+• Command palette: press Ctrl+K (⌘K on Mac) to search links, folders and settings. Enter opens the link.
+• Address bar: type "tw", a space and some text to see up to 5 matching links.
+• Search matches the title, the URL, the folder, the note and the tag.
 
 SAVE THE CURRENT TAB
 • Press Ctrl+Shift+B (⌘⇧B on Mac) to save the current tab into any folder, or create a new folder by name.
+• Add a note and a priority when you save.
+• Open the same page on your other versions (live, test, staging, local) with one click.
 
 SETTINGS AND BACKUP
 • Accent color, text size, your name in the header.
+• Your own tags with a name and a color, next to PROD, TEST, STAGE and LOCAL.
+• Duplicate finder: see links with the same address and keep one copy, with undo.
 • Export to JSON or HTML (Chrome's bookmark format). Import merges and skips links you already have.
 
 PRIVACY
@@ -90,14 +101,16 @@ Tab Warehouse replaces the new tab page with a bookmark manager: it shows, organ
 
 **Permission justification:**
 
-| Permission  | Justification                                                                                                                                                                |
-| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `bookmarks` | The extension is a bookmark manager. It reads the bookmark tree to show folders and links, and creates, edits, moves and deletes bookmarks when the user asks.               |
-| `storage`   | Saves the user's preferences on the device: sidebar order, categories, environment rules, Home look, custom icons and the Home background image. No bookmark data is stored. |
-| `favicon`   | Shows each site's icon next to its link, from Chrome's own favicon cache.                                                                                                    |
-| `activeTab` | When the user clicks the toolbar button or presses Ctrl+Shift+B, the popup reads the current tab's title and URL so the user can save it as a bookmark.                      |
+| Permission  | Justification                                                                                                                                                                                                              |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `bookmarks` | The extension is a bookmark manager. It reads the bookmark tree to show folders and links, and creates, edits, moves and deletes bookmarks when the user asks.                                                             |
+| `storage`   | Saves the user's preferences on the device: sidebar order, categories, tag rules and custom tags, link notes and priorities, Home look, custom icons and the Home background image. No bookmark titles or URLs are stored. |
+| `favicon`   | Shows each site's icon next to its link, from Chrome's own favicon cache.                                                                                                                                                  |
+| `activeTab` | When the user clicks the toolbar button or presses Ctrl+Shift+B, the popup reads the current tab's title and URL so the user can save it as a bookmark.                                                                    |
 
 **Host permissions:** none.
+
+**Background service worker** (if the reviewer asks): it exists only for the `tw` address bar search (the `omnibox` manifest key, not a permission). It reads the bookmark tree and settings on the device when the user types `tw`, and it sends nothing over the network.
 
 **Remote code:** No, I am not using remote code.
 
