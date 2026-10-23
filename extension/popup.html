@@ -131,6 +131,42 @@
       #meta:empty {
         display: none;
       }
+      .pri-row {
+        display: flex;
+        gap: 6px;
+      }
+      .pri-row .pri-pick {
+        flex: 1 1 auto;
+        min-width: 0;
+      }
+      .due-btn {
+        min-height: 30px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 0 10px;
+        border-radius: 8px;
+        border: 1px solid var(--line-2);
+        background: var(--surface);
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .due-btn svg {
+        width: 14px;
+        height: 14px;
+      }
+      .due-btn:hover {
+        background: var(--surface-2);
+      }
+      .due-btn.on {
+        border-color: var(--accent);
+        background: var(--surface-2);
+        color: var(--text);
+        font-weight: 500;
+      }
+      body.due-open .folders {
+        min-height: 48px;
+      }
       .opt-row {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));

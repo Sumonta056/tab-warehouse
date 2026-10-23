@@ -828,25 +828,17 @@ export function duePicker(due) {
     calLbl.classList.toggle('off', !date.value);
     clear.hidden = !date.value && !time.value;
   };
-  const clear = h(
-    'button',
-    {
-      type: 'button',
-      class: 'due-clr',
-      'aria-label': 'Clear due date',
-      onClick: () => {
-        date.value = '';
-        time.value = '';
-        sync();
-      },
-    },
-    '✕',
-  );
+  const reset = () => {
+    date.value = '';
+    time.value = '';
+    sync();
+  };
+  const clear = h('button', { type: 'button', class: 'due-clr', 'aria-label': 'Clear due date', onClick: reset }, '✕');
   date.addEventListener('input', sync);
   time.addEventListener('input', sync);
   sync();
   const el = h('div', { class: 'due-pick', role: 'group', 'aria-label': 'Due date' }, h('div', { class: 'due-row' }, date, time, clear), calLbl);
-  return { el, date, value, calendar: () => cal.checked && isDue(value()) };
+  return { el, date, value, reset, calendar: () => cal.checked && isDue(value()) };
 }
 
 export function svgIcon(name) {

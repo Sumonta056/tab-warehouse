@@ -264,6 +264,9 @@ select {
   flex-direction: column;
   gap: 4px;
 }
+.due-pick[hidden] {
+  display: none;
+}
 .due-row {
   display: grid;
   grid-template-columns: minmax(0, 3fr) minmax(0, 2fr) 28px;

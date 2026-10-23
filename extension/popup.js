@@ -151,8 +151,36 @@ function renderMeta() {
     'aria-label': 'Note',
   });
   dueEl = duePicker('');
+  dueEl.el.id = 'duePick';
+  dueEl.el.hidden = true;
+  const dueBtn = h(
+    'button',
+    {
+      type: 'button',
+      id: 'dueBtn',
+      class: 'due-btn',
+      'aria-expanded': 'false',
+      'aria-controls': 'duePick',
+      onClick: () => {
+        const open = dueEl.el.hidden;
+        dueEl.el.hidden = !open;
+        dueBtn.setAttribute('aria-expanded', String(open));
+        dueBtn.classList.toggle('on', open);
+        document.body.classList.toggle('due-open', open);
+        if (open) dueEl.date.focus();
+        else dueEl.reset();
+      },
+    },
+    svgIcon('calendar'),
+    'Due',
+  );
   $('#meta').replaceChildren(
-    priPicker(pri, (p) => (pri = p)),
+    h(
+      'div',
+      { class: 'pri-row' },
+      priPicker(pri, (p) => (pri = p)),
+      dueBtn,
+    ),
     h('div', { class: 'opt-row' }, noteEl, h('div', { class: 'modes', id: 'modes', role: 'group', 'aria-label': 'Save' })),
     dueEl.el,
   );

@@ -203,6 +203,7 @@ export default [
     page: 'popup',
     fixture: () => base({ activeTab: tab }),
     async run(t) {
+      t.click(t.$('#dueBtn'));
       const cal = t.$('#meta .due-cal-box');
       t.ok(cal.disabled, 'calendar box disabled without a date');
       t.ok(t.$('#meta .due-clr').hidden, 'clear hidden without a date');
@@ -222,6 +223,7 @@ export default [
     page: 'popup',
     fixture: () => base({ activeTab: tab }),
     async run(t) {
+      t.click(t.$('#dueBtn'));
       t.type(t.$('#meta .due-date'), '2026-04-10');
       t.click(t.$('#meta .due-cal-box'));
       t.click(t.$('#save'));
@@ -241,12 +243,60 @@ export default [
     page: 'popup',
     fixture: () => base({ activeTab: tab }),
     async run(t) {
+      t.click(t.$('#dueBtn'));
       t.type(t.$('#meta .due-date'), '2026-04-10');
       const cal = t.$('#meta .due-cal-box');
       t.click(cal);
       t.click(t.$('#meta .due-clr'));
       t.ok(cal.disabled && !cal.checked, 'box off and disabled');
       t.eq(t.$('#meta .due-date').value, '', 'date cleared');
+    },
+  },
+  {
+    area,
+    name: 'due date: hidden until Due is pressed; pressing Due again hides and clears it',
+    page: 'popup',
+    fixture: () => base({ activeTab: tab }),
+    async run(t) {
+      const btn = t.$('#dueBtn');
+      t.ok(t.$('#duePick').hidden, 'picker hidden on open');
+      t.eq(btn.getAttribute('aria-expanded'), 'false', 'collapsed');
+      t.ok(btn.getBoundingClientRect().height >= 28, 'Due button at least 28 px');
+      t.click(btn);
+      t.ok(!t.$('#duePick').hidden, 'picker shown');
+      t.eq(btn.getAttribute('aria-expanded'), 'true', 'expanded');
+      t.eq(t.d.activeElement, t.$('#meta .due-date'), 'date box focused');
+      t.type(t.$('#meta .due-date'), '2026-04-10');
+      t.click(btn);
+      t.ok(t.$('#duePick').hidden, 'hidden again');
+      t.click(t.$('#save'));
+      await t.settle();
+      const saved = t.node('10').children.find((c) => c.url === tab.url);
+      t.eq(t.store.linkMeta?.[saved?.id], undefined, 'a hidden date is not saved');
+    },
+  },
+  {
+    area,
+    name: 'due date: with "Open this page in" rows and many folders the popup still fits 600 px, open or closed',
+    page: 'popup',
+    fixture: () =>
+      base({
+        activeTab: { title: 'Shop PROD', url: 'https://shop.example.com/api/x', index: 3 },
+        extraRoot: Array.from({ length: 30 }, (_, i) => F(String(900 + i), `Folder ${i + 1}`)),
+      }),
+    async run(t) {
+      t.ok(!t.$('#switch').hidden, 'switch rows shown');
+      const check = (when) => {
+        const body = t.d.body.getBoundingClientRect();
+        const bar = t.$('.bar').getBoundingClientRect();
+        const list = t.$('#folders').getBoundingClientRect();
+        t.ok(body.height <= 600, `${when}: fits 600 px (${Math.round(body.height)})`);
+        t.ok(list.bottom <= bar.top + 1, `${when}: folder list ends above the bottom bar (${Math.round(list.bottom)} / ${Math.round(bar.top)})`);
+        t.ok(list.height >= 44, `${when}: at least one folder row visible (${Math.round(list.height)})`);
+      };
+      check('closed');
+      t.click(t.$('#dueBtn'));
+      check('open');
     },
   },
   {
