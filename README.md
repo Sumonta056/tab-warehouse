@@ -220,7 +220,7 @@ extension/             Everything Chrome loads (choose this folder in Load unpac
   lib/shared.css       Design tokens and shared components
   icons/               Extension icons (source: icons/logo.svg)
 tools/make-icons.py    Build the icon sizes from any logo
-tools/package.sh       Build the release ZIP from extension/
+tools/package.sh       Build the release ZIP from extension/ (--store: Web Store ZIP)
 tests/                 Unit, end-to-end and performance tests
 site/                  Website, live demo and screenshots (deployed to GitHub Pages)
 docs/                  Notes and requirements

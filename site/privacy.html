@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Privacy policy · Tab Warehouse</title>
+    <meta name="description" content="Tab Warehouse privacy policy: no server, no account, no analytics. Your bookmarks stay in Chrome." />
+    <link rel="canonical" href="https://sumonta056.github.io/tab-warehouse/privacy.html" />
+    <meta name="theme-color" content="#0b1110" />
+    <link rel="icon" type="image/png" sizes="48x48" href="demo/icons/icon48.png" />
+    <link rel="stylesheet" href="site.css" />
+  </head>
+  <body>
+    <header class="top">
+      <div class="wrap top-in">
+        <a class="brand" href="./">
+          <img src="demo/icons/icon48.png" alt="" width="28" height="28" />
+          <span>Tab Warehouse</span>
+        </a>
+        <nav class="top-nav" aria-label="Sections">
+          <a href="./">Home</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="wrap doc">
+      <h1>Privacy policy</h1>
+      <p class="lead">Tab Warehouse has no server, no account, no analytics and no tracking. The developer never receives your data.</p>
+      <p class="doc-date">Last updated: 23 October 2026</p>
+
+      <h2>What the extension uses</h2>
+      <ul>
+        <li><b>Bookmarks.</b> The extension reads and changes your Chrome bookmarks only to show and organise them. They stay in Chrome.</li>
+        <li>
+          <b>Preferences.</b> Sidebar order, categories, environment rules, the Home look, custom icons and the Home background image are saved in
+          <code>chrome.storage.local</code> on your computer.
+        </li>
+        <li>
+          <b>Current tab.</b> When you open the toolbar popup, the extension reads the title and URL of the current tab so that you can save it as a bookmark.
+        </li>
+      </ul>
+
+      <h2>What leaves your computer</h2>
+      <p>The extension sends no bookmarks, titles, full URLs or settings to any server. It loads only these images from the network:</p>
+      <ul>
+        <li>Official Google app icons (Gmail, Drive and others) from <code>ssl.gstatic.com</code>.</li>
+        <li>An icon URL that you add yourself to a Home link.</li>
+        <li>
+          The icon of a Home link that Chrome has no icon for. For this, the extension asks Google's favicon service (<code>www.google.com/s2/favicons</code>)
+          and sends it only the host name of that link, for example <code>github.com</code>. Local addresses (<code>localhost</code>, IP addresses, names
+          without a dot) are never sent.
+        </li>
+      </ul>
+      <p>These requests follow <a href="https://policies.google.com/privacy" rel="noopener">Google's privacy policy</a>.</p>
+
+      <h2>What the developer does not do</h2>
+      <ul>
+        <li>Collect, store or sell personal data.</li>
+        <li>Share data with third parties, or use it for advertising or credit decisions.</li>
+        <li>Use data for any purpose other than the bookmark features of the extension.</li>
+      </ul>
+
+      <h2>Permissions</h2>
+      <div class="panel">
+        <table>
+          <tr>
+            <td><code>bookmarks</code></td>
+            <td>Read and edit your bookmarks, the core of the extension.</td>
+          </tr>
+          <tr>
+            <td><code>storage</code></td>
+            <td>Save your preferences on your computer.</td>
+          </tr>
+          <tr>
+            <td><code>favicon</code></td>
+            <td>Show site icons from Chrome's own icon cache.</td>
+          </tr>
+          <tr>
+            <td><code>activeTab</code></td>
+            <td>Read the current tab's title and URL, only when you open the popup.</td>
+          </tr>
+        </table>
+      </div>
+
+      <h2>Remove your data</h2>
+      <p>Remove the extension at <code>chrome://extensions</code>. Chrome then deletes its preferences. Your bookmarks stay in Chrome.</p>
+
+      <h2>Contact</h2>
+      <p>Questions: open an issue on <a href="https://github.com/Sumonta056/tab-warehouse/issues" rel="noopener">GitHub</a>.</p>
+    </main>
+
+    <footer class="foot">
+      <div class="wrap foot-in">
+        <span>Made by <a href="https://sumonta056.vercel.app/" rel="noopener">Sumonta</a> · MIT license</span>
+        <span><a href="./">Tab Warehouse</a> · <a href="https://github.com/Sumonta056/tab-warehouse" rel="noopener">GitHub</a></span>
+      </div>
+    </footer>
+  </body>
+</html>
