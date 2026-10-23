@@ -54,6 +54,7 @@ let settings,
   secs = [];
 let current = null; // selected section
 let query = ''; // global search (sidebar box)
+let navSearch = false;
 let filterQ = ''; // folder-local filter
 let priF = 'all';
 let linkMeta = {};
@@ -180,20 +181,26 @@ function bindHomeButtons() {
   });
 }
 
+function openView() {
+  return query ? null : current;
+}
+
 function clearQuery() {
   qInput.value = '';
   query = '';
 }
 
 function renderNav() {
-  const on = !!current?.home;
+  navSearch = !!query;
+  const open = openView();
+  const on = !!open?.home;
   $('#homeBtn').classList.toggle('on', on);
   $('#homeBtn').setAttribute('aria-current', on ? 'page' : 'false');
-  const onBoard = !!current?.board;
+  const onBoard = !!open?.board;
   $('#boardBtn').classList.toggle('on', onBoard);
   $('#boardBtn').setAttribute('aria-current', onBoard ? 'page' : 'false');
-  $('#settingsBtn').classList.toggle('on', !!current?.settings);
-  $('#settingsBtn').setAttribute('aria-pressed', String(!!current?.settings));
+  $('#settingsBtn').classList.toggle('on', !!open?.settings);
+  $('#settingsBtn').setAttribute('aria-pressed', String(!!open?.settings));
   nav.replaceChildren();
   if (!settings.categories.length) {
     secs.forEach((s) => nav.append(navItem(s)));
@@ -213,7 +220,7 @@ function navItem(s) {
   const el = h(
     'button',
     {
-      class: `nav ${s.id === current?.id ? 'on' : ''} ${s.virtual ? 'unsorted' : ''}`,
+      class: `nav ${s.id === openView()?.id ? 'on' : ''} ${s.virtual ? 'unsorted' : ''}`,
       dataset: { id: s.id },
       draggable: !s.virtual,
       title: s.virtual ? 'Loose links directly under the root' : 'Drag to reorder · Alt+↑/↓ to move',
@@ -272,7 +279,7 @@ function headerDrag(el, kind, id, onDrop) {
 }
 
 function catHeader({ cat, items }) {
-  const hasOn = cat?.closed && items.some((s) => s.id === current?.id);
+  const hasOn = cat?.closed && items.some((s) => s.id === openView()?.id);
   const label = [h('span', { class: 't' }, cat ? cat.name : 'No category'), h('span', { class: 'n' }, `(${items.length})`)];
   const el = h(
     'div',
@@ -510,6 +517,7 @@ function bindNavDrag(el, s) {
 /* ================= page ================= */
 function renderPage() {
   closeMenu();
+  if (navSearch !== !!query) renderNav();
   page.replaceChildren();
   page.classList.toggle('home-mode', !!current?.home && !query);
   page.classList.toggle('settings-mode', !!current?.settings && !query);

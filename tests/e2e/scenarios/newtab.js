@@ -126,6 +126,83 @@ export default [
   },
   {
     area,
+    name: 'search results: no view tab or folder is marked open; Escape marks the page again',
+    page: 'newtab',
+    fixture: () => base(),
+    async run(t) {
+      const on = () => [...t.$$('#homeBtn.on, #boardBtn.on, #nav .nav.on, #nav .cat.has-on')].map((el) => el.id || el.dataset.id || 'cat');
+      const current = () => t.$$('[aria-current="page"]').length;
+      t.eq(on(), ['homeBtn'], 'Home marked on Home');
+      t.type(t.$('#q'), 'shop');
+      await t.settle();
+      t.eq(t.$('.head h2')?.textContent, 'Search', 'results shown');
+      t.eq(on(), [], 'nothing marked during search from Home');
+      t.eq(current(), 0, 'no aria-current during search');
+      t.key(t.$('#q'), 'Escape');
+      await t.settle();
+      t.eq(on(), ['homeBtn'], 'Home marked again after Escape');
+      await t.folder('Shop API');
+      const id = t.$('#nav .nav.on')?.dataset.id;
+      t.type(t.$('#q'), 'shop');
+      await t.settle();
+      t.eq(on(), [], 'folder not marked during search');
+      t.click(t.$('.head .btn.add'));
+      await t.settle();
+      t.eq(on(), [id], 'folder marked again after Clear');
+    },
+  },
+  {
+    area,
+    name: 'search results: the Board, Settings and a collapsed category are not marked either',
+    page: 'newtab',
+    fixture: () => base({ settings: { categories: [{ id: 'c1', name: 'Daily working', closed: false }], folderCat: { 30: 'c1' } } }),
+    async run(t) {
+      const search = async (text) => {
+        t.type(t.$('#q'), text);
+        await t.settle();
+      };
+      const escape = async () => {
+        t.key(t.$('#q'), 'Escape');
+        await t.settle();
+      };
+      t.click(t.$('#boardBtn'));
+      await t.settle();
+      await search('shop');
+      t.ok(!t.$('#boardBtn').classList.contains('on'), 'Board not marked during search');
+      t.eq(t.$('#boardBtn').getAttribute('aria-current'), 'false', 'Board not aria-current');
+      await escape();
+      t.ok(t.$('#boardBtn').classList.contains('on'), 'Board marked after Escape');
+      t.click(t.$('#settingsBtn'));
+      await t.settle();
+      await search('shop');
+      t.ok(!t.$('#settingsBtn').classList.contains('on'), 'gear not marked during search');
+      t.eq(t.$('#settingsBtn').getAttribute('aria-pressed'), 'false', 'gear not pressed');
+      await escape();
+      t.ok(t.$('#settingsBtn').classList.contains('on'), 'gear marked after Escape');
+      await t.folder('Shop API');
+      t.click(t.catHeader('Daily working').querySelector('.cat-toggle'));
+      await t.settle();
+      t.ok(t.catHeader('Daily working').classList.contains('has-on'), 'collapsed category marked');
+      await search('shop');
+      t.ok(!t.catHeader('Daily working').classList.contains('has-on'), 'collapsed category not marked during search');
+      await escape();
+      t.ok(t.catHeader('Daily working').classList.contains('has-on'), 'collapsed category marked after Escape');
+    },
+  },
+  {
+    area,
+    name: 'search results: ?q= on boot does not mark Home',
+    page: 'newtab',
+    search: '?q=shop',
+    fixture: () => base(),
+    async run(t) {
+      t.eq(t.$('.head h2')?.textContent, 'Search', 'results shown');
+      t.ok(!t.$('#homeBtn').classList.contains('on'), 'Home not marked');
+      t.eq(t.$('#homeBtn').getAttribute('aria-current'), 'false', 'Home not aria-current');
+    },
+  },
+  {
+    area,
     name: 'sidebar theme: a preset applies and saves at once, and survives reload',
     page: 'newtab',
     fixture: () => base(),
