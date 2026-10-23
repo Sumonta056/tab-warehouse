@@ -1,7 +1,6 @@
 Icon
 
-tags option
-
 export all config
 
   
+Star this project
