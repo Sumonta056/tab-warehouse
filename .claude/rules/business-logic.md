@@ -45,7 +45,7 @@ Every rule here has at least one test. If you change a rule, change its test in 
 - Every change saves without a Save button. Toggles, swatches, the root folder and buttons save at once; sliders and color pickers save after 300 ms; Environments rows and the name save when a box loses focus; the name is trimmed and updates the header and tab title at once. The header status shows "Saving…" then "Saved".
 - Saves go through one queue so two quick saves never overwrite each other.
 - Settings changed in another tab: a hidden tab only marks itself stale; when it is shown again it reloads settings and Home assets and re-renders (test "a hidden tab picks up settings changed in another tab when it is shown"). A visible tab never re-renders on a settings storage event, so its own sliders and text boxes are not interrupted. A `linkMeta` change (for example a save from the popup) re-renders only the folder list or search results, and not while a row is being edited.
-- Backup › Import (JSON) keeps only valid preferences (`cleanImport()`): env rules need a text pattern and a known label; host rows keep only PROD/TEST/STAGE/LOCAL text values; folder prefs keep only a known sort, `list`/`matrix`, `title`/`url` and boolean `closed`; `board.group` is kept only when it is `cat` or `flat`; links need a text URL; a link's `note`/`pri` pass through `cleanMeta()`. Anything else is dropped, so a bad file cannot break the page.
+- Backup › Import (JSON) keeps only valid preferences (`cleanImport()`): custom tags pass through `cleanTags()`; env rules need a text pattern and a built-in or imported tag; host rows keep only text values for the built-in and imported tags (an old backup without `customTags` keeps only PROD/TEST/STAGE/LOCAL); folder prefs keep only a known sort, `list`/`matrix`, `title`/`url` and boolean `closed`; `board.group` is kept only when it is `cat` or `flat`; links need a text URL; a link's `note`/`pri` pass through `cleanMeta()`. Anything else is dropped, so a bad file cannot break the page.
 - Settings re-render on bookmark changes and keep their tab and scroll position.
 
 ## Command palette
@@ -98,6 +98,14 @@ Every rule here has at least one test. If you change a rule, change its test in 
 - A bad or taken name shows the `tagNameError()` text as a toast; nothing is saved and a renamed box gets its old name back.
 - Rename changes the tag in every label and moves its site column. Plain name and color save at once. Delete asks `confirm()` ("Delete the tag QA? Its N labels and its site column are removed too."), then removes the tag, its labels and its column; a site row that is then empty is removed. Alt+↑/↓ or drag the grip reorders tags (focus follows).
 - The label select, the legend ("<plain> — your tag"), the sites table and Try it list built-ins then custom tags; a select with a custom tag is colored like its badge.
+- Every view uses `tagNames(settings)` (built-ins, then custom tags) in place of the fixed list:
+  - Environment sort: one group per tag in that order, then **NO ENV**. A custom group header is `grp tag` + `data-tag="<color>"`; every header has `data-env="<name>"`; collapse is `folders[id].closed[<name>]`.
+  - Env matrix: one column per tag, always (also with no link of that tag). A custom tag's pill is `pill tag` + `data-tag`, its header dot uses the tag color. `+ derive` and the row menu's _Save derived links_ use `deriveUrl(..., tags)`.
+  - Link ⋯ menu: _Open on <tag>_ for every other tag that the site row fills, also from and to a custom tag.
+  - Board cards and every `sortLinks()` call take the tag list.
+  - Popup: the page badge is `linkBadge()`; **Open this page in** uses `switchTargets(..., tags)`, `tagBadge()` and the plain name `tagPlain()`.
+  - The palette and `tw` find a link by its custom tag name (`searchLinks()`).
+- Backup › Export JSON writes `customTags`. Import adds only the tags whose names are new, after the existing ones; a local tag with the same name keeps its color and plain name.
 - Copy writes `envText(rules, map, customTags)`. Import (`parseEnvText(text, known)`) adds new tags after the existing ones, replaces labels and sites, says "Imported N tags, N labels and N sites" (the tags part only when there are new tags), and Undo also removes the new tags.
 
 ## Text size

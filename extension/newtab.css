@@ -838,6 +838,9 @@ img.wait {
 .grp.LOCAL {
   color: var(--local-fg);
 }
+.grp.tag {
+  color: var(--tag-fg);
+}
 .grp.NONE {
   color: var(--muted);
 }
@@ -1187,6 +1190,14 @@ img.wait {
   background: var(--local-bg);
   color: var(--local-fg);
   border-color: #1f4a33;
+}
+.pill.tag {
+  background: var(--tag-bg);
+  color: var(--tag-fg);
+  border-color: color-mix(in srgb, var(--tag-fg) 35%, transparent);
+}
+.matrix th .dot[data-tag] {
+  background: var(--tag-fg);
 }
 .pill.derive {
   color: #6f6f6f;

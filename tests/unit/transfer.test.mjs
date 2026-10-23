@@ -101,6 +101,50 @@ describe('sortLinks keeps input order for equal keys', () => {
   });
 });
 
+describe('cleanImport: custom tags', () => {
+  const prefs = (p) => cleanImport({ sections: [], preferences: p }).preferences;
+
+  test('keeps valid custom tags through cleanTags', () => {
+    const p = prefs({
+      customTags: [{ name: 'qa', plain: ' QA team ', color: 'pink' }, { name: 'PROD', color: 'red' }, { name: 'UAT', color: 'orange' }, 'bad'],
+    });
+    assert.deepEqual(p.customTags, [
+      { name: 'QA', plain: 'QA team', color: 'pink' },
+      { name: 'UAT', plain: '', color: 'teal' },
+    ]);
+  });
+
+  test('accepts labels and site columns for imported tags, drops unknown tags', () => {
+    const p = prefs({
+      customTags: [{ name: 'QA', plain: '', color: 'pink' }],
+      envRules: [
+        { pattern: 'qa.example.com', env: 'QA' },
+        { pattern: 'uat.example.com', env: 'UAT' },
+        { pattern: 'shop.example.com', env: 'PROD' },
+      ],
+      hostMap: [{ PROD: 'shop.example.com', QA: 'qa.example.com', UAT: 'uat.example.com' }, { UAT: 'only.example.com' }],
+    });
+    assert.deepEqual(p.envRules, [
+      { pattern: 'qa.example.com', env: 'QA' },
+      { pattern: 'shop.example.com', env: 'PROD' },
+    ]);
+    assert.deepEqual(p.hostMap, [{ PROD: 'shop.example.com', QA: 'qa.example.com' }]);
+  });
+
+  test('an old backup without customTags imports as before', () => {
+    const p = prefs({
+      envRules: [
+        { pattern: 'qa.example.com', env: 'QA' },
+        { pattern: 'test.', env: 'TEST' },
+      ],
+      hostMap: [{ QA: 'q.example.com' }],
+    });
+    assert.equal('customTags' in p, false);
+    assert.deepEqual(p.envRules, [{ pattern: 'test.', env: 'TEST' }]);
+    assert.deepEqual(p.hostMap, []);
+  });
+});
+
 describe('cleanImport: link notes and priority', () => {
   test('keeps a valid note and priority on each link, drops bad ones', () => {
     const r = cleanImport({

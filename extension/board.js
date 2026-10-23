@@ -1,4 +1,4 @@
-import { h, svgIcon, iconEl, highlight, detectEnv, linkBadge, sameAsUrl, displayUrl, sortLinks, hostOf, normalizeUrl } from './lib/core.js';
+import { h, svgIcon, iconEl, highlight, detectEnv, linkBadge, tagNames, sameAsUrl, displayUrl, sortLinks, hostOf, normalizeUrl } from './lib/core.js';
 
 let adding = null;
 
@@ -99,7 +99,7 @@ function column(s, ctx) {
   const { settings } = ctx;
   const p = ctx.folderPrefs(s.id);
   const match = matcher(ctx.filter);
-  const sort = (list) => sortLinks(list.filter(match), p.sort, settings.envRules);
+  const sort = (list) => sortLinks(list.filter(match), p.sort, settings.envRules, tagNames(settings));
   const cards = h('div', { class: 'bcards' });
   let hits = 0;
   if (s.parts.length) {

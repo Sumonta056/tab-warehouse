@@ -401,6 +401,16 @@ describe('searchLinks', () => {
     assert.deepEqual(ids(searchLinks(secs, 'CART Legacy')), ['2']);
     assert.deepEqual(ids(searchLinks(secs, 'nothing')), []);
   });
+
+  test('a custom tag from an address rule is searchable, so the palette and tw find it', () => {
+    const rules = [{ pattern: 'old.example.com', env: 'QA' }];
+    assert.deepEqual(ids(searchLinks(secs, 'qa', {}, rules)), ['2']);
+    assert.deepEqual(ids(searchLinks(secs, 'qa cart', {}, rules)), ['2']);
+    assert.deepEqual(
+      omniboxSuggestions(secs, 'qa', {}, rules).map((s) => s.content),
+      ['https://old.example.com/cart'],
+    );
+  });
 });
 
 describe('omnibox', () => {

@@ -5,7 +5,10 @@ import {
   getTree,
   resolveRoot,
   detectEnv,
-  isGithub,
+  linkBadge,
+  tagBadge,
+  tagNames,
+  tagPlain,
   hostOf,
   iconEl,
   h,
@@ -15,7 +18,6 @@ import {
   loadLinkMeta,
   setLinkMeta,
   switchTargets,
-  ENV_NAMES,
 } from './lib/core.js';
 
 const $ = (s) => document.querySelector(s);
@@ -107,7 +109,7 @@ function renderPage() {
 function renderSwitch() {
   if (!tab?.url) return;
   const box = $('#switch');
-  const sw = switchTargets(tab.url, settings.hostMap);
+  const sw = switchTargets(tab.url, settings.hostMap, tagNames(settings));
   if (sw?.to.length)
     box.replaceChildren(
       h('span', { class: 'lbl' }, 'Open this page in'),
@@ -115,9 +117,9 @@ function renderSwitch() {
         h(
           'button',
           { class: 'env-go', title: url, dataset: { env }, onClick: (e) => openEnv(url, e.shiftKey || e.metaKey || e.ctrlKey) },
-          h('span', { class: `badge ${env}` }, env),
+          tagBadge(env, settings.customTags),
           h('span', { class: 'u' }, url),
-          h('span', { class: 'n' }, ENV_NAMES[env]),
+          h('span', { class: 'n' }, tagPlain(settings, env)),
         ),
       ),
     );
@@ -159,10 +161,9 @@ function updateTarget() {
 function updateBadge() {
   const bm = { title: titleEl.value, url: targetUrl() || '' };
   const env = detectEnv(bm, settings.envRules);
-  const tag = env || (isGithub(bm.url) ? 'GH' : null);
-  badgeEl.replaceChildren();
-  badgeEl.className = tag ? `badge ${tag}` : '';
-  if (tag) badgeEl.textContent = tag;
+  const badge = linkBadge(env, bm.url, settings.customTags) || h('span');
+  badgeEl.replaceWith(badge);
+  badgeEl = badge;
 }
 
 function renderModes() {

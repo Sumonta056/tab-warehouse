@@ -1,5 +1,5 @@
 // Export / import. JSON carries bookmarks + warehouse preferences; HTML is the Netscape format Chrome itself imports/exports.
-import { saveSettings, ENVS, SORTS, cleanMeta, loadLinkMeta } from './core.js';
+import { saveSettings, ENVS, SORTS, cleanMeta, cleanTags, loadLinkMeta } from './core.js';
 
 const stamp = () => new Date().toISOString().slice(0, 10);
 
@@ -39,6 +39,7 @@ export async function exportJson(root, secs, settings) {
           .filter(([id, cat]) => cat === c.id && byId[id])
           .map(([id]) => byId[id]),
       })),
+      customTags: settings.customTags || [],
       envRules: settings.envRules,
       hostMap: settings.hostMap,
       showFavicons: settings.showFavicons,
@@ -182,6 +183,7 @@ export async function importFile(file, root, settings) {
       categories,
       folderCat,
       folders: foldersPrefs,
+      ...(p.customTags?.length ? { customTags: addTags(settings.customTags, p.customTags) } : {}),
       ...(p.envRules?.length ? { envRules: p.envRules } : {}),
       ...(p.hostMap?.length ? { hostMap: p.hostMap } : {}),
       ...(typeof p.showFavicons === 'boolean' ? { showFavicons: p.showFavicons } : {}),
@@ -220,6 +222,8 @@ function cleanFolderPrefs(f) {
   return out;
 }
 
+const addTags = (have = [], add) => [...have, ...add.filter((t) => !have.some((x) => x.name === t.name))];
+
 export function cleanImport(d) {
   const sections = list(d.sections)
     .filter((s) => isObj(s) && isStr(s.title))
@@ -238,20 +242,23 @@ export function cleanImport(d) {
     const prefs = cleanFolderPrefs(f);
     if (prefs) folders[t] = prefs;
   }
+  const customTags = cleanTags(p.customTags);
+  const tags = [...ENVS, ...customTags.map((t) => t.name)];
   return {
     sections,
     preferences: {
+      ...(customTags.length ? { customTags } : {}),
       order: list(p.order).filter(isStr),
       folders,
       categories: list(p.categories)
         .filter((c) => isObj(c) && isStr(c.name) && c.name.trim())
         .map((c) => ({ name: c.name.trim(), closed: c.closed === true, folders: list(c.folders).filter(isStr) })),
       envRules: list(p.envRules)
-        .filter((r) => isObj(r) && isStr(r.pattern) && r.pattern.trim() && ENVS.includes(r.env))
+        .filter((r) => isObj(r) && isStr(r.pattern) && r.pattern.trim() && tags.includes(r.env))
         .map((r) => ({ pattern: r.pattern.trim().toLowerCase(), env: r.env })),
       hostMap: list(p.hostMap)
         .filter(isObj)
-        .map((r) => Object.fromEntries(ENVS.filter((e) => isStr(r[e]) && r[e].trim()).map((e) => [e, r[e].trim()])))
+        .map((r) => Object.fromEntries(tags.filter((e) => isStr(r[e]) && r[e].trim()).map((e) => [e, r[e].trim()])))
         .filter((r) => Object.keys(r).length),
       ...(typeof p.showFavicons === 'boolean' ? { showFavicons: p.showFavicons } : {}),
       ...(isObj(p.board) && (p.board.group === 'cat' || p.board.group === 'flat') ? { board: { group: p.board.group } } : {}),

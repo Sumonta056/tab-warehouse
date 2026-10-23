@@ -17,7 +17,7 @@ import {
   svgIcon,
   iconEl,
   highlight,
-  ENVS,
+  tagNames,
   SORTS,
   findById,
   clampSideWidth,
@@ -725,7 +725,7 @@ function renderParts(body, s, p, match) {
     if (filtering() && !links.length) continue;
     const closed = !!p.closed[g.id];
     list.append(partHeader(g, s, p, closed, links.length));
-    if (!closed) priFirst(sortLinks(links, p.sort, settings.envRules), linkMeta).forEach((bm) => list.append(renderRow(bm, s, p)));
+    if (!closed) priFirst(sortLinks(links, p.sort, settings.envRules, tagNames(settings)), linkMeta).forEach((bm) => list.append(renderRow(bm, s, p)));
   }
   body.append(list);
   if (p.sort !== 'manual')
@@ -846,9 +846,11 @@ async function newPart(s) {
 }
 
 /* ---------- list view ---------- */
+const tagColor = (name) => settings.customTags?.find((t) => t.name === name)?.color;
+
 function renderList(body, links, s, p) {
   const list = h('div', { class: 'list' });
-  const sorted = priFirst(sortLinks(links, p.sort, settings.envRules), linkMeta);
+  const sorted = priFirst(sortLinks(links, p.sort, settings.envRules, tagNames(settings)), linkMeta);
   const pris = p.sort === 'env' ? [] : priGroups(sorted, linkMeta);
   if (pris.some((g) => g.pri)) {
     list.dataset.pri = 'groups';
@@ -863,14 +865,16 @@ function renderList(body, links, s, p) {
       const e = detectEnv(bm, settings.envRules) || 'NONE';
       (groups[e] ||= []).push(bm);
     }
-    for (const e of [...ENVS, 'NONE']) {
+    for (const e of [...tagNames(settings), 'NONE']) {
       const g = groups[e];
       if (!g) continue;
       const closed = !!p.closed[e];
+      const color = tagColor(e);
       const hdr = h(
         'button',
         {
-          class: `grp ${e} ${closed ? 'closed' : ''}`,
+          class: `grp ${color ? 'tag' : e} ${closed ? 'closed' : ''}`,
+          dataset: { env: e, ...(color ? { tag: color } : {}) },
           'aria-expanded': closed ? 'false' : 'true',
           onClick: () => setFolderPrefs(s.id, { closed: { ...p.closed, [e]: !closed } }),
         },
@@ -989,7 +993,8 @@ function renderRow(bm, s, p, { crumb = null, q = filterQ } = {}) {
 
 /* ---------- matrix view ---------- */
 function renderMatrix(body, links, s, p) {
-  const { rows, rest } = buildMatrix(links, settings.envRules);
+  const tags = tagNames(settings);
+  const { rows, rest } = buildMatrix(links, settings.envRules, tags);
   if (!rows.length) {
     body.append(
       h(
@@ -1011,14 +1016,21 @@ function renderMatrix(body, links, s, p) {
         'tr',
         {},
         h('th', {}, 'Resource (path)'),
-        ...ENVS.map((e) => h('th', { class: 'env' }, h('span', { class: 'dot', style: { background: colors[e] } }), e)),
+        ...tags.map((e) =>
+          h(
+            'th',
+            { class: 'env' },
+            h('span', { class: 'dot', dataset: tagColor(e) ? { tag: tagColor(e) } : null, style: colors[e] ? { background: colors[e] } : null }),
+            e,
+          ),
+        ),
         h('th', {}),
       ),
     ),
   );
   const tb = h('tbody');
   for (const r of rows) {
-    const any = ENVS.map((e) => r.cells[e][0]).find(Boolean);
+    const any = tags.map((e) => r.cells[e][0]).find(Boolean);
     const tr = h(
       'tr',
       {},
@@ -1033,15 +1045,22 @@ function renderMatrix(body, links, s, p) {
         ),
       ),
     );
-    for (const e of ENVS) {
+    for (const e of tags) {
       const cell = h('div', { class: 'cell' });
       if (r.cells[e].length) {
         for (const bm of r.cells[e]) {
           const q = pathKey(bm.url).includes('?') ? '?' + pathKey(bm.url).split('?')[1] : '';
-          cell.append(h('a', { class: `pill ${e}`, href: bm.url, target: '_blank', rel: 'noopener', title: bm.url }, h('span', {}, q ? `open ${q}` : 'open')));
+          const color = tagColor(e);
+          cell.append(
+            h(
+              'a',
+              { class: `pill ${color ? 'tag' : e}`, dataset: color ? { tag: color } : null, href: bm.url, target: '_blank', rel: 'noopener', title: bm.url },
+              h('span', {}, q ? `open ${q}` : 'open'),
+            ),
+          );
         }
       } else {
-        const d = any && deriveUrl(any.url, e, settings.hostMap);
+        const d = any && deriveUrl(any.url, e, settings.hostMap, tags);
         if (d)
           cell.append(
             h(
@@ -1076,7 +1095,7 @@ function renderMatrix(body, links, s, p) {
   if (rest.length) {
     body.append(h('div', { class: 'grp NONE' }, 'NO ENV', h('span', { class: 'line' }), String(rest.length)));
     const list = h('div', { class: 'list' });
-    sortLinks(rest, p.sort, settings.envRules).forEach((bm) => list.append(renderRow(bm, s, p)));
+    sortLinks(rest, p.sort, settings.envRules, tagNames(settings)).forEach((bm) => list.append(renderRow(bm, s, p)));
     body.append(list);
   }
 }
@@ -1090,10 +1109,12 @@ async function deriveClick(ev, url, from, s) {
 }
 
 function rowMenu(e, r, s) {
-  const all = ENVS.flatMap((env) => r.cells[env]);
+  const tags = tagNames(settings);
+  const all = tags.flatMap((env) => r.cells[env]);
   const any = all[0];
-  const missing = ENVS.filter((env) => !r.cells[env].length)
-    .map((env) => ({ env, url: any && deriveUrl(any.url, env, settings.hostMap) }))
+  const missing = tags
+    .filter((env) => !r.cells[env].length)
+    .map((env) => ({ env, url: any && deriveUrl(any.url, env, settings.hostMap, tags) }))
     .filter((x) => x.url);
   showMenu(e, [
     { label: `Open all (${all.length})`, icon: 'external', run: () => all.forEach((bm) => chrome.tabs.create({ url: bm.url, active: false })) },
@@ -1396,8 +1417,10 @@ function closeMenu() {
 
 function linkMenu(e, bm, row) {
   const env = detectEnv(bm, settings.envRules);
-  const derived = ENVS.filter((x) => x !== env)
-    .map((x) => ({ env: x, url: deriveUrl(bm.url, x, settings.hostMap) }))
+  const tags = tagNames(settings);
+  const derived = tags
+    .filter((x) => x !== env)
+    .map((x) => ({ env: x, url: deriveUrl(bm.url, x, settings.hostMap, tags) }))
     .filter((x) => x.url);
   const inCurrent = !query && current && !current.virtual && current.parts.length && current.all.some((x) => x.id === bm.id);
   const targets = inCurrent ? [...current.parts, { title: 'No section', node: current.node }].filter((g) => g.node.id !== bm.parentId) : [];
