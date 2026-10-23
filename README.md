@@ -109,9 +109,11 @@ Developers keep the same page open in many versions: live, test, staging and `lo
 
 ### Due dates
 
-- Give a link a due date, with a time if you want one. Set it in the popup when you save, in the edit form, or from the row menu.
+- Give a link a due date, with a time if you want one. Set it in the popup when you save (press **Due**), in the edit form, or from the row menu.
 - Overdue links show a red chip. The **Overdue** and **Has due date** filter buttons find them.
 - Turn on **Also add to Google Calendar** to open a filled-in Google Calendar event after you save. Google sends the reminder. The extension asks for no extra permission.
+
+![Learning pending folder with a red Overdue chip, a highlighted chip for a date in 2 days and a plain chip for a later date](site/screenshots/due.png)
 
 ![Docs folder with High, Medium and Other groups, a colored stripe and a note under the URL](site/screenshots/notes.png)
 

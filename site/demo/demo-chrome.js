@@ -110,10 +110,19 @@
     sideLook: { mode: 'image', color: '#141414', dark: 85, blur: 14 },
   });
 
+  const dayFromNow = (offset) => {
+    const d = new Date();
+    d.setDate(d.getDate() + offset);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  };
+
   const sampleLinkMeta = (ids) => ({
     [ids['chrome.bookmarks API']]: { note: 'Source of truth for every change', pri: 'high' },
     [ids['Manifest V3 overview']]: { pri: 'high' },
     [ids['HTML drag and drop API']]: { note: 'Same-parent move index quirk', pri: 'med' },
+    [ids['The Rust book']]: { note: 'Finish chapter 4 on ownership', due: dayFromNow(-3) },
+    [ids['web.dev: Learn performance']]: { due: `${dayFromNow(2)}T10:00` },
+    [ids['Refactoring UI']]: { due: dayFromNow(40) },
   });
 
   const fresh = () => {
@@ -305,10 +314,31 @@
     },
   };
 
+  const messages = [];
+  window.addEventListener('keydown', (e) => {
+    if (!(e.metaKey || e.ctrlKey) || !e.shiftKey || e.key.toLowerCase() !== 'k') return;
+    e.preventDefault();
+    for (const f of messages) f({ type: 'open-palette', tabId: 1 }, {}, () => {});
+  });
+
   window.chrome = {
     bookmarks,
     storage: { local, onChanged: listen('storage') },
-    runtime: { getURL: (p) => new URL(p.replace(/^\//, ''), location.href).href },
+    runtime: {
+      getURL: (p) => new URL(p.replace(/^\//, ''), location.href).href,
+      getManifest: () => ({ omnibox: { keyword: 'tw' } }),
+      onMessage: { addListener: (f) => messages.push(f) },
+    },
+    commands: {
+      async getAll() {
+        const mac = /Mac/.test(navigator.platform);
+        return [
+          { name: '_execute_action', description: '', shortcut: mac ? '⇧⌘B' : 'Ctrl+Shift+B' },
+          { name: 'quick-save', description: 'Save current tab without the popup', shortcut: mac ? '⌘K' : 'Ctrl+K' },
+          { name: 'palette', description: 'Open the command palette on Tab Warehouse', shortcut: mac ? '⇧⌘K' : 'Ctrl+Shift+K' },
+        ];
+      },
+    },
     tabs: {
       async create({ url }) {
         window.open(url, '_blank', 'noopener');
@@ -320,6 +350,9 @@
       },
       async query() {
         return [clone(S.activeTab)];
+      },
+      async getCurrent() {
+        return { id: 1 };
       },
     },
   };

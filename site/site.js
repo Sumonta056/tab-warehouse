@@ -63,6 +63,16 @@
         'Import merges and skips URLs you already have',
       ],
     },
+    {
+      name: 'Shortcuts',
+      img: 'settings-shortcuts.png',
+      text: 'Every key in one place.',
+      items: [
+        'Chrome shortcuts: the save popup, quick save and the command palette',
+        "Change shortcuts opens Chrome's own shortcut page",
+        'Keys on this page: search, j / k, Alt+↑ / ↓ and Esc',
+      ],
+    },
   ];
 
   const tabs = $('.set-tabs');
