@@ -16,6 +16,7 @@
   --test: #8ab4f8;
   --stage: #c6a9ff;
   --local: #6fd99a;
+  --star: #f2cc60;
   --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Inter, 'Helvetica Neue', Arial, sans-serif;
   --mono: ui-monospace, 'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace;
   --r: 14px;
@@ -241,6 +242,15 @@ h3 {
   display: flex;
   gap: 4px;
   margin-left: auto;
+}
+
+.top-acts {
+  display: flex;
+  gap: 8px;
+}
+
+.btn.star svg {
+  color: var(--star);
 }
 
 .top-nav a {
@@ -1215,8 +1225,11 @@ h3 {
   .top-nav {
     display: none;
   }
-  .top-in .btn {
+  .top-acts {
     margin-left: auto;
+  }
+  .top-acts .gh {
+    display: none;
   }
   .hero {
     padding-top: 56px;

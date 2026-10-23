@@ -284,7 +284,7 @@ export default [
   },
   {
     area,
-    name: 'Settings fills the right pane with 5 tabs; Done and Escape return to the previous page',
+    name: 'Settings fills the right pane with its tabs; Done and Escape return to the previous page',
     page: 'newtab',
     fixture: () => base(),
     async run(t) {
@@ -297,7 +297,7 @@ export default [
       t.ok(t.$('#settingsBtn').classList.contains('on'), 'gear marked on');
       t.eq(
         t.$$('.set-tab').map((b) => b.textContent),
-        ['Appearance', 'Home page', 'Bookmarks', 'Duplicates', 'Tags', 'Backup'],
+        ['Appearance', 'Home page', 'Bookmarks', 'Duplicates', 'Tags', 'Backup', 'Shortcuts'],
         'tabs',
       );
       t.eq(t.$('.set-tab.on').dataset.tab, 'appearance', 'first tab by default');
@@ -334,8 +334,16 @@ export default [
       t.eq(t.d.activeElement, t.$('.set-tab.on'), 'focus follows');
       t.key(t.$('.set-tab.on'), 'ArrowLeft');
       t.key(t.$('.set-tab.on'), 'ArrowLeft');
-      t.eq(t.$('.set-tab.on').dataset.tab, 'backup', 'ArrowLeft wraps');
-      const want = { appearance: '#themeSwatches', home: '#homePreview', bookmarks: '#rootSelect', dupes: '#dupCard', env: '#envTry', backup: '#exportJson' };
+      t.eq(t.$('.set-tab.on').dataset.tab, 'keys', 'ArrowLeft wraps');
+      const want = {
+        appearance: '#themeSwatches',
+        home: '#homePreview',
+        bookmarks: '#rootSelect',
+        dupes: '#dupCard',
+        env: '#envTry',
+        backup: '#exportJson',
+        keys: '#chromeKeys',
+      };
       for (const [k, sel] of Object.entries(want)) {
         t.click(t.$(`.set-tab[data-tab="${k}"]`));
         t.ok(t.$(`#settingsView ${sel}`), `${k} tab shows ${sel}`);

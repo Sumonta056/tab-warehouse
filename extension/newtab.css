@@ -951,6 +951,40 @@ img.wait {
   border-radius: 2px;
   background: var(--pc);
 }
+.row .due-chip {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 3px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--line-2);
+  font-family: var(--sans);
+  font-size: calc(11px * var(--fs, 1));
+  font-weight: 500;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.row .due-chip svg {
+  width: 12px;
+  height: 12px;
+}
+.row .due-chip.overdue {
+  color: var(--tag-red-fg);
+  background: var(--tag-red-bg);
+  border-color: transparent;
+}
+.row .due-chip.today {
+  color: var(--tag-yellow-fg);
+  background: var(--tag-yellow-bg);
+  border-color: transparent;
+}
+.row .due-chip.soon {
+  color: var(--accent-text);
+  background: var(--accent-bg);
+  border-color: transparent;
+}
 .row .note {
   display: flex;
   align-items: flex-start;
@@ -1467,6 +1501,46 @@ img.wait {
 }
 .dup-empty {
   margin: 0;
+}
+.keys-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+}
+.keys-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 36px;
+  border-top: 1px solid var(--line);
+}
+.keys-row:first-child {
+  border-top: 0;
+}
+.keys-what {
+  color: var(--text-2);
+  font-size: calc(13px * var(--fs, 1));
+}
+.keys {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.keys-combo {
+  display: inline-flex;
+  gap: 3px;
+}
+.keys-or,
+.keys-none {
+  color: var(--muted);
+  font-size: calc(12px * var(--fs, 1));
+}
+.keys-actions {
+  margin-top: 12px;
 }
 .set-f {
   display: grid;

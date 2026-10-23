@@ -14,7 +14,7 @@ description: Cut a release of the extension — bump version, sanity-check, prod
    ./tools/package.sh
    ```
    For the Chrome Web Store, run `./tools/package.sh --store`. It writes `tab-warehouse-<version>-store.zip` with `manifest.json` at the ZIP root (the store rejects a nested folder). Upload it in the Developer Dashboard › Package › Upload new package. For the store listing, images and the dashboard steps, run `/web-store`.
-5. Load the zip's contents unpacked in a fresh Chrome profile and check: new tab opens an empty Home with the _Add link_ tile and help text, Settings › Environments shows empty lists, the sidebar resizes, popup opens on `⌘⇧B` and saves the current tab, a drag-reorder of the sidebar survives a reload.
+5. Load the zip's contents unpacked in a fresh Chrome profile and check: new tab opens an empty Home with the _Add link_ tile and help text, Settings › Environments shows empty lists, the sidebar resizes, popup opens on `⌘⇧B` and saves the current tab, `⌘K` saves without the popup (green ✓ badge) and opens the popup on a duplicate, `⌘⇧K` on the new tab opens the palette, Settings › Shortcuts lists the three keys, a drag-reorder of the sidebar survives a reload.
 6. Note what changed in README.md under a short "Changelog" entry.
 7. Publishing the GitHub release triggers `.github/workflows/release-zip.yml`, which attaches `tab-warehouse-<version>.zip` (built by `tools/package.sh`) to the release. The website Download button uses that file. Check that the asset is there.
 8. Run `/update-website` for any user-visible change in this release, and bump `softwareVersion` in the JSON-LD of `site/index.html`.

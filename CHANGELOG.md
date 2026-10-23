@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- The command palette opens with ⌘⇧K / Ctrl+Shift+K, also right after a new tab opens with the cursor in the address bar. ⌘K / Ctrl+K is now quick save (save the tab without the popup).
+
 ## [2.4.0] - 2026-10-23
 
 Tab Warehouse 2.4.0 helps you find and sort links faster. It adds a command palette, search from the address bar, link notes and priority, a duplicate finder and your own tags.

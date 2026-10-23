@@ -14,7 +14,7 @@ paths:
 - Long URLs must wrap (`word-break: break-all`) and the row must grow with them — never truncate in the folder page. Truncation is allowed only in the popup and the command palette (the full URL is the tooltip).
 - In URL mode, show the title under the URL **only if it differs** (`sameAsUrl()`), otherwise it prints twice.
 - Every clickable thing: ≥ 28 px (dense), ≥ 36 px (toolbar), ≥ 44 px (primary). Keep `:focus-visible` outlines; never `outline: none` without a replacement.
-- Keyboard: `⌘K` opens the command palette, `/` focuses search, `Esc` clears/closes, `Enter` opens first hit, `j`/`k` move folders. Don't take those over for something else.
+- Keyboard: `⌘⇧K` opens the command palette (only the Chrome command `palette`, so the user can change it; `⌘K` is quick save), `/` focuses search, `Esc` clears/closes, `Enter` opens first hit, `j`/`k` move folders. Don't take those over for something else.
 - Per-folder preferences (`sort`, `view`, `show`, collapsed groups) are saved through `setFolderPrefs()`; global ones through `saveSettings()`. Never save bookmark content.
 - Destructive actions: links → undo toast (8 s); folders → `confirm()`.
 - Copy: sentence case, plain verbs, no exclamation marks, no "Successfully …". Empty and error states say what to do next.

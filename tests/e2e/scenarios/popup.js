@@ -199,6 +199,108 @@ export default [
   },
   {
     area,
+    name: 'due date: date and time are saved with the link; no calendar tab when the box is off',
+    page: 'popup',
+    fixture: () => base({ activeTab: tab }),
+    async run(t) {
+      t.click(t.$('#dueBtn'));
+      const cal = t.$('#meta .due-cal-box');
+      t.ok(cal.disabled, 'calendar box disabled without a date');
+      t.ok(t.$('#meta .due-clr').hidden, 'clear hidden without a date');
+      t.type(t.$('#meta .due-date'), '2026-04-10');
+      t.type(t.$('#meta .due-time'), '10:00');
+      t.ok(!cal.disabled && !cal.checked, 'box enabled and off by default');
+      t.click(t.$('#save'));
+      await t.settle();
+      const saved = t.node('10').children.find((c) => c.url === tab.url);
+      t.eq(t.store.linkMeta?.[saved?.id]?.due, '2026-04-10T10:00', 'due stored');
+      t.ok(!t.tabs.some((x) => x.url?.includes('calendar.google.com')), 'no calendar tab');
+    },
+  },
+  {
+    area,
+    name: 'due date: "Also add to Google Calendar" opens the filled-in event after save',
+    page: 'popup',
+    fixture: () => base({ activeTab: tab }),
+    async run(t) {
+      t.click(t.$('#dueBtn'));
+      t.type(t.$('#meta .due-date'), '2026-04-10');
+      t.click(t.$('#meta .due-cal-box'));
+      t.click(t.$('#save'));
+      await t.settle();
+      const saved = t.node('10').children.find((c) => c.url === tab.url);
+      t.eq(t.store.linkMeta?.[saved?.id]?.due, '2026-04-10', 'all-day due stored');
+      const cal = t.tabs.find((x) => x.url?.startsWith('https://calendar.google.com/calendar/render'));
+      t.ok(cal, 'calendar tab opened');
+      const q = new URL(cal?.url || 'https://x').searchParams;
+      t.eq(q.get('dates'), '20260410/20260411', 'all-day dates');
+      t.eq(q.get('text'), 'Deploy app PROD', 'event title is the link title');
+    },
+  },
+  {
+    area,
+    name: 'due date: clearing the date turns the calendar box off',
+    page: 'popup',
+    fixture: () => base({ activeTab: tab }),
+    async run(t) {
+      t.click(t.$('#dueBtn'));
+      t.type(t.$('#meta .due-date'), '2026-04-10');
+      const cal = t.$('#meta .due-cal-box');
+      t.click(cal);
+      t.click(t.$('#meta .due-clr'));
+      t.ok(cal.disabled && !cal.checked, 'box off and disabled');
+      t.eq(t.$('#meta .due-date').value, '', 'date cleared');
+    },
+  },
+  {
+    area,
+    name: 'due date: hidden until Due is pressed; pressing Due again hides and clears it',
+    page: 'popup',
+    fixture: () => base({ activeTab: tab }),
+    async run(t) {
+      const btn = t.$('#dueBtn');
+      t.ok(t.$('#duePick').hidden, 'picker hidden on open');
+      t.eq(btn.getAttribute('aria-expanded'), 'false', 'collapsed');
+      t.ok(btn.getBoundingClientRect().height >= 28, 'Due button at least 28 px');
+      t.click(btn);
+      t.ok(!t.$('#duePick').hidden, 'picker shown');
+      t.eq(btn.getAttribute('aria-expanded'), 'true', 'expanded');
+      t.eq(t.d.activeElement, t.$('#meta .due-date'), 'date box focused');
+      t.type(t.$('#meta .due-date'), '2026-04-10');
+      t.click(btn);
+      t.ok(t.$('#duePick').hidden, 'hidden again');
+      t.click(t.$('#save'));
+      await t.settle();
+      const saved = t.node('10').children.find((c) => c.url === tab.url);
+      t.eq(t.store.linkMeta?.[saved?.id], undefined, 'a hidden date is not saved');
+    },
+  },
+  {
+    area,
+    name: 'due date: with "Open this page in" rows and many folders the popup still fits 600 px, open or closed',
+    page: 'popup',
+    fixture: () =>
+      base({
+        activeTab: { title: 'Shop PROD', url: 'https://shop.example.com/api/x', index: 3 },
+        extraRoot: Array.from({ length: 30 }, (_, i) => F(String(900 + i), `Folder ${i + 1}`)),
+      }),
+    async run(t) {
+      t.ok(!t.$('#switch').hidden, 'switch rows shown');
+      const check = (when) => {
+        const body = t.d.body.getBoundingClientRect();
+        const bar = t.$('.bar').getBoundingClientRect();
+        const list = t.$('#folders').getBoundingClientRect();
+        t.ok(body.height <= 600, `${when}: fits 600 px (${Math.round(body.height)})`);
+        t.ok(list.bottom <= bar.top + 1, `${when}: folder list ends above the bottom bar (${Math.round(list.bottom)} / ${Math.round(bar.top)})`);
+        t.ok(list.height >= 44, `${when}: at least one folder row visible (${Math.round(list.height)})`);
+      };
+      check('closed');
+      t.click(t.$('#dueBtn'));
+      check('open');
+    },
+  },
+  {
+    area,
     name: 'no active tab shows a message and disables Save',
     page: 'popup',
     fixture: () => base({ activeTab: null }),

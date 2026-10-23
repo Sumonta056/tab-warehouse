@@ -165,4 +165,22 @@ describe('cleanImport: link notes and priority', () => {
     ]);
     assert.deepEqual(r.sections[0].parts[0].links, [{ title: 'z', url: 'https://z.com/', pri: 'low' }]);
   });
+
+  test('keeps a valid due date on each link, drops a bad one', () => {
+    const r = cleanImport({
+      sections: [
+        {
+          title: 'A',
+          links: [
+            { title: 'x', url: 'https://x.com/', due: '2026-04-10T10:00' },
+            { title: 'y', url: 'https://y.com/', due: '2026-02-30' },
+          ],
+        },
+      ],
+    });
+    assert.deepEqual(r.sections[0].links, [
+      { title: 'x', url: 'https://x.com/', due: '2026-04-10T10:00' },
+      { title: 'y', url: 'https://y.com/' },
+    ]);
+  });
 });

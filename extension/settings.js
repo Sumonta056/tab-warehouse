@@ -22,6 +22,8 @@ import {
   FONT_SCALE,
   flatten,
   findDuplicates,
+  commandLabel,
+  shortcutKeys,
 } from './lib/core.js';
 import { homeBgUrl, homeIconMap, homeLinks, homeLinksList, setHomeBg, applyHomeVars, homeIconImg } from './home.js';
 import { exportJson, exportHtml, importFile } from './lib/transfer.js';
@@ -33,6 +35,7 @@ export const TABS = [
   ['dupes', 'Duplicates'],
   ['env', 'Tags'],
   ['backup', 'Backup'],
+  ['keys', 'Shortcuts'],
 ];
 
 const ENV_HINTS = {
@@ -61,11 +64,21 @@ let envTryUrl = TRY_SAMPLES[1];
 let envDrag = null;
 let scroll = {};
 let dupLoose = false;
+let keysView = null;
 const timers = {};
 
 function later(key, fn, ms = 300) {
   clearTimeout(timers[key]);
   timers[key] = setTimeout(fn, ms);
+}
+
+const isMac = () => /mac/i.test(navigator.userAgentData?.platform || navigator.platform || '');
+
+function bindKeysRefresh() {
+  if (keysView) return;
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && keysView?.list.isConnected) keysView.draw();
+  });
 }
 
 const cap = (s) => `${s[0].toUpperCase()}${s.slice(1)}`;
@@ -1190,6 +1203,75 @@ const VIEWS = {
           'Import merges. URLs that already exist are skipped.',
           h('button', { type: 'button', class: 'btn sm', id: 'importBtn', onClick: () => file.click() }, 'Import…'),
           file,
+        ),
+      ),
+    );
+  },
+
+  keys() {
+    const mac = isMac();
+    const mod = mac ? '⌘' : 'Ctrl';
+    const alt = mac ? '⌥' : 'Alt';
+    const combo = (keys) => h('span', { class: 'keys-combo' }, ...keys.map((k) => h('kbd', { class: 'kbd' }, k)));
+    const keysEl = (groups) =>
+      h('span', { class: 'keys' }, ...groups.flatMap((g, i) => (i ? [h('span', { class: 'keys-or', 'aria-hidden': 'true' }, '/'), combo(g)] : [combo(g)])));
+    const row = (what, groups, name) =>
+      h(
+        'li',
+        { class: 'keys-row', dataset: name ? { cmd: name } : {} },
+        h('span', { class: 'keys-what' }, what),
+        groups.length ? keysEl(groups) : h('span', { class: 'keys-none' }, 'Not set'),
+      );
+    const list = h('ul', { class: 'keys-list', id: 'chromeKeys', 'aria-label': 'Chrome shortcuts' });
+    const draw = async () => {
+      const cmds = (await chrome.commands?.getAll?.()) || [];
+      const word = chrome.runtime.getManifest?.()?.omnibox?.keyword;
+      list.replaceChildren(
+        ...cmds.map((cmd) => {
+          const keys = shortcutKeys(cmd.shortcut);
+          return row(commandLabel(cmd), keys.length ? [keys] : [], cmd.name);
+        }),
+        ...(word ? [row('Search from the address bar', [[word, 'Space']], 'omnibox')] : []),
+      );
+    };
+    bindKeysRefresh();
+    keysView = { list, draw };
+    draw();
+    return h(
+      'div',
+      { class: 'set-grid one' },
+      h(
+        'div',
+        { class: 'set-col' },
+        card(
+          'Chrome shortcuts',
+          'These keys work on any page. Chrome does not let an extension change its own keys, so change them on Chrome’s shortcuts page. If another extension already uses a key, Chrome leaves it Not set here.',
+          list,
+          h(
+            'div',
+            { class: 'set-row keys-actions' },
+            h(
+              'button',
+              { type: 'button', class: 'btn', id: 'keysChange', onClick: () => chrome.tabs.create({ url: 'chrome://extensions/shortcuts' }) },
+              'Change shortcuts',
+            ),
+          ),
+        ),
+        card(
+          'Keys on this page',
+          'Fixed. These keys cannot be changed.',
+          h(
+            'ul',
+            { class: 'keys-list', id: 'pageKeys', 'aria-label': 'Keys on this page' },
+            row('Open the result in a background tab (in the palette)', [[mod, 'Enter']]),
+            row('Go to the search box', [['/']]),
+            row('Next or previous page in the sidebar', [['j'], ['k']]),
+            row('Move the focused folder, rule or tag up or down', [
+              [alt, '↑'],
+              [alt, '↓'],
+            ]),
+            row('Close the palette, a menu or Settings, or clear a search', [['Esc']]),
+          ),
         ),
       ),
     );

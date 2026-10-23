@@ -131,6 +131,42 @@
       #meta:empty {
         display: none;
       }
+      .pri-row {
+        display: flex;
+        gap: 6px;
+      }
+      .pri-row .pri-pick {
+        flex: 1 1 auto;
+        min-width: 0;
+      }
+      .due-btn {
+        min-height: 30px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 0 10px;
+        border-radius: 8px;
+        border: 1px solid var(--line-2);
+        background: var(--surface);
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .due-btn svg {
+        width: 14px;
+        height: 14px;
+      }
+      .due-btn:hover {
+        background: var(--surface-2);
+      }
+      .due-btn.on {
+        border-color: var(--accent);
+        background: var(--surface-2);
+        color: var(--text);
+        font-weight: 500;
+      }
+      body.due-open .folders {
+        min-height: 48px;
+      }
       .opt-row {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -212,25 +248,43 @@
       .folder.create {
         color: var(--accent);
       }
-      .exists {
+      .dup-warn {
         margin: 0 14px 8px;
-        min-height: 32px;
-        padding: 2px 4px 2px 10px;
+        padding: 4px 4px 4px 10px;
         border-radius: 8px;
-        background: var(--surface);
-        border: 1px solid var(--line-2);
+        background: var(--warn-bg);
+        border: 1px solid var(--warn-line);
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        font-size: 12px;
+        color: var(--warn-fg);
+      }
+      .exists {
+        min-height: 32px;
         display: flex;
         align-items: center;
         gap: 8px;
-        font-size: 12px;
-        color: var(--text-2);
       }
-      .exists > span {
+      .exists .where {
         flex: 1 1 auto;
         min-width: 0;
+        display: flex;
+        flex-direction: column;
+      }
+      .exists .path,
+      .exists .addr {
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+      }
+      .exists strong {
+        color: var(--text);
+      }
+      .exists .addr {
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--muted);
       }
       .bar {
         display: flex;

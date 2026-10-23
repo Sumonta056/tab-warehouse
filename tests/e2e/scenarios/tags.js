@@ -108,8 +108,7 @@ export default [
       t.click(t.$('#boardBtn'));
       await t.settle();
       t.ok(isTag(t.$('#page .bcard[data-id="33"] .badge'), 'QA', 'pink'), 'Board card');
-      t.key(t.d.body, 'k', { metaKey: true });
-      await t.settle();
+      await t.palette();
       t.type(t.$('#palQ'), 'shop stage');
       await t.settle();
       t.ok(isTag(t.$('#palList .pal-item .badge'), 'QA', 'pink'), 'palette item');
@@ -409,8 +408,7 @@ export default [
         'No link in this folder has a tag, so there is nothing to lay out as a matrix. Use List view or add tags by address in Settings › Tags.',
         'empty state',
       );
-      t.key(t.d.body, 'k', { metaKey: true });
-      await t.settle();
+      await t.palette();
       t.type(t.$('#palQ'), 'tags');
       await t.settle();
       t.ok(

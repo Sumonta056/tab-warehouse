@@ -37,6 +37,9 @@
   --tag-grey-fg: #b8b8b8;
   --red-fg: #ff8a80;
   --yellow-fg: #f2cc60;
+  --warn-bg: #36260c;
+  --warn-fg: #ffc46b;
+  --warn-line: #6e4b14;
   --pri-high: var(--red-fg);
   --pri-med: var(--yellow-fg);
   --pri-low: var(--muted-2);
@@ -254,6 +257,68 @@ select {
 .note-in:focus {
   border-color: var(--accent);
   outline: 0;
+}
+
+.due-pick {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.due-pick[hidden] {
+  display: none;
+}
+.due-row {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr) 28px;
+  gap: 6px;
+  align-items: center;
+}
+.due-in {
+  min-height: 32px;
+  width: 100%;
+  padding: 0 8px;
+  border-radius: 8px;
+  border: 1px solid var(--line-2);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: calc(13px * var(--fs, 1));
+  font-variant-numeric: tabular-nums;
+}
+.due-in:focus {
+  border-color: var(--accent);
+  outline: 0;
+}
+.due-clr {
+  min-width: 28px;
+  min-height: 28px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+}
+.due-clr:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+.due-cal {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 28px;
+  font-size: calc(12px * var(--fs, 1));
+  color: var(--text-2);
+  cursor: pointer;
+}
+.due-cal input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--accent);
+}
+.due-cal.off {
+  color: var(--muted-2);
+  cursor: default;
 }
 
 /* Badges */
@@ -551,6 +616,33 @@ mark {
 }
 .edit-pri .pri-pick {
   max-width: 360px;
+}
+.edit-due {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: calc(10px * var(--fs, 1));
+  color: var(--muted);
+}
+.edit-due .due-pick {
+  max-width: 360px;
+}
+.edit .due-cal {
+  flex-direction: row;
+  gap: 8px;
+  font-size: calc(12px * var(--fs, 1));
+  color: var(--text-2);
+}
+.edit .due-cal.off {
+  color: var(--muted-2);
+}
+.edit .due-cal input {
+  width: 16px;
+  padding: 0;
+}
+.edit .due-in {
+  min-height: 30px;
+  padding: 0 8px;
 }
 
 /* Toast */

@@ -28,6 +28,10 @@ import {
   PRI_NAMES,
   NOTE_MAX,
   cleanMeta,
+  isDue,
+  dueState,
+  dueLabel,
+  gcalUrl,
   priGroups,
   priFirst,
   matchLink,
@@ -57,6 +61,7 @@ import {
   tagNames,
   tagPlain,
 } from '../../extension/lib/core.js';
+import { commandLabel, shortcutKeys } from '../../extension/lib/core.js';
 
 const SAMPLE_ENV_RULES = [
   { pattern: 'localhost', env: 'LOCAL' },
@@ -378,6 +383,80 @@ describe('link notes and priority', () => {
     assert.equal(matchLink(bm, 'Ask Sam for the token', 'build token'), true);
     assert.equal(matchLink(bm, '', 'sam'), false);
     assert.equal(matchLink(bm, undefined, 'build'), true);
+  });
+});
+
+describe('due dates', () => {
+  const NOW = new Date(2026, 9, 24, 11, 30);
+
+  test('isDue accepts a real date, with or without a time', () => {
+    assert.equal(isDue('2026-04-10'), true);
+    assert.equal(isDue('2026-04-10T10:00'), true);
+    assert.equal(isDue('2026-02-30'), false);
+    assert.equal(isDue('2026-13-01'), false);
+    assert.equal(isDue('2026-04-10T24:00'), false);
+    assert.equal(isDue('2026-04-10T10:60'), false);
+    assert.equal(isDue('10 April'), false);
+    assert.equal(isDue(''), false);
+    assert.equal(isDue(20260410), false);
+  });
+
+  test('cleanMeta keeps a valid due date and drops a bad one', () => {
+    assert.deepEqual(cleanMeta({ due: '2026-04-10' }), { due: '2026-04-10' });
+    assert.deepEqual(cleanMeta({ note: 'read', due: '2026-04-10T10:00' }), { note: 'read', due: '2026-04-10T10:00' });
+    assert.deepEqual(cleanMeta({ pri: 'high', due: 'tomorrow' }), { pri: 'high' });
+    assert.equal(cleanMeta({ due: '' }), null);
+  });
+
+  test('dueState: a date without a time is overdue from the next day', () => {
+    assert.equal(dueState('2026-10-23', NOW), 'overdue');
+    assert.equal(dueState('2026-10-24', NOW), 'today');
+    assert.equal(dueState('2026-10-25', NOW), 'soon');
+  });
+
+  test('dueState: a date with a time is overdue after that minute', () => {
+    assert.equal(dueState('2026-10-24T11:29', NOW), 'overdue');
+    assert.equal(dueState('2026-10-24T11:30', NOW), 'today');
+    assert.equal(dueState('2026-10-24T16:00', NOW), 'today');
+  });
+
+  test('dueState: soon is the next 7 days, later after that, null without a date', () => {
+    assert.equal(dueState('2026-10-31', NOW), 'soon');
+    assert.equal(dueState('2026-11-01', NOW), 'later');
+    assert.equal(dueState('', NOW), null);
+    assert.equal(dueState(undefined, NOW), null);
+  });
+
+  test('dueLabel says when and how late', () => {
+    assert.equal(dueLabel('2026-10-20', NOW), 'Overdue · 20 Oct (4 days)');
+    assert.equal(dueLabel('2026-10-23T09:00', NOW), 'Overdue · 23 Oct 09:00 (1 day)');
+    assert.equal(dueLabel('2026-10-24T10:00', NOW), 'Overdue · today 10:00');
+    assert.equal(dueLabel('2026-10-24', NOW), 'Due today');
+    assert.equal(dueLabel('2026-10-24T16:00', NOW), 'Today 16:00');
+    assert.equal(dueLabel('2026-10-29', NOW), 'Due Thu 29 Oct');
+    assert.equal(dueLabel('2026-10-29T10:00', NOW), 'Due Thu 29 Oct 10:00');
+    assert.equal(dueLabel('2026-12-11', NOW), 'Due 11 Dec 2026');
+    assert.equal(dueLabel('bad', NOW), '');
+  });
+
+  test('gcalUrl: an all-day event ends on the next day', () => {
+    const u = new URL(gcalUrl({ title: 'Q4 checklist', url: 'https://example.com/q4', due: '2026-12-31' }));
+    assert.equal(u.origin + u.pathname, 'https://calendar.google.com/calendar/render');
+    assert.equal(u.searchParams.get('action'), 'TEMPLATE');
+    assert.equal(u.searchParams.get('text'), 'Q4 checklist');
+    assert.equal(u.searchParams.get('dates'), '20261231/20270101');
+    assert.equal(u.searchParams.get('details'), 'https://example.com/q4');
+  });
+
+  test('gcalUrl: a timed event lasts 30 minutes in local time and carries the note', () => {
+    const u = new URL(gcalUrl({ title: '', url: 'https://example.com/a', note: 'Read first', due: '2026-04-10T23:45' }));
+    assert.equal(u.searchParams.get('dates'), '20260410T234500/20260411T001500');
+    assert.equal(u.searchParams.get('text'), 'https://example.com/a');
+    assert.equal(u.searchParams.get('details'), 'Read first\n\nhttps://example.com/a');
+  });
+
+  test('gcalUrl is empty without a valid date', () => {
+    assert.equal(gcalUrl({ title: 'x', url: 'https://example.com', due: '' }), '');
   });
 });
 
@@ -888,5 +967,147 @@ describe('clampFont', () => {
   test('bad values fall back to 100', () => {
     assert.equal(clampFont(undefined), 100);
     assert.equal(clampFont('big'), 100);
+  });
+});
+
+describe('shortcuts', () => {
+  test('shortcutKeys splits Windows and Linux keys on +', () => {
+    assert.deepEqual(shortcutKeys('Ctrl+Shift+K'), ['Ctrl', 'Shift', 'K']);
+    assert.deepEqual(shortcutKeys('Alt+Shift+Down'), ['Alt', 'Shift', 'Down']);
+  });
+  test('shortcutKeys splits Mac modifier symbols and keeps the key whole', () => {
+    assert.deepEqual(shortcutKeys('⇧⌘B'), ['⇧', '⌘', 'B']);
+    assert.deepEqual(shortcutKeys('⌥⇧Space'), ['⌥', '⇧', 'Space']);
+    assert.deepEqual(shortcutKeys('F5'), ['F5']);
+  });
+  test('an empty shortcut has no keys', () => {
+    assert.deepEqual(shortcutKeys(''), []);
+    assert.deepEqual(shortcutKeys(undefined), []);
+  });
+  test('commandLabel names the known commands and falls back to the description', () => {
+    assert.equal(commandLabel({ name: '_execute_action', description: '' }), 'Open the save popup');
+    assert.equal(commandLabel({ name: 'quick-save', description: 'Save current tab without the popup' }), 'Quick save (no popup)');
+    assert.equal(commandLabel({ name: 'palette', description: 'x' }), 'Open the command palette (on Tab Warehouse)');
+    assert.equal(commandLabel({ name: 'other', description: 'Do a thing' }), 'Do a thing');
+    assert.equal(commandLabel({ name: 'other' }), 'other');
+  });
+});
+
+describe('palette command', async () => {
+  const { isPaletteRequest, paletteCommand, PALETTE_MSG } = await import('../../extension/lib/core.js');
+  test('isPaletteRequest matches only the open-palette message for this tab', () => {
+    assert.equal(PALETTE_MSG, 'open-palette');
+    assert.equal(isPaletteRequest({ type: 'open-palette', tabId: 5 }, 5), true);
+    assert.equal(isPaletteRequest({ type: 'open-palette', tabId: 6 }, 5), false);
+    assert.equal(isPaletteRequest({ type: 'other', tabId: 5 }, 5), false);
+    assert.equal(isPaletteRequest({ type: 'open-palette' }, undefined), false);
+    assert.equal(isPaletteRequest(null, 5), false);
+  });
+  test('a page that answers true opens the palette', async () => {
+    const sent = [];
+    assert.equal(await paletteCommand(5, async (m) => (sent.push(m), true)), 'palette');
+    assert.deepEqual(sent, [{ type: 'open-palette', tabId: 5 }]);
+  });
+  test('no listener (rejected or thrown), or any other answer, does nothing', async () => {
+    for (const send of [
+      () => Promise.reject(new Error('Receiving end does not exist.')),
+      () => {
+        throw new Error('sync');
+      },
+      async () => undefined,
+      async () => 'yes',
+    ]) {
+      assert.equal(await paletteCommand(5, send), 'none');
+    }
+  });
+  test('without a tab id it does not ask a page', async () => {
+    const sent = [];
+    assert.equal(await paletteCommand(undefined, async (m) => (sent.push(m), true)), 'none');
+    assert.deepEqual(sent, []);
+  });
+});
+
+describe('quick save', async () => {
+  const { findSaved, quickSaveTarget, quickSave, quickSaveBadge } = await import('../../extension/lib/core.js');
+  const tree = () => ({
+    id: '0',
+    title: '',
+    children: [
+      {
+        id: '1',
+        title: 'Bookmarks bar',
+        children: [
+          {
+            id: '10',
+            title: 'My Links',
+            children: [
+              { id: '30', title: 'Shop API', children: [{ id: '31', title: 'Shop', url: 'https://shop.example.com/api/x' }] },
+              { id: '40', title: 'Empty', children: [] },
+              { id: '60', title: 'Loose', url: 'https://loose.example.com/' },
+            ],
+          },
+        ],
+      },
+      { id: '2', title: 'Other bookmarks', children: [{ id: '70', title: 'Home', children: [{ id: '71', title: 'Ex', url: 'https://example.com/' }] }] },
+    ],
+  });
+  const settings = { rootName: 'My Links', lastSaveFolder: null };
+
+  test('findSaved: an exact address matches, with its folder path', () => {
+    const hits = findSaved(tree(), 'https://shop.example.com/api/x');
+    assert.deepEqual(
+      hits.map((b) => [b.id, b.path]),
+      [['31', 'Bookmarks bar › My Links › Shop API']],
+    );
+  });
+  test('findSaved: tracking parameters, #part and a trailing slash still match', () => {
+    assert.deepEqual(
+      findSaved(tree(), 'https://shop.example.com/api/x/?utm_source=mail&gclid=1#top').map((b) => b.id),
+      ['31'],
+    );
+    assert.deepEqual(
+      findSaved(tree(), 'https://example.com').map((b) => b.id),
+      ['71'],
+    );
+  });
+  test('findSaved: another page or another query does not match', () => {
+    assert.deepEqual(findSaved(tree(), 'https://shop.example.com/api/y'), []);
+    assert.deepEqual(findSaved(tree(), 'https://shop.example.com/api/x?id=2'), []);
+  });
+  test('quickSaveTarget: the last save folder while it exists, else the root', () => {
+    assert.equal(quickSaveTarget({ ...settings, lastSaveFolder: '40' }, tree()), '40');
+    assert.equal(quickSaveTarget({ ...settings, lastSaveFolder: '999' }, tree()), '10');
+    assert.equal(quickSaveTarget({ ...settings, lastSaveFolder: '60' }, tree()), '10');
+    assert.equal(quickSaveTarget({ ...settings, lastSaveFolder: '70' }, tree()), '10');
+    assert.equal(quickSaveTarget(settings, tree()), '10');
+  });
+  test('quickSave: saves a new page into the target folder with the tab title', () => {
+    assert.deepEqual(quickSave({ ...settings, lastSaveFolder: '40' }, tree(), { title: 'New', url: 'https://new.example.com/a' }), {
+      kind: 'save',
+      parentId: '40',
+      folder: 'Empty',
+      title: 'New',
+      url: 'https://new.example.com/a',
+    });
+    assert.equal(quickSave(settings, tree(), { title: '', url: 'file:///x.html' }).title, 'file:///x.html');
+  });
+  test('quickSave: an address that is already saved is a duplicate', () => {
+    const r = quickSave(settings, tree(), { title: 'Shop', url: 'https://shop.example.com/api/x#top' });
+    assert.equal(r.kind, 'dup');
+    assert.deepEqual(
+      r.hits.map((b) => b.id),
+      ['31'],
+    );
+  });
+  test('quickSave: no tab or a page that is not http(s)/file is skipped', () => {
+    assert.deepEqual(quickSave(settings, tree(), undefined), { kind: 'skip' });
+    assert.deepEqual(quickSave(settings, tree(), { url: 'chrome://extensions/' }), { kind: 'skip' });
+    assert.deepEqual(quickSave(settings, tree(), { url: '' }), { kind: 'skip' });
+  });
+  test('quickSaveBadge: ✓ green, ! orange with the path, – grey', () => {
+    assert.deepEqual(quickSaveBadge({ kind: 'save', folder: 'Empty' }), { text: '✓', color: '#1e8e3e', title: 'Saved to Empty' });
+    assert.deepEqual(quickSaveBadge({ kind: 'dup', hits: [{ path: 'A › B' }] }), { text: '!', color: '#e8710a', title: 'Already in A › B' });
+    assert.equal(quickSaveBadge({ kind: 'skip' }).text, '–');
+    assert.equal(quickSaveBadge({ kind: 'error', message: 'x' }).title, 'Could not save: x');
   });
 });

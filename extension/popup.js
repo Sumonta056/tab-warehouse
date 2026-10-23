@@ -14,10 +14,13 @@ import {
   h,
   svgIcon,
   priPicker,
+  duePicker,
+  gcalUrl,
   NOTE_MAX,
   loadLinkMeta,
   setLinkMeta,
   switchTargets,
+  findSaved,
 } from './lib/core.js';
 
 const $ = (s) => document.querySelector(s);
@@ -26,7 +29,7 @@ const list = $('#folders');
 const saveBtn = $('#save');
 $('#searchIcon').append(svgIcon('search'));
 
-let settings, root, tab, titleEl, targetEl, badgeEl, noteEl;
+let settings, root, tab, titleEl, targetEl, badgeEl, noteEl, dueEl;
 let pri = null;
 let folders = [],
   items = [],
@@ -35,7 +38,8 @@ let folders = [],
   mode = 'page',
   query = '',
   titleEdited = false,
-  busy = false;
+  busy = false,
+  dup = false;
 
 async function boot() {
   settings = await loadSettings();
@@ -146,9 +150,39 @@ function renderMeta() {
     placeholder: 'Add a note…',
     'aria-label': 'Note',
   });
+  dueEl = duePicker('');
+  dueEl.el.id = 'duePick';
+  dueEl.el.hidden = true;
+  const dueBtn = h(
+    'button',
+    {
+      type: 'button',
+      id: 'dueBtn',
+      class: 'due-btn',
+      'aria-expanded': 'false',
+      'aria-controls': 'duePick',
+      onClick: () => {
+        const open = dueEl.el.hidden;
+        dueEl.el.hidden = !open;
+        dueBtn.setAttribute('aria-expanded', String(open));
+        dueBtn.classList.toggle('on', open);
+        document.body.classList.toggle('due-open', open);
+        if (open) dueEl.date.focus();
+        else dueEl.reset();
+      },
+    },
+    svgIcon('calendar'),
+    'Due',
+  );
   $('#meta').replaceChildren(
-    priPicker(pri, (p) => (pri = p)),
+    h(
+      'div',
+      { class: 'pri-row' },
+      priPicker(pri, (p) => (pri = p)),
+      dueBtn,
+    ),
     h('div', { class: 'opt-row' }, noteEl, h('div', { class: 'modes', id: 'modes', role: 'group', 'aria-label': 'Save' })),
+    dueEl.el,
   );
 }
 
@@ -247,7 +281,7 @@ function setCursor(i) {
 
 function updateSaveBtn() {
   const x = items[cursor];
-  const label = !x ? 'Save' : x.create ? `Create "${x.create}" and save` : `Save to ${x.f.title}`;
+  const label = !x ? 'Save' : x.create ? `Create "${x.create}" and save` : `${dup ? 'Save again' : 'Save'} to ${x.f.title}`;
   saveBtn.replaceChildren(svgIcon('save'), h('span', {}, label));
   saveBtn.title = label;
   saveBtn.disabled = busy || !x || !targetUrl();
@@ -255,26 +289,41 @@ function updateSaveBtn() {
 
 async function renderExists() {
   const box = $('#exists');
-  box.replaceChildren();
   const url = targetUrl();
-  if (!url) return;
   let hits = [];
-  try {
-    hits = (await chrome.bookmarks.search({ url })).filter((b) => b.url);
-  } catch {
-    return;
+  if (url) {
+    try {
+      hits = findSaved(await getTree(), url);
+    } catch {
+      hits = [];
+    }
   }
-  for (const b of hits.slice(0, 3)) {
-    const parent = folders.find((f) => f.id === b.parentId);
-    box.append(
-      h(
-        'div',
-        { class: 'exists' },
-        h('span', {}, 'Already in ', h('strong', {}, parent?.path || 'another folder')),
-        h('button', { class: 'btn sm', onClick: () => remove(b) }, 'Remove'),
-      ),
-    );
-  }
+  if (url !== targetUrl()) return;
+  box.replaceChildren();
+  dup = hits.length > 0;
+  updateSaveBtn();
+  if (!dup) return;
+  box.append(
+    h(
+      'div',
+      { class: 'dup-warn', role: 'note' },
+      ...hits
+        .slice(0, 3)
+        .map((b) =>
+          h(
+            'div',
+            { class: 'exists' },
+            h(
+              'span',
+              { class: 'where' },
+              h('span', { class: 'path' }, 'Already saved in ', h('strong', {}, folders.find((f) => f.id === b.parentId)?.path || b.path || 'another folder')),
+              b.url !== url && h('span', { class: 'addr', title: b.url }, b.url),
+            ),
+            h('button', { class: 'btn sm', onClick: () => remove(b) }, 'Remove'),
+          ),
+        ),
+    ),
+  );
 }
 
 async function remove(b) {
@@ -334,9 +383,11 @@ async function save() {
   try {
     const parentId = x.create ? (await chrome.bookmarks.create({ parentId: root.id, title: x.create })).id : x.f.id;
     const bm = await chrome.bookmarks.create({ parentId, title: titleEl.value.trim() || url, url });
-    if (pri || noteEl.value.trim()) await setLinkMeta(bm.id, { pri, note: noteEl.value });
+    const due = dueEl.value();
+    if (pri || noteEl.value.trim() || due) await setLinkMeta(bm.id, { pri, note: noteEl.value, due });
     await saveSettings({ lastSaveFolder: parentId });
     status(`Saved to ${x.create || x.f.title}`);
+    if (dueEl.calendar()) await chrome.tabs.create({ url: gcalUrl({ title: bm.title, url, note: noteEl.value.trim(), due }), index: tab.index + 1 });
     setTimeout(() => window.close(), 900);
   } catch (e) {
     busy = false;

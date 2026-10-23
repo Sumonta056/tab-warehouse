@@ -33,6 +33,14 @@
     "_execute_action": {
       "suggested_key": { "default": "Ctrl+Shift+B", "mac": "Command+Shift+B" },
       "description": "Save current tab"
+    },
+    "quick-save": {
+      "suggested_key": { "default": "Ctrl+K", "mac": "Command+K" },
+      "description": "Save current tab without the popup"
+    },
+    "palette": {
+      "suggested_key": { "default": "Ctrl+Shift+K", "mac": "Command+Shift+K" },
+      "description": "Open the command palette on Tab Warehouse"
     }
   }
 }

@@ -6,11 +6,15 @@ import popup from './scenarios/popup.js';
 import environments from './scenarios/environments.js';
 import board from './scenarios/board.js';
 import notes from './scenarios/notes.js';
+import due from './scenarios/due.js';
 import duplicates from './scenarios/duplicates.js';
 import palette from './scenarios/palette.js';
 import envswitch from './scenarios/envswitch.js';
 import omnibox from './scenarios/omnibox.js';
 import tags from './scenarios/tags.js';
+import palettecmd from './scenarios/palettecmd.js';
+import quicksave from './scenarios/quicksave.js';
+import shortcuts from './scenarios/shortcuts.js';
 
 const ALL = [
   ...newtab,
@@ -21,11 +25,15 @@ const ALL = [
   ...environments,
   ...board,
   ...notes,
+  ...due,
   ...duplicates,
   ...palette,
   ...envswitch,
   ...omnibox,
   ...tags,
+  ...palettecmd,
+  ...quicksave,
+  ...shortcuts,
 ];
 const frame = document.getElementById('frame');
 const out = document.getElementById('results');
@@ -217,6 +225,11 @@ function makeT(scenario) {
     navTitles() {
       return t.$$('#nav .nav').map((n) => n.querySelector('.t').textContent);
     },
+    async palette() {
+      await t.w.eval("import('/extension/background.js')");
+      await t.w.__command('palette', { id: t.H.currentTabId });
+      await t.settle();
+    },
     async folder(title) {
       t.click(t.nav(title));
       await t.settle();
@@ -256,6 +269,8 @@ export async function run(filter) {
       answers: [],
       confirm: true,
       activeTab: state.activeTab || null,
+      commands: state.commands || null,
+      currentTabId: state.currentTabId ?? 1,
       closed: false,
     };
     const t = makeT(s);

@@ -158,7 +158,53 @@
   window.chrome = {
     bookmarks,
     storage: { local, onChanged: { addListener: (f) => storageListeners.push(f) } },
-    runtime: { getURL: (p) => `${window.parent.location.origin}${p.startsWith('/') ? '' : '/'}${p}` },
+    runtime: {
+      getURL: (p) => `${window.parent.location.origin}${p.startsWith('/') ? '' : '/'}${p}`,
+      getManifest: () => ({ action: { default_title: 'Save current tab to Tab Warehouse' }, omnibox: { keyword: 'tw' } }),
+      onMessage: on('onMessage'),
+      sendMessage(msg) {
+        H.log.push(['sendMessage', clone(msg)]);
+        return new Promise((resolve, reject) => {
+          let waiting = false;
+          let done = false;
+          const respond = (v) => {
+            if (done) return;
+            done = true;
+            resolve(clone(v));
+          };
+          for (const f of listeners.onMessage || []) if (f(clone(msg), {}, respond) === true) waiting = true;
+          if (!done && !waiting) reject(new Error('Could not establish connection. Receiving end does not exist.'));
+        });
+      },
+    },
+    commands: {
+      onCommand: on('onCommand'),
+      async getAll() {
+        return clone(
+          H.commands || [
+            { name: '_execute_action', description: 'Save current tab', shortcut: 'Ctrl+Shift+B' },
+            { name: 'quick-save', description: 'Save current tab without the popup', shortcut: 'Ctrl+K' },
+            { name: 'palette', description: 'Open the command palette on Tab Warehouse', shortcut: 'Ctrl+Shift+K' },
+          ],
+        );
+      },
+    },
+    omnibox: { setDefaultSuggestion() {}, onInputChanged: on('onInputChanged'), onInputEntered: on('onInputEntered') },
+    action: {
+      async setBadgeText({ tabId, text }) {
+        ((H.badges ||= {})[tabId ?? 'all'] ||= {}).text = text;
+      },
+      async setBadgeBackgroundColor({ tabId, color }) {
+        ((H.badges ||= {})[tabId ?? 'all'] ||= {}).color = color;
+      },
+      async setTitle({ tabId, title }) {
+        ((H.badges ||= {})[tabId ?? 'all'] ||= {}).title = title;
+      },
+      async openPopup() {
+        if (H.openPopupFails) throw new Error('Could not find an active browser window.');
+        H.popupOpened = (H.popupOpened || 0) + 1;
+      },
+    },
     tabs: {
       async create(o) {
         H.tabs.push(o);
@@ -171,8 +217,12 @@
       async query() {
         return H.activeTab ? [clone(H.activeTab)] : [];
       },
+      async getCurrent() {
+        return H.currentTabId == null ? undefined : { id: H.currentTabId };
+      },
     },
   };
+  window.__command = (name, tab) => Promise.all((listeners.onCommand || []).map((f) => f(name, tab && clone(tab))));
   window.close = () => {
     H.closed = true;
   };
