@@ -6,12 +6,13 @@ Bookmarks as a warehouse: a Home page (clock + link tiles), a resizable folder s
 
 ```
 extension/             Everything that ships; the Load unpacked folder. Paths below are relative to it.
-  manifest.json        MV3: newtab override + action popup + ⌘⇧B command
+  manifest.json        MV3: newtab override + action popup + omnibox + ⌘⇧B / ⌘⇧K / ⌘K commands
   newtab.html/.css/.js The warehouse page (sidebar + folder page)
   home.js              Home view: clock, tiles, links list, default links
   board.js             Board view: one column of cards per folder
-  settings.js          Settings view (right pane, 5 tabs); opened by the sidebar gear
-  popup.html/.js       Toolbar popup: save the current tab into any folder
+  settings.js          Settings view (right pane, 7 tabs); opened by the sidebar gear
+  popup.html/.js       Toolbar popup: save the current tab into any folder, warns on duplicates
+  background.js        Service worker: `tw` omnibox, quick save (⌘⇧K), open command (⌘K)
   lib/core.js          Shared: settings schema, env detection, derive, sort, matrix, DOM helpers
   lib/transfer.js      Export (JSON w/ prefs, Netscape HTML) and merge-import
   lib/shared.css       Design tokens + shared components (.row, .badge, .btn, .menu, .toast)

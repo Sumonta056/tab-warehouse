@@ -58,7 +58,8 @@ FIND LINKS
 • Search matches the title, the URL, the folder, the note and the tag.
 
 SAVE THE CURRENT TAB
-• Press Ctrl+Shift+B (⌘⇧B on Mac) to save the current tab into any folder, or create a new folder by name.
+• Press Ctrl+Shift+B (⌘⇧B on Mac) or Ctrl+K (⌘K) to save the current tab into any folder, or create a new folder by name. The popup warns when the page is already saved.
+• Press Ctrl+Shift+K (⌘⇧K) to save the current tab at once, without the popup.
 • Add a note and a priority when you save.
 • Open the same page on your other versions (live, test, staging, local) with one click.
 
@@ -101,12 +102,12 @@ Tab Warehouse replaces the new tab page with a bookmark manager: it shows, organ
 
 **Permission justification:**
 
-| Permission  | Justification                                                                                                                                                                                                              |
-| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `bookmarks` | The extension is a bookmark manager. It reads the bookmark tree to show folders and links, and creates, edits, moves and deletes bookmarks when the user asks.                                                             |
-| `storage`   | Saves the user's preferences on the device: sidebar order, categories, tag rules and custom tags, link notes and priorities, Home look, custom icons and the Home background image. No bookmark titles or URLs are stored. |
-| `favicon`   | Shows each site's icon next to its link, from Chrome's own favicon cache.                                                                                                                                                  |
-| `activeTab` | When the user clicks the toolbar button or presses Ctrl+Shift+B, the popup reads the current tab's title and URL so the user can save it as a bookmark.                                                                    |
+| Permission  | Justification                                                                                                                                                                                                                             |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `bookmarks` | The extension is a bookmark manager. It reads the bookmark tree to show folders and links, and creates, edits, moves and deletes bookmarks when the user asks.                                                                            |
+| `storage`   | Saves the user's preferences on the device: sidebar order, categories, tag rules and custom tags, link notes and priorities, Home look, custom icons and the Home background image. No bookmark titles or URLs are stored.                |
+| `favicon`   | Shows each site's icon next to its link, from Chrome's own favicon cache.                                                                                                                                                                 |
+| `activeTab` | When the user clicks the toolbar button or presses one of its shortcuts (Ctrl+Shift+B, Ctrl+K, Ctrl+Shift+K), the extension reads the current tab's title and URL so the user can save it as a bookmark (quick save creates it directly). |
 
 **Host permissions:** none.
 
