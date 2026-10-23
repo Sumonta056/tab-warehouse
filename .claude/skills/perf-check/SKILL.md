@@ -44,15 +44,15 @@ Process memory is reported but not checked: Chrome keeps freed pages for reuse, 
 3. For object detail use the Chrome DevTools MCP: `take_heapsnapshot` before and after, compare `Detached` nodes.
 4. Fix, add a regression scenario if the behaviour changed, run `./tests/run.sh` and this check again.
 
-### Baseline (2026-10-22, after the sort and listener fixes, Chrome for Testing 1243, Apple Silicon)
+### Baseline (2026-10-23, release 2.4.0, Chrome for Testing 1243, Apple Silicon)
 
-| State                        | JS heap | DOM nodes | Listeners | Process |
-| ---------------------------- | ------- | --------- | --------- | ------- |
-| Home, no bookmarks           | 0.9 MB  | 244       | 38        | 47 MB   |
-| 1000 links, after 300 cycles | 1.9 MB  | 2231      | 884       | 89 MB   |
-| 5000 links, after 300 cycles | 3.5 MB  | 7631      | 2884      | 148 MB  |
+| State                        | JS heap | DOM nodes | Listeners | Process  |
+| ---------------------------- | ------- | --------- | --------- | -------- |
+| Home, no bookmarks           | 0.95 MB | 294       | 38        | 52 MB    |
+| 1000 links, after 300 cycles | 2.05 MB | 2480      | 934       | 89–98 MB |
+| 5000 links, after 300 cycles | 3.5 MB  | 7631      | 2884      | 148 MB   |
 
-Folder render: 3.9 ms at 50 rows, 16 ms at 250 rows. Sorting 5000 links in Node: env 10 ms, name 10 ms, url 9 ms, host 12 ms. Update this table when a change moves the numbers on purpose.
+The 5000-link row is from 2026-10-22 (2.3.0). The DOM node count after 1000 links moves between 2478 and 2480 from run to run, so the "DOM nodes stable" check can fail by ±2 without a leak; rerun before you look for one. Folder render: 4–5 ms at 50 rows (3.9 ms in 2.3.0), 16 ms at 250 rows. Sorting 5000 links in Node: env 10 ms, name 10 ms, url 9 ms, host 12 ms. Update this table when a change moves the numbers on purpose.
 
 ## 2. Security checklist
 

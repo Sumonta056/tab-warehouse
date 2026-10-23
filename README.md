@@ -283,7 +283,11 @@ python3 -I tests/serve.py 8799
 
 ## Changelog
 
-- **2.3.0** — Full history in [CHANGELOG.md](CHANGELOG.md).
+- **2.4.0** — Full history in [CHANGELOG.md](CHANGELOG.md).
+  - Command palette (⌘K) and `tw` search from the address bar.
+  - Link notes and priority, a duplicate finder and your own tags (QA, UAT …).
+  - Popup: open this page in your other versions; **Save** always visible.
+- **2.3.0**
   - Board view: every folder as a column of cards, grouped by category or in one row, with drag to move and reorder, add, delete with undo and a filter.
   - Website with a live demo, and a release ZIP to download.
   - Shipped files now live in `extension/`.

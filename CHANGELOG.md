@@ -7,6 +7,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.4.0] - 2026-10-23
+
+Tab Warehouse 2.4.0 helps you find and sort links faster. It adds a command palette, search from the address bar, link notes and priority, a duplicate finder and your own tags.
+
+### Added
+
+**Find links**
+
+- Command palette: press ⌘K / Ctrl+K anywhere to search links, folders and Settings tabs. Enter opens the link; ⌘/Ctrl/Shift+Enter opens it in a background tab.
+- Address bar search: type `tw`, a space and some text in Chrome's address bar to see up to 5 matching links.
+- Search (sidebar, palette and `tw`) also matches the link note and the tag name.
+
+**Notes and priority**
+
+- Give a link a one-line note (max 200 characters) and a priority: High, Medium or Low.
+- Set them in the popup, in the row edit form or in the row ⋯ menu.
+- Priority links come first, with High / Medium / Low / Other headers in plain folders. A colored stripe marks each priority link.
+- Filter buttons above the list: All, High, Medium, Low, Has note.
+- Backup JSON carries notes and priority. Undo after a delete restores them too.
+
+**Duplicates**
+
+- Settings › Duplicates lists links that have the same address, oldest first, with the folder path and the date added.
+- **Keep this** deletes the other copies. **Keep the oldest in every group** cleans all groups at once. Both have an 8 s Undo.
+- An option ignores the `#part` and tracking parameters such as `utm_*`.
+
+**Your own tags**
+
+- Add tags next to PROD / TEST / STAGE / LOCAL, for example QA or UAT, in Settings › Tags › Your tags. Each has a name, a plain name and one of 6 colors.
+- Rules by address can give your tags. Each tag gets its own column in _Same site in each version_.
+- Your tags show in every view: badges, Tag sort, Tag matrix, _Open on <tag>_, the Board, the popup and search.
+- Copy / paste text and Backup JSON carry your tags.
+
+**Popup**
+
+- **Open this page in**: open the same page on the other versions of the site with one click. Shift/⌘/Ctrl+click opens it in the background.
+
+### Changed
+
+- The UI says _tag_ in place of _env_ and _label_: the Settings tab is **Tags**, the sort is **Tag**, the view is **Tag matrix** and the untagged group is **NO TAG**. Saved data does not change.
+- The popup is more compact. The **Save** button is always visible without scrolling.
+- Opening any page clears the global search. While search results show, the sidebar marks no page as open.
+- A small background service worker exists only for the `tw` address bar search. No permission changes.
+
 ## [2.3.0] - 2026-10-22
 
 Tab Warehouse 2.3.0 adds the Board: every folder as a column of cards on one screen. The release also adds a website with a live demo, and a ZIP download on each GitHub release.
@@ -130,6 +174,7 @@ Tab Warehouse 2.2.0 is a bookmark manager and new tab page for developers. It sh
 
 - Column board, popup search.
 
-[Unreleased]: https://github.com/Sumonta056/tab-warehouse/compare/v2.3.0...HEAD
+[Unreleased]: https://github.com/Sumonta056/tab-warehouse/compare/v2.4.0...HEAD
+[2.4.0]: https://github.com/Sumonta056/tab-warehouse/compare/v2.3.0...v2.4.0
 [2.3.0]: https://github.com/Sumonta056/tab-warehouse/compare/v2.2.0...v2.3.0
 [2.2.0]: https://github.com/Sumonta056/tab-warehouse/releases/tag/v2.2.0
