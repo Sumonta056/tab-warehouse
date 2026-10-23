@@ -11,6 +11,7 @@
             L('Checkout TEST', 'https://test.shop.example.com/checkout/cart'),
             L('Checkout STAGE', 'https://staging.shop.example.com/checkout/cart'),
             L('Checkout local', 'http://localhost:3000/checkout/cart'),
+            L('Checkout QA', 'https://qa.shop.example.com/checkout/cart'),
           ]),
           L('Orders admin', 'https://shop.example.com/admin/orders?status=open'),
           L('Orders admin', 'https://test.shop.example.com/admin/orders?status=open'),
@@ -46,6 +47,7 @@
         F('Weekly report', [
           L('Team metrics', 'https://shop.example.com/admin/metrics?range=7d'),
           L('Standup notes', 'https://docs.google.com/document/d/demo'),
+          L('Product API', 'https://shop.example.com/api/v2/products/'),
         ]),
         L('A loose link', 'https://example.com/'),
       ]),
@@ -96,9 +98,13 @@
       { pattern: 'localhost', env: 'LOCAL' },
       { pattern: 'test.', env: 'TEST' },
       { pattern: 'staging.', env: 'STAGE' },
+      { pattern: 'qa.shop.example.com', env: 'QA' },
       { pattern: 'shop.example.com', env: 'PROD' },
     ],
-    hostMap: [{ PROD: 'shop.example.com', TEST: 'test.shop.example.com', STAGE: 'staging.shop.example.com', LOCAL: 'localhost:3000' }],
+    customTags: [{ name: 'QA', plain: 'QA team', color: 'pink' }],
+    hostMap: [
+      { PROD: 'shop.example.com', TEST: 'test.shop.example.com', STAGE: 'staging.shop.example.com', LOCAL: 'localhost:3000', QA: 'qa.shop.example.com' },
+    ],
     lastFolder: ids['Shop project'],
     home: { folderId: ids['Home'], seeded: true, newTab: true, dark: 70, blur: 2 },
     sideLook: { mode: 'image', color: '#141414', dark: 85, blur: 14 },
@@ -307,6 +313,10 @@
       async create({ url }) {
         window.open(url, '_blank', 'noopener');
         return { id: 2 };
+      },
+      async update(_id, { url }) {
+        window.open(url, '_blank', 'noopener');
+        return { id: 1 };
       },
       async query() {
         return [clone(S.activeTab)];

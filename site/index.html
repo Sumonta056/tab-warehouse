@@ -6,11 +6,11 @@
     <title>Tab Warehouse</title>
     <meta
       name="description"
-      content="Tab Warehouse is a free Chrome extension and bookmark manager for developers: a new tab page with a clock and site tiles, folders with full URLs, a Board with every folder side by side, PROD / TEST / STAGE / LOCAL environment tags and an env matrix. No account, no tracking."
+      content="Tab Warehouse is a free Chrome extension and bookmark manager for developers: a new tab page with a clock and site tiles, folders with full URLs, a Board with every folder side by side, PROD / TEST / STAGE / LOCAL tags plus your own tags, a tag matrix and a command palette. No account, no tracking."
     />
     <meta
       name="keywords"
-      content="Tab Warehouse, Chrome extension, bookmark manager, new tab page, bookmarks for developers, environment tags, PROD TEST STAGE LOCAL, Manifest V3"
+      content="Tab Warehouse, Chrome extension, bookmark manager, new tab page, bookmarks for developers, environment tags, PROD TEST STAGE LOCAL, command palette, Manifest V3"
     />
     <meta name="author" content="Sumonta Saha Mridul" />
     <meta name="robots" content="index, follow" />
@@ -20,7 +20,7 @@
     <meta property="og:title" content="Tab Warehouse — bookmark manager and new tab page for Chrome" />
     <meta
       property="og:description"
-      content="A free Chrome extension for developers: full URLs, env tags, an env matrix and a Home page with a clock and tiles. No account, no tracking."
+      content="A free Chrome extension for developers: full URLs, tags, a tag matrix, a command palette and a Home page with a clock and tiles. No account, no tracking."
     />
     <meta property="og:url" content="https://sumonta056.github.io/tab-warehouse/" />
     <meta property="og:image" content="https://sumonta056.github.io/tab-warehouse/screenshots/home.png" />
@@ -29,7 +29,10 @@
     <meta property="og:image:alt" content="Tab Warehouse Home page with a clock and site tiles" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Tab Warehouse" />
-    <meta name="twitter:description" content="A free Chrome extension and bookmark manager for developers. Full URLs, env tags, env matrix, no tracking." />
+    <meta
+      name="twitter:description"
+      content="A free Chrome extension and bookmark manager for developers. Full URLs, tags, a tag matrix, a command palette, no tracking."
+    />
     <meta name="twitter:image" content="https://sumonta056.github.io/tab-warehouse/screenshots/home.png" />
     <meta name="theme-color" content="#0b1110" />
     <link rel="icon" type="image/png" sizes="48x48" href="demo/icons/icon48.png" />
@@ -42,7 +45,7 @@
         "name": "Tab Warehouse",
         "applicationCategory": "BrowserApplication",
         "operatingSystem": "Chrome",
-        "description": "A Chrome extension and bookmark manager for developers: new tab page with clock and tiles, folders with full URLs, a Board view, environment tags and an env matrix.",
+        "description": "A Chrome extension and bookmark manager for developers: new tab page with clock and tiles, folders with full URLs, a Board view, environment tags, a tag matrix and a command palette.",
         "url": "https://sumonta056.github.io/tab-warehouse/",
         "image": "https://sumonta056.github.io/tab-warehouse/screenshots/home.png",
         "screenshot": [
@@ -139,9 +142,9 @@
             This is the real extension code, running in your browser with sample bookmarks. Nothing is saved: reload to start again. Things to try:
           </p>
           <ul class="tries">
-            <li>Open <b>Shop project</b> and switch to <b>Env matrix</b></li>
+            <li>Open <b>Shop project</b> and switch to <b>Tag matrix</b></li>
             <li>Click <b>Board</b> and drag a card to another column</li>
-            <li>Press <kbd>/</kbd> and search for <b>api</b></li>
+            <li>Press <kbd>⌘K</kbd> and type <b>checkout</b></li>
             <li>Open ⚙ Settings and change the accent color</li>
             <li>Save the page in the <b>Popup</b> tab, then look in the folder</li>
           </ul>
@@ -196,7 +199,7 @@
               alt="Home page with a clock, the date and 18 site tiles over a darkened mountain photo; the sidebar uses the same photo, blurred"
               loading="lazy"
               width="1800"
-              height="1007"
+              height="1100"
               data-zoom
             />
           </figure>
@@ -222,7 +225,7 @@
               alt="Shop project folder with a Checkout section and PROD, TEST, STAGE and LOCAL badges on each row"
               loading="lazy"
               width="1800"
-              height="1007"
+              height="1100"
               data-zoom
             />
           </figure>
@@ -246,7 +249,7 @@
               alt="Docs folder with High, Medium and Other groups; High and Medium rows have a colored stripe and a note under the URL"
               loading="lazy"
               width="1800"
-              height="1007"
+              height="1100"
               data-zoom
             />
           </figure>
@@ -273,7 +276,7 @@
               alt="Board view: lanes for the Work and Learning categories, with a column of link cards per folder, section headers and env badges"
               loading="lazy"
               width="1800"
-              height="1007"
+              height="1100"
               data-zoom
             />
           </figure>
@@ -281,24 +284,24 @@
 
         <div class="wrap feature">
           <div class="txt">
-            <h3>Env matrix</h3>
+            <h3>Tag matrix</h3>
             <p>
-              One row per page, one column per environment. See at a glance which versions you have saved. An empty cell offers <code>+ derive</code>: it opens
-              the same path on the other host, and Alt+click saves it.
+              One row per page, one column per tag, your own tags included. See at a glance which versions you have saved. An empty cell offers
+              <code>+ derive</code>: it opens the same path on the other host, and Alt+click saves it.
             </p>
             <ul>
               <li>Hosts come from <em>Same site in each version</em></li>
-              <li>Query strings stay with the link</li>
+              <li>Add your own tags, such as QA or UAT, in one of 6 colors</li>
               <li>Jump from TEST to PROD in one click</li>
             </ul>
           </div>
           <figure class="frame">
             <img
               src="screenshots/env-matrix.png"
-              alt="Env matrix table: rows for /admin/orders, /api/v2/products, /checkout/cart and /health with open and derive buttons per environment"
+              alt="Tag matrix table: rows for /admin/orders, /api/v2/products, /checkout/cart and /health with open and derive buttons for PROD, TEST, STAGE, LOCAL and a pink QA tag"
               loading="lazy"
               width="1800"
-              height="1007"
+              height="1100"
               data-zoom
             />
           </figure>
@@ -324,7 +327,7 @@
               alt="Sprint board folder with In progress and Blocked sections, and the sidebar grouped into Work, Learning and Later"
               loading="lazy"
               width="1800"
-              height="1007"
+              height="1100"
               data-zoom
             />
           </figure>
@@ -332,19 +335,23 @@
 
         <div class="wrap feature">
           <div class="txt">
-            <h3>Search everything</h3>
+            <h3>Command palette and search</h3>
             <p>
-              Press <kbd>⌘K</kbd> or <kbd>/</kbd> and type. The search looks at every folder and section, highlights the match and shows where each link lives.
-              <kbd>Enter</kbd> opens the first hit, <kbd>Esc</kbd> clears.
+              Press <kbd>⌘K</kbd> and type. The palette finds links, folders and Settings tabs by title, address, folder, note or tag, and highlights the match.
+              <kbd>Enter</kbd> opens it, <kbd>⌘Enter</kbd> opens it in a background tab.
             </p>
+            <ul>
+              <li><kbd>/</kbd> searches every folder in the sidebar</li>
+              <li>Type <kbd>tw</kbd> and a space in Chrome's address bar to search from any tab</li>
+            </ul>
           </div>
           <figure class="frame">
             <img
-              src="screenshots/search.png"
-              alt="Search results for api across Shop project and Docs, with the matching text highlighted"
+              src="screenshots/palette.png"
+              alt="The command palette over Home with five Checkout links, the matching text highlighted and a tag badge on each"
               loading="lazy"
               width="1800"
-              height="1007"
+              height="1100"
               data-zoom
             />
           </figure>
@@ -358,7 +365,7 @@
             </p>
             <ul>
               <li>Save the page, or the whole site (<code>origin/</code>)</li>
-              <li>Shows the env badge before you save</li>
+              <li>Shows the tag and opens this page in your other versions</li>
               <li>Tells you if the URL is already saved</li>
               <li>Add a priority and a short note</li>
             </ul>
@@ -380,10 +387,10 @@
           <figure class="frame narrow">
             <img
               src="screenshots/popup.png"
-              alt="The save popup with the page title, a TEST badge, High priority picked, a short note, a folder list and a Save button"
+              alt="The save popup with the page title, a TEST badge, links to the same page on PROD, STAGE, LOCAL and QA, High priority picked, a short note, a folder list and a Save button"
               loading="lazy"
               width="840"
-              height="1574"
+              height="1200"
               data-zoom
             />
           </figure>
@@ -393,13 +400,13 @@
       <section id="settings" class="settings" aria-labelledby="set-h">
         <div class="wrap">
           <p class="eyebrow">Settings</p>
-          <h2 id="set-h">Five tabs. No Save button.</h2>
+          <h2 id="set-h">Six tabs. No Save button.</h2>
           <p class="lead">Every change saves at once. Pick a tab to see what it holds.</p>
           <div class="set-tabs" role="tablist" aria-label="Settings tabs"></div>
           <div class="set-body">
             <div class="set-txt" id="setTxt"></div>
             <figure class="frame">
-              <img id="setImg" src="screenshots/settings-appearance.png" alt="" loading="lazy" width="1800" height="1007" data-zoom />
+              <img id="setImg" src="screenshots/settings-appearance.png" alt="" loading="lazy" width="1800" height="1100" data-zoom />
             </figure>
           </div>
         </div>
@@ -408,17 +415,17 @@
       <section class="envs wrap" aria-labelledby="env-h">
         <div class="env-grid">
           <div>
-            <p class="eyebrow">How env tags work</p>
+            <p class="eyebrow">How tags work</p>
             <h2 id="env-h">Two short lists, written in plain words</h2>
             <p>
-              <b>Labels.</b> "If the address contains <code>test.</code>, show TEST." The list is checked from top to bottom and the first match wins. Without
-              labels, words like PROD or TEST in the title still work.
+              <b>Tags by address.</b> "If the address contains <code>test.</code>, give the tag TEST." The list is checked from top to bottom and the first
+              match wins. Without rules, words like PROD or TEST in the title still work. Add your own tags, such as QA, next to the built-in ones.
             </p>
             <p>
               <b>Same site in each version.</b> Write the PROD, TEST, STAGE and LOCAL hosts of a site once. Every link of that site then offers
-              <em>Open on TEST / PROD / …</em>, and the env matrix can derive missing links.
+              <em>Open on TEST / PROD / …</em>, and the tag matrix can derive missing links.
             </p>
-            <p>A <b>Try it</b> box tells you which label matches a link and why. Copy both lists as text and paste them on another machine.</p>
+            <p>A <b>Try it</b> box tells you which rule matches a link and why. Copy both lists as text and paste them on another machine.</p>
           </div>
           <div class="rules" aria-label="Example rules">
             <div class="rule"><code>localhost</code><span>→</span><span class="badge LOCAL">LOCAL</span></div>
@@ -427,7 +434,7 @@
             <div class="rule"><code>shop.example.com</code><span>→</span><span class="badge PROD">PROD</span></div>
             <div class="try">
               <span class="badge TEST">TEST</span>
-              <div><code>https://test.shop.example.com/cart</code><small>Label 2 matched: the address contains "test."</small></div>
+              <div><code>https://test.shop.example.com/cart</code><small>Rule 2 matched: the address contains "test."</small></div>
             </div>
           </div>
         </div>
@@ -551,8 +558,16 @@
                   <td>Save the current tab</td>
                 </tr>
                 <tr>
-                  <td><kbd>⌘K</kbd> or <kbd>/</kbd></td>
+                  <td><kbd>⌘K</kbd> / <kbd>Ctrl+K</kbd></td>
+                  <td>Open the command palette</td>
+                </tr>
+                <tr>
+                  <td><kbd>/</kbd></td>
                   <td>Search all folders</td>
+                </tr>
+                <tr>
+                  <td><kbd>tw</kbd> + space</td>
+                  <td>Search from the address bar</td>
                 </tr>
                 <tr>
                   <td><kbd>Enter</kbd></td>

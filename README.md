@@ -53,8 +53,8 @@
 Developers keep the same page open in many versions: live, test, staging and `localhost`. Chrome's bookmark bar hides URLs and treats every link the same. Tab Warehouse fixes that:
 
 - **Every URL in full.** Nothing is truncated, so you always see which host you are about to open.
-- **Environment tags.** Each link gets a PROD, TEST, STAGE or LOCAL badge from rules you write.
-- **Env matrix.** See the same page across all environments in one table, and jump from TEST to PROD in one click.
+- **Tags.** Each link gets a PROD, TEST, STAGE or LOCAL tag, or one of your own (QA, UAT …), from rules you write.
+- **Tag matrix.** See the same page across all versions in one table, and jump from TEST to PROD in one click.
 - **No lock-in.** Your links stay real Chrome bookmarks. They sync with your Google account and show in Chrome's bookmark manager. Uninstall the extension and nothing is lost.
 
 ## Features
@@ -92,7 +92,7 @@ Developers keep the same page open in many versions: live, test, staging and `lo
 ### Folder page
 
 - Full URLs that wrap instead of truncating. Show the title first or the URL first.
-- Sort per folder: manual, name, URL, environment, date added or host.
+- Sort per folder: manual, name, URL, tag, date added or host.
 - **Sections**: split a folder into groups such as "In progress" or "Blocked". Each section is a real subfolder, so it syncs too.
 - Inline edit, right-click menus, a folder filter, _Open all_ and _Copy all URLs_.
 - Delete a link and undo it within 8 seconds.
@@ -109,30 +109,41 @@ Developers keep the same page open in many versions: live, test, staging and `lo
 
 ![Docs folder with High, Medium and Other groups, a colored stripe and a note under the URL](site/screenshots/notes.png)
 
-### Environments
+### Tags
 
-- **Labels**: "if the address contains `-test.` show TEST". The first matching rule wins. Without rules, words like PROD or TEST in the title still work.
-- **Same site in each version**: list the PROD, TEST, STAGE and LOCAL hosts of a site once. Every link then offers _Open on TEST / PROD / …_.
-- **Env matrix** view: one row per page, one column per environment. Empty cells offer **+ derive**.
-- A **Try it** box explains which rule matches a link and why.
-- Copy both lists as text and paste them on another machine.
+- **Your tags**: add your own tags, such as QA, UAT or DEMO, next to the built-in PROD, TEST, STAGE and LOCAL. Pick one of 6 colors.
+- **Tags by address**: "if the address contains `-test.` give the tag TEST". The first matching rule wins. Without rules, words like PROD or TEST in the title still work.
+- **Same site in each version**: list the hosts of a site once, one box per tag. Every link then offers _Open on TEST / PROD / …_.
+- **Tag matrix** view: one row per page, one column per tag. Empty cells offer **+ derive**.
+- A **Try it** box explains which rule matches a link and why. Copy both lists as text and paste them on another machine.
 
-![Env matrix: one row per page, one column per environment](site/screenshots/env-matrix.png)
+![Tag matrix: one row per page, one column per tag, with a QA column](site/screenshots/env-matrix.png)
 
-![Settings › Environments with the Try it box](site/screenshots/settings-environments.png)
+![Settings › Tags with Try it and Your tags](site/screenshots/settings-tags.png)
+
+### Search and command palette
+
+- `⌘K` / `Ctrl+K` opens the command palette. It finds links, folders and Settings tabs by title, address, folder, note or tag.
+- `Enter` opens the link in this tab, `⌘Enter` in a background tab.
+- `/` searches every folder from the sidebar box.
+- Type `tw` and a space in Chrome's address bar to search your links from any tab.
+
+![The command palette with Checkout links and their tags](site/screenshots/palette.png)
 
 ### Popup (`⌘⇧B` / `Ctrl+Shift+B`)
 
 - Save the current tab into any folder, or create a new folder by typing its name.
 - Save the full page or the whole site (`origin/`).
-- Shows the env badge, remembers the last folder, and tells you if the URL is already saved.
+- Shows the tag, remembers the last folder, and tells you if the URL is already saved.
+- **Open this page in**: opens the same page in your other versions (from _Same site in each version_).
 - Add a priority and a short note before you save.
 
-<img src="site/screenshots/popup.png" alt="The save popup with a TEST badge, a priority picker, a note box and the folder list" width="360">
+<img src="site/screenshots/popup.png" alt="The save popup with a TEST badge, links to the same page in the other versions, a priority picker, a note box and the folder list" width="360">
 
 ### Settings and backup
 
-- One Settings view with 5 tabs: Appearance, Home page, Bookmarks, Environments, Backup.
+- One Settings view with 6 tabs: Appearance, Home page, Bookmarks, Duplicates, Tags, Backup.
+- **Duplicates** lists links saved more than once. Keep one copy; the others are deleted with Undo.
 - Every change saves at once. There is no Save button.
 - Text size for the sidebar, the page and the Board (80–140 %).
 - Export to JSON (links, sections, sidebar order, categories and preferences) or to HTML (Chrome's bookmark format). Import merges and skips URLs you already have.
@@ -176,10 +187,10 @@ Coming soon.
 ## Quick start
 
 1. **Pick your root folder.** Open ⚙ Settings → Bookmarks. Its subfolders become the sidebar. By default it uses your bookmarks bar.
-2. **Add environment labels.** Settings → Environments → Labels. For example: `localhost` → LOCAL, `-test.` → TEST, `-stage.` → STAGE.
-3. **Link your environments.** Settings → Environments → Same site in each version. Add one row per site with its PROD, TEST, STAGE and LOCAL hosts.
+2. **Add tags by address.** Settings → Tags → Tags by address. For example: `localhost` → LOCAL, `-test.` → TEST, `-stage.` → STAGE.
+3. **Link your versions.** Settings → Tags → Same site in each version. Add one row per site with its PROD, TEST, STAGE and LOCAL hosts.
 4. **Save a page.** On any site, press `⌘⇧B` (macOS) or `Ctrl+Shift+B` (Windows/Linux), pick a folder and press Enter.
-5. **Open the env matrix.** Open a folder and choose View → **Env matrix**.
+5. **Open the tag matrix.** Open a folder and choose View → **Tag matrix**.
 
 ## Keyboard shortcuts
 

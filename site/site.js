@@ -32,14 +32,25 @@
       items: ['Root folder: its subfolders become the sidebar', 'Turn site favicons on or off', 'Reset the sidebar order'],
     },
     {
-      name: 'Environments',
-      img: 'settings-environments.png',
-      text: 'Teach the extension your PROD, TEST, STAGE and LOCAL hosts.',
+      name: 'Duplicates',
+      img: 'settings-duplicates.png',
+      text: 'Find links that you saved more than once.',
       items: [
-        'Labels: "if the address contains … show …", first match wins',
+        'Every copy with its folder and the date you added it',
+        'Keep this: deletes the other copies, with Undo',
+        'Keep the oldest in every group in one click',
+        'Optional: ignore #part and tracking parameters',
+      ],
+    },
+    {
+      name: 'Tags',
+      img: 'settings-tags.png',
+      text: 'Teach the extension your PROD, TEST, STAGE and LOCAL hosts, and add your own tags.',
+      items: [
+        'Your tags: add QA, UAT or DEMO in one of 6 colors',
+        'Tags by address: "if the address contains … give the tag …", first match wins',
         'Same site in each version: one row of hosts per site',
-        'Try it: type a link and see which label matches and why',
-        'Copy both lists as text, paste them on another machine',
+        'Try it: type a link and see which rule matches and why',
       ],
     },
     {

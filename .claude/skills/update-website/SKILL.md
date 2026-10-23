@@ -17,26 +17,26 @@ The website lives in `site/` and deploys to `https://sumonta056.github.io/tab-wa
 
 ## 2. Map each change to the places it shows
 
-| Area changed                       | Website (`site/index.html`)                | Screenshot(s)               | README.md section              |
-| ---------------------------------- | ------------------------------------------ | --------------------------- | ------------------------------ |
-| Home (clock, tiles, background)    | feature "Home page"                        | `home-demo.png`             | Features › Home                |
-| Sidebar, categories, drag and drop | feature "Categories and drag and drop"     | `sprint.png`                | Features › Sidebar             |
-| Folder page, sections, sort        | feature "Folders and sections"             | `sections.png`              | Features › Folder page         |
-| Env matrix, derive                 | feature "Env matrix"                       | `env-matrix.png`            | Features › Environments        |
-| Env labels, sites, Try it          | section "How env tags work" + Settings tab | `settings-environments.png` | Features › Environments        |
-| Search                             | feature "Search everything"                | `search.png`                | Keyboard shortcuts             |
-| Popup                              | feature "Save the current tab"             | `popup.png`                 | Features › Popup               |
-| Any Settings tab                   | `SETTINGS` array in `site/site.js`         | `settings-<tab>.png`        | Features › Settings and backup |
-| New view (e.g. a new page)         | a new `.feature` block (alternate `flip`)  | new `<name>.png`            | new Features subsection        |
-| Keyboard shortcut                  | "Keyboard shortcuts" table                 | —                           | Keyboard shortcuts             |
-| Permission                         | "Privacy and permissions" table            | —                           | Privacy and permissions        |
-| Version bump                       | JSON-LD `softwareVersion` in `<head>`      | —                           | Changelog (done by `/release`) |
+| Area changed                       | Website (`site/index.html`)               | Screenshot(s)        | README.md section              |
+| ---------------------------------- | ----------------------------------------- | -------------------- | ------------------------------ |
+| Home (clock, tiles, background)    | feature "Home page"                       | `home-demo.png`      | Features › Home                |
+| Sidebar, categories, drag and drop | feature "Categories and drag and drop"    | `sprint.png`         | Features › Sidebar             |
+| Folder page, sections, sort        | feature "Folders and sections"            | `sections.png`       | Features › Folder page         |
+| Tag matrix, derive                 | feature "Tag matrix"                      | `env-matrix.png`     | Features › Tags                |
+| Tags, tags by address, sites       | section "How tags work" + Settings tab    | `settings-tags.png`  | Features › Tags                |
+| Palette, search, `tw`              | feature "Command palette and search"      | `palette.png`        | Search and command palette     |
+| Popup                              | feature "Save the current tab"            | `popup.png`          | Features › Popup               |
+| Any Settings tab                   | `SETTINGS` array in `site/site.js`        | `settings-<tab>.png` | Features › Settings and backup |
+| New view (e.g. a new page)         | a new `.feature` block (alternate `flip`) | new `<name>.png`     | new Features subsection        |
+| Keyboard shortcut                  | "Keyboard shortcuts" table                | —                    | Keyboard shortcuts             |
+| Permission                         | "Privacy and permissions" table           | —                    | Privacy and permissions        |
+| Version bump                       | JSON-LD `softwareVersion` in `<head>`     | —                    | Changelog (done by `/release`) |
 
 `home.png` and `folder.png` are the owner's own screenshots. Never replace them unless asked; all other screenshots come from the demo, so they never show personal data.
 
 ## 3. Give the demo the data it needs
 
-If the new feature needs sample data (a new setting, a folder shape, a section), add it to `sampleTree()` or `sampleSettings()` in `site/demo/demo-chrome.js`. If the extension calls a `chrome.*` method the stub does not have, add it there. Keep sample hosts on `example.com` / `localhost:3000` so the Settings › Environments **Try it** samples still match.
+If the new feature needs sample data (a new setting, a folder shape, a section), add it to `sampleTree()` or `sampleSettings()` in `site/demo/demo-chrome.js`. If the extension calls a `chrome.*` method the stub does not have, add it there. Keep sample hosts on `example.com` / `localhost:3000` so the Settings › Tags **Try it** samples still match.
 
 ## 4. Build and look
 
