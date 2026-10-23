@@ -593,7 +593,7 @@ function renderPage() {
         'View',
         [
           ['list', 'List'],
-          ['matrix', 'Env matrix'],
+          ['matrix', 'Tag matrix'],
         ],
         p.view,
         (v) => setFolderPrefs(s.id, { view: v }),
@@ -879,7 +879,7 @@ function renderList(body, links, s, p) {
           onClick: () => setFolderPrefs(s.id, { closed: { ...p.closed, [e]: !closed } }),
         },
         svgIcon('chevron'),
-        e === 'NONE' ? 'NO ENV' : e,
+        e === 'NONE' ? 'NO TAG' : e,
         h('span', { class: 'line' }),
         String(g.length),
       );
@@ -1000,7 +1000,7 @@ function renderMatrix(body, links, s, p) {
       h(
         'div',
         { class: 'empty' },
-        'No link in this folder has a detectable environment, so there is nothing to lay out as a matrix. Use List view or add env rules in Settings.',
+        'No link in this folder has a tag, so there is nothing to lay out as a matrix. Use List view or add tags by address in Settings › Tags.',
       ),
     );
     return;
@@ -1093,7 +1093,7 @@ function renderMatrix(body, links, s, p) {
     ),
   );
   if (rest.length) {
-    body.append(h('div', { class: 'grp NONE' }, 'NO ENV', h('span', { class: 'line' }), String(rest.length)));
+    body.append(h('div', { class: 'grp NONE' }, 'NO TAG', h('span', { class: 'line' }), String(rest.length)));
     const list = h('div', { class: 'list' });
     sortLinks(rest, p.sort, settings.envRules, tagNames(settings)).forEach((bm) => list.append(renderRow(bm, s, p)));
     body.append(list);

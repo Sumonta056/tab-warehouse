@@ -124,7 +124,7 @@ function renderSwitch() {
       ),
     );
   else if (!sw && detectEnv({ title: tab.title, url: tab.url }, settings.envRules))
-    box.replaceChildren(h('span', { class: 'switch-hint' }, 'To open this page in your other versions, add this site in Settings › Environments.'));
+    box.replaceChildren(h('span', { class: 'switch-hint' }, 'To open this page in your other versions, add this site in Settings › Tags.'));
   else return;
   box.hidden = false;
 }

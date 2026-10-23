@@ -31,7 +31,7 @@ export const TABS = [
   ['home', 'Home page'],
   ['bookmarks', 'Bookmarks'],
   ['dupes', 'Duplicates'],
-  ['env', 'Environments'],
+  ['env', 'Tags'],
   ['backup', 'Backup'],
 ];
 
@@ -556,7 +556,7 @@ const VIEWS = {
     let updateTry = () => {};
     const names = () => [...ENVS, ...tags.map((t) => t.name)];
     const plain = (e) => ENV_NAMES[e] || tags.find((t) => t.name === e)?.plain || e;
-    const envBadge = (e) => (e ? tagBadge(e, tags) : h('span', { class: 'badge none' }, 'No label'));
+    const envBadge = (e) => (e ? tagBadge(e, tags) : h('span', { class: 'badge none' }, 'No tag'));
 
     const envSelect = (value, label, onChange) => {
       const sel = h('select', { 'aria-label': label }, ...names().map((e) => h('option', { value: e, selected: e === value }, `${e} · ${plain(e)}`)));
@@ -636,10 +636,10 @@ const VIEWS = {
         const x = explainEnv({ url, title: '' }, rules);
         const why =
           x.rule >= 0
-            ? `Label ${x.rule + 1} matched: the address contains “${rules[x.rule].pattern}”.`
+            ? `Rule ${x.rule + 1} matched: the address contains “${rules[x.rule].pattern}”.`
             : rules.length
-              ? 'No label matches this address.'
-              : 'There are no labels yet.';
+              ? 'No rule matches this address.'
+              : 'There are no rules yet.';
         const host = hostOf(url);
         const row = host && map.find((r) => names().some((e) => (r[e] || '').toLowerCase() === host));
         const others = row
@@ -677,7 +677,7 @@ const VIEWS = {
             {},
             'Many websites have more than one version of the same site: the live site that customers use, and copies for testing. This section helps you tell them apart.',
           ),
-          h('p', {}, h('b', {}, '1. Labels. '), 'Each link gets a colored label, so you can see at a glance which version it opens.'),
+          h('p', {}, h('b', {}, '1. Tags by address. '), 'Each link gets a colored tag, so you can see at a glance which version it opens.'),
           h(
             'p',
             {},
@@ -717,13 +717,13 @@ const VIEWS = {
     }
 
     function labelsCard() {
-      const head = h('div', { class: 'env-rule head' }, h('span'), h('span', {}, 'If the address contains'), h('span', {}, 'Show the label'), h('span'));
+      const head = h('div', { class: 'env-rule head' }, h('span'), h('span', {}, 'If the address contains'), h('span', {}, 'Give the tag'), h('span'));
       const rows = rules.map((r, i) => {
-        const input = h('input', { type: 'text', class: 'env-in', value: r.pattern, 'aria-label': `Label ${i + 1}: address contains`, dataset: { i } });
+        const input = h('input', { type: 'text', class: 'env-in', value: r.pattern, 'aria-label': `Rule ${i + 1}: address contains`, dataset: { i } });
         input.addEventListener('change', () => {
           const v = cleanHost(input.value);
           if (!v) {
-            removeWithUndo(rules, i, 'label', saveRules);
+            removeWithUndo(rules, i, 'rule', saveRules);
             return;
           }
           r.pattern = v;
@@ -737,14 +737,14 @@ const VIEWS = {
           { class: 'env-rule', dataset: { i } },
           grip,
           input,
-          envSelect(r.env, `Label ${i + 1}: label`, (v) => {
+          envSelect(r.env, `Rule ${i + 1}: tag`, (v) => {
             r.env = v;
             saveRules();
             updateTry();
           }),
           h(
             'button',
-            { type: 'button', class: 'x', 'aria-label': `Remove label ${i + 1}`, title: 'Remove', onClick: () => removeWithUndo(rules, i, 'label', saveRules) },
+            { type: 'button', class: 'x', 'aria-label': `Remove rule ${i + 1}`, title: 'Remove', onClick: () => removeWithUndo(rules, i, 'rule', saveRules) },
             svgIcon('x'),
           ),
         );
@@ -759,7 +759,7 @@ const VIEWS = {
       const empty = h(
         'div',
         { class: 'env-empty' },
-        'No labels yet. Add one below, or start with examples.',
+        'No rules yet. Add one below, or start with examples.',
         h(
           'button',
           {
@@ -774,15 +774,15 @@ const VIEWS = {
           'Add examples',
         ),
       );
-      const addIn = h('input', { type: 'text', class: 'env-in', id: 'envAddPattern', placeholder: 'e.g. test.', 'aria-label': 'New label: address contains' });
-      const addSel = envSelect('TEST', 'New label: label', () => {});
+      const addIn = h('input', { type: 'text', class: 'env-in', id: 'envAddPattern', placeholder: 'e.g. test.', 'aria-label': 'New rule: address contains' });
+      const addSel = envSelect('TEST', 'New rule: tag', () => {});
       const add = h(
         'form',
         { class: 'env-rule add', novalidate: true },
         h('span'),
         addIn,
         addSel,
-        h('button', { type: 'submit', class: 'x add', 'aria-label': 'Add label', title: 'Add label' }, svgIcon('plus')),
+        h('button', { type: 'submit', class: 'x add', 'aria-label': 'Add rule', title: 'Add rule' }, svgIcon('plus')),
       );
       add.addEventListener('submit', (e) => {
         e.preventDefault();
@@ -798,11 +798,11 @@ const VIEWS = {
       return h(
         'div',
         { class: 'set-card', id: 'envLabels' },
-        h('h3', {}, h('span', { class: 'step' }, '1'), `Labels (${rules.length})`),
+        h('h3', {}, h('span', { class: 'step' }, '1'), `Tags by address (${rules.length})`),
         h(
           'p',
           { class: 'sub' },
-          'When a link’s address contains the text on the left, the link gets the label on the right. The list is checked ',
+          'When a link’s address contains the text on the left, the link gets the tag on the right. The list is checked ',
           h('b', {}, 'from top to bottom'),
           ', and the first match wins. Drag ',
           svgIcon('grip'),
@@ -893,7 +893,7 @@ const VIEWS = {
         });
         const remove = () => {
           const n = rules.filter((r) => r.env === tg.name).length;
-          const what = n ? `Its ${n} label${n === 1 ? '' : 's'} and its site column are` : 'Its site column is';
+          const what = n ? `Its ${n} rule${n === 1 ? '' : 's'} and its site column are` : 'Its site column is';
           if (!confirm(`Delete the tag ${tg.name}? ${what} removed too.`)) return;
           tags.splice(i, 1);
           rules = rules.filter((r) => r.env !== tg.name);
@@ -974,7 +974,7 @@ const VIEWS = {
         h(
           'p',
           { class: 'sub' },
-          'Add your own tags next to the built-in ones, for example QA, UAT or DEMO. A label in step 1 gives a link its tag. Drag ',
+          'Add your own tags next to the built-in ones, for example QA, UAT or DEMO. A rule in step 1 gives a link its tag. Drag ',
           svgIcon('grip'),
           ' or press Alt+↑/↓ to change the order.',
         ),
@@ -1071,7 +1071,7 @@ const VIEWS = {
         h(
           'p',
           { class: 'sub' },
-          'One row for each site. Type the site’s address in each version. Then a link’s menu can open the same page in another version, and “Env matrix” can fill in missing links. Leave a box empty if that version does not exist.',
+          'One row for each site. Type the site’s address in each version. Then a link’s menu can open the same page in another version, and “Tag matrix” can fill in missing links. Leave a box empty if that version does not exist.',
         ),
         sites,
       );
@@ -1112,7 +1112,7 @@ const VIEWS = {
         draw();
         const n = (k, w) => `${k} ${w}${k === 1 ? '' : 's'}`;
         c.toast(
-          `Imported ${p.tags.length ? `${n(p.tags.length, 'tag')}, ` : ''}${n(rules.length, 'label')} and ${n(map.length, 'site')}${p.skipped ? `. Skipped ${n(p.skipped, 'line')} that could not be read` : ''}`,
+          `Imported ${p.tags.length ? `${n(p.tags.length, 'tag')}, ` : ''}${n(rules.length, 'rule')} and ${n(map.length, 'site')}${p.skipped ? `. Skipped ${n(p.skipped, 'line')} that could not be read` : ''}`,
           {
             label: 'Undo',
             run: async () => {

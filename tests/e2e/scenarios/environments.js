@@ -33,10 +33,10 @@ export default [
       );
       t.ok(t.$('.env-legend').textContent.includes('Live — the real site'), 'plain-language names');
       t.eq(ruleRows(t).length, 0, 'no label rows');
-      t.ok(t.$('#envLabels .env-empty')?.textContent.startsWith('No labels yet.'), 'labels empty state');
+      t.ok(t.$('#envLabels .env-empty')?.textContent.startsWith('No rules yet.'), 'labels empty state');
       t.ok(t.$('#envSites .env-empty')?.textContent.startsWith('No sites yet.'), 'sites empty state');
       const r = await tryIt(t, 'https://test.shop.example.com/cart');
-      t.eq([r.badge, r.why], ['No label', 'There are no labels yet.'], 'Try it with no labels');
+      t.eq([r.badge, r.why], ['No tag', 'There are no rules yet.'], 'Try it with no labels');
       t.ok(t.$('.env-others').textContent.includes('Fill in step 2'), 'hint for step 2');
     },
   },
@@ -58,7 +58,7 @@ export default [
       );
       t.eq(t.settings().hostMap.length, 1, 'example site saved');
       let r = await tryIt(t, 'https://test.shop.example.com/cart');
-      t.eq([r.badge, r.why], ['TEST', 'Label 3 matched: the address contains “test.”.'], 'TEST via rule 3');
+      t.eq([r.badge, r.why], ['TEST', 'Rule 3 matched: the address contains “test.”.'], 'TEST via rule 3');
       const others = t.$$('.env-other').map((o) => [o.querySelector('.badge').textContent, o.querySelector('.u')?.textContent]);
       t.eq(
         others,
@@ -70,7 +70,7 @@ export default [
         'same page in the other versions',
       );
       t.click(t.$$('.env-samples .chip').find((b) => b.textContent === 'news.example.org'));
-      t.eq(t.$('.env-result .why').textContent, 'No label matches this address.', 'sample chip without a match');
+      t.eq(t.$('.env-result .why').textContent, 'No rule matches this address.', 'sample chip without a match');
       t.ok(t.$('.env-others').textContent.includes('not in step 2'), 'site not in the table');
     },
   },
@@ -89,7 +89,7 @@ export default [
       await t.settle();
       t.eq(t.settings().envRules, [{ pattern: 'qa.example.com', env: 'STAGE' }], 'added as host, lower case');
       t.eq(t.d.activeElement, t.$('#envAddPattern'), 'focus back in the add box');
-      t.ok(t.$('#envLabels h3').textContent.includes('Labels (1)'), 'count updated');
+      t.ok(t.$('#envLabels h3').textContent.includes('Tags by address (1)'), 'count updated');
       submit(t.$('#envLabels .env-rule.add'));
       await t.settle();
       t.eq(t.settings().envRules.length, 1, 'empty add does nothing');
@@ -104,7 +104,7 @@ export default [
       t.click(row.querySelector('.x'));
       await t.settle();
       t.eq(t.settings().envRules, [], 'removed');
-      t.ok(t.toast()?.textContent.startsWith('Removed label'), 'toast');
+      t.ok(t.toast()?.textContent.startsWith('Removed rule'), 'toast');
       t.click(t.toast().querySelector('button'));
       await t.settle();
       t.eq(t.settings().envRules, [{ pattern: 'qa.', env: 'PROD' }], 'Undo restores');
@@ -209,7 +209,7 @@ export default [
         'labels replaced',
       );
       t.eq(t.settings().hostMap, [{ PROD: 'shop.example.com', TEST: '', STAGE: '', LOCAL: 'localhost:3000' }], 'sites replaced');
-      t.eq(t.toast()?.firstChild.textContent, 'Imported 2 labels and 1 site. Skipped 1 line that could not be read', 'toast counts');
+      t.eq(t.toast()?.firstChild.textContent, 'Imported 2 rules and 1 site. Skipped 1 line that could not be read', 'toast counts');
       t.eq(patterns(t), ['localhost', 'qa.'], 'rows redrawn');
       t.click(t.toast().querySelector('button'));
       await t.settle();

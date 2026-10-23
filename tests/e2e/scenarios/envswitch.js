@@ -66,7 +66,7 @@ export default [
     fixture: () => at('https://deploy.prod.example.com/applications/x', 'Deploy app PROD'),
     async run(t) {
       t.ok(!t.$('#switch').hidden, 'hint shown');
-      t.eq(t.$('#switch .switch-hint')?.textContent, 'To open this page in your other versions, add this site in Settings › Environments.', 'hint');
+      t.eq(t.$('#switch .switch-hint')?.textContent, 'To open this page in your other versions, add this site in Settings › Tags.', 'hint');
       t.eq(rows(t), [], 'no rows');
       t.H.activeTab = { title: 'Example', url: 'https://example.com/', index: 0 };
       await t.reload();

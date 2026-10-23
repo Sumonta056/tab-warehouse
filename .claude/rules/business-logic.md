@@ -41,8 +41,8 @@ Every rule here has at least one test. If you change a rule, change its test in 
 ## Settings
 
 - One settings button: the gear in the sidebar header (`#settingsBtn`). It opens the Settings view in the right pane (the sidebar stays); clicking it again, **Done**, or Escape (when focus is not in a text field) returns to the page that was open before, and focus goes back to the gear. The gear is marked `on` while Settings is open. There is no settings `<dialog>`.
-- Tabs, in order: Appearance (your name, text size, accent color, sidebar background), Home page (links, background, clock, tiles, live preview), Bookmarks (root folder, site favicons, reset sidebar order), Duplicates (duplicate links), Environments (explanation + Try it, labels, sites, copy/paste), Backup (export JSON / HTML, import). ←/→ move between tabs. The last tab is remembered for the session.
-- Every change saves without a Save button. Toggles, swatches, the root folder and buttons save at once; sliders and color pickers save after 300 ms; Environments rows and the name save when a box loses focus; the name is trimmed and updates the header and tab title at once. The header status shows "Saving…" then "Saved".
+- Tabs, in order: Appearance (your name, text size, accent color, sidebar background), Home page (links, background, clock, tiles, live preview), Bookmarks (root folder, site favicons, reset sidebar order), Duplicates (duplicate links), Tags (explanation + Try it, your tags, tags by address, sites, copy/paste), Backup (export JSON / HTML, import). ←/→ move between tabs. The last tab is remembered for the session.
+- Every change saves without a Save button. Toggles, swatches, the root folder and buttons save at once; sliders and color pickers save after 300 ms; Tags rows and the name save when a box loses focus; the name is trimmed and updates the header and tab title at once. The header status shows "Saving…" then "Saved".
 - Saves go through one queue so two quick saves never overwrite each other.
 - Settings changed in another tab: a hidden tab only marks itself stale; when it is shown again it reloads settings and Home assets and re-renders (test "a hidden tab picks up settings changed in another tab when it is shown"). A visible tab never re-renders on a settings storage event, so its own sliders and text boxes are not interrupted. A `linkMeta` change (for example a save from the popup) re-renders only the folder list or search results, and not while a row is being edited.
 - Backup › Import (JSON) keeps only valid preferences (`cleanImport()`): custom tags pass through `cleanTags()`; env rules need a text pattern and a built-in or imported tag; host rows keep only text values for the built-in and imported tags (an old backup without `customTags` keeps only PROD/TEST/STAGE/LOCAL); folder prefs keep only a known sort, `list`/`matrix`, `title`/`url` and boolean `closed`; `board.group` is kept only when it is `cat` or `flat`; links need a text URL; a link's `note`/`pri` pass through `cleanMeta()`. Anything else is dropped, so a bad file cannot break the page.
@@ -75,15 +75,17 @@ Every rule here has at least one test. If you change a rule, change its test in 
 - **Keep this** deletes every other copy in the group. **Keep the oldest in every group** (shown only with 2 or more groups) deletes every copy but the first in each group. Both show one toast "Deleted 1 copy" / "Deleted N copies" with an 8 s Undo that recreates each copy at the same parent and index, with its note and priority under the new id.
 - No groups → "No duplicate links.".
 
-## Environments (labels and sites)
+## Tags (Settings › Tags: tags by address and sites)
 
-- No defaults: `envRules` and `hostMap` start as `[]` on a fresh install. Saved lists from older versions are kept as they are. With no labels, `detectEnv` uses only the PROD/TEST/STAGE/DEV words in the title.
-- All copy is plain language: _Labels_ ("If the address contains" → "Show the label") and _Same site in each version_ (one row per site, a box per label). Label names stay PROD/TEST/STAGE/LOCAL with their colors; plain names (`ENV_NAMES`: Live, Test, Staging, Your computer) show beside them.
-- "What is this?" card explains both lists and has **Try it**: type a link or click a sample. It shows the label (`explainEnv()`), why ("Label N matched: the address contains …", "No label matches this address.", "There are no labels yet."), and the same page in the other versions from the site row (`deriveUrl`), or why there is none.
-- Labels: add row (text + label + ＋, Enter works), edit on blur, a select colored by its label. Clearing the text or ✕ removes the row with an Undo toast. Drag the grip or Alt+↑/↓ to reorder; the first match wins. A pasted full address is cut to its host; text is lower-cased.
+- UI words: the Settings tab is **Tags**, the sort is **Tag**, the view is **Tag matrix**, the untagged group is **NO TAG**. One row of _Tags by address_ is a **rule**. Storage keys (`envRules`, `hostMap`), ids (`#envLabels`, tab key `env`) and CSS classes keep their old names.
+
+- No defaults: `envRules` and `hostMap` start as `[]` on a fresh install. Saved lists from older versions are kept as they are. With no rules, `detectEnv` uses only the PROD/TEST/STAGE/DEV words in the title.
+- All copy is plain language: _Tags by address (n)_ ("If the address contains" → "Give the tag") and _Same site in each version_ (one row per site, a box per tag). Built-in tag names stay PROD/TEST/STAGE/LOCAL with their colors; plain names (`ENV_NAMES`: Live, Test, Staging, Your computer) show beside them.
+- "What is this?" card explains both lists and has **Try it**: type a link or click a sample. It shows the tag or **No tag** (`explainEnv()`), why ("Rule N matched: the address contains …", "No rule matches this address.", "There are no rules yet."), and the same page in the other versions from the site row (`deriveUrl`), or why there is none.
+- Tags by address: add row (text + tag + ＋, Enter works), edit on blur, a select colored by its tag. Clearing the text or ✕ removes the row with the Undo toast "Removed rule". Drag the grip or Alt+↑/↓ to reorder; the first match wins. A pasted full address is cut to its host; text is lower-cased.
 - Sites: one box per tag (PROD, TEST, STAGE, LOCAL, then custom tags; the table scrolls sideways with more than 4) + ✕; an empty box means none. A row with all boxes empty is not added, and emptying every box removes it (Undo). Full addresses are cut to the host.
 - Empty states offer **Add examples** (neutral `example.com` / `localhost:3000` data).
-- Copy or paste: **Copy to clipboard** writes `envText()` (a `#` header per list; `pattern LABEL` lines; `PROD TEST STAGE LOCAL` host lines with `-` for none) to the box and the clipboard. **Import** parses with `parseEnvText()` (comments/blank lines ignored, any order, bad lines counted), replaces both lists and shows "Imported N labels and M sites[. Skipped K lines …]" with Undo. Text with no valid line imports nothing and says so.
+- Copy or paste: **Copy to clipboard** writes `envText()` (a `#` header per list, `# Tags by address: …` first (old text with `# Labels` still imports, because `#` lines are comments); `pattern TAG` lines; `PROD TEST STAGE LOCAL` host lines with `-` for none) to the box and the clipboard. **Import** parses with `parseEnvText()` (comments/blank lines ignored, any order, bad lines counted), replaces both lists and shows "Imported N rules and M sites[. Skipped K lines …]" with Undo. Text with no valid line imports nothing and says so.
 
 ## Custom tags
 
@@ -91,22 +93,22 @@ Every rule here has at least one test. If you change a rule, change its test in 
 - Name (`tagNameError()`): 1–8 capital letters or digits; not `PROD TEST STAGE LOCAL DEV GH NONE` or a color word; unique. `cleanTags()` upper-cases, drops bad or repeated names, cuts `plain` to 40 characters and replaces an unknown color with `teal`.
 - Colors: `TAG_COLORS` = teal, pink, yellow, red, cyan, grey (never the env colors).
 - A custom tag comes **only from an address rule** (`envRules` `{ pattern, env: 'QA' }`). Title words stay PROD/TEST/STAGE/DEV for the built-ins.
-- Sites: a `hostMap` row may hold a key for each custom tag. `deriveUrl()`, `switchTargets()` and `buildMatrix()` take the tag list; Environment sort ranks built-ins, then custom tags, then unknown tags with the untagged links.
+- Sites: a `hostMap` row may hold a key for each custom tag. `deriveUrl()`, `switchTargets()` and `buildMatrix()` take the tag list; Tag sort ranks built-ins, then custom tags, then unknown tags with the untagged links.
 - Text format: with custom tags, `envText()` starts with `# Tags: NAME color plain name` lines (`QA teal QA team`), and the sites header names the columns (`# Same site in each version: PROD TEST STAGE LOCAL QA (- for none)`). `parseEnvText(text, known)` reads tag lines first (any order), returns new tags in `tags`, accepts rules for built-in, known and new tags, reads site rows by the header columns (old text without a header = the 4 built-ins), drops columns of unknown tags and skips a row that is then empty.
 - Badges: `tagBadge()` gives `badge PROD|TEST|STAGE|LOCAL` for built-ins and `badge tag` + `data-tag="<color>"` for a custom tag; `linkBadge()` (tag, else GH) is used by the folder rows, the Board cards and the palette. `[data-tag]` sets `--tag-bg/--tag-fg` from the `--tag-<color>-bg/-fg` tokens, so the badge, the label select and the swatches share one color rule.
-- Settings › Environments › **Your tags (n)** (`#envTags`), between the intro and the labels: the built-ins locked (`.tag-builtin`), then one row per custom tag: badge, name (`.tag-name`, upper-cased), plain name (`.tag-plain`), 6 swatches (`.tag-sw`, `aria-pressed`, ≥ 28 px) and ✕ (`Delete tag <name>`); then the add row (`#tagAddName`, `#tagAddPlain`, swatches with the first unused color picked, ＋, Enter works).
+- Settings › Tags › **Your tags (n)** (`#envTags`), between the intro and the tags by address: the built-ins locked (`.tag-builtin`), then one row per custom tag: badge, name (`.tag-name`, upper-cased), plain name (`.tag-plain`), 6 swatches (`.tag-sw`, `aria-pressed`, ≥ 28 px) and ✕ (`Delete tag <name>`); then the add row (`#tagAddName`, `#tagAddPlain`, swatches with the first unused color picked, ＋, Enter works).
 - A bad or taken name shows the `tagNameError()` text as a toast; nothing is saved and a renamed box gets its old name back.
-- Rename changes the tag in every label and moves its site column. Plain name and color save at once. Delete asks `confirm()` ("Delete the tag QA? Its N labels and its site column are removed too."), then removes the tag, its labels and its column; a site row that is then empty is removed. Alt+↑/↓ or drag the grip reorders tags (focus follows).
-- The label select, the legend ("<plain> — your tag"), the sites table and Try it list built-ins then custom tags; a select with a custom tag is colored like its badge.
+- Rename changes the tag in every rule and moves its site column. Plain name and color save at once. Delete asks `confirm()` ("Delete the tag QA? Its N rules and its site column are removed too."), then removes the tag, its rules and its column; a site row that is then empty is removed. Alt+↑/↓ or drag the grip reorders tags (focus follows).
+- The tag select of each rule, the legend ("<plain> — your tag"), the sites table and Try it list built-ins then custom tags; a select with a custom tag is colored like its badge.
 - Every view uses `tagNames(settings)` (built-ins, then custom tags) in place of the fixed list:
-  - Environment sort: one group per tag in that order, then **NO ENV**. A custom group header is `grp tag` + `data-tag="<color>"`; every header has `data-env="<name>"`; collapse is `folders[id].closed[<name>]`.
-  - Env matrix: one column per tag, always (also with no link of that tag). A custom tag's pill is `pill tag` + `data-tag`, its header dot uses the tag color. `+ derive` and the row menu's _Save derived links_ use `deriveUrl(..., tags)`.
+  - Tag sort: one group per tag in that order, then **NO TAG**. A custom group header is `grp tag` + `data-tag="<color>"`; every header has `data-env="<name>"`; collapse is `folders[id].closed[<name>]`.
+  - Tag matrix: one column per tag, always (also with no link of that tag). A custom tag's pill is `pill tag` + `data-tag`, its header dot uses the tag color. `+ derive` and the row menu's _Save derived links_ use `deriveUrl(..., tags)`.
   - Link ⋯ menu: _Open on <tag>_ for every other tag that the site row fills, also from and to a custom tag.
   - Board cards and every `sortLinks()` call take the tag list.
   - Popup: the page badge is `linkBadge()`; **Open this page in** uses `switchTargets(..., tags)`, `tagBadge()` and the plain name `tagPlain()`.
   - The palette and `tw` find a link by its custom tag name (`searchLinks()`).
 - Backup › Export JSON writes `customTags`. Import adds only the tags whose names are new, after the existing ones; a local tag with the same name keeps its color and plain name.
-- Copy writes `envText(rules, map, customTags)`. Import (`parseEnvText(text, known)`) adds new tags after the existing ones, replaces labels and sites, says "Imported N tags, N labels and N sites" (the tags part only when there are new tags), and Undo also removes the new tags.
+- Copy writes `envText(rules, map, customTags)`. Import (`parseEnvText(text, known)`) adds new tags after the existing ones, replaces rules and sites, says "Imported N tags, N rules and N sites" (the tags part only when there are new tags), and Undo also removes the new tags.
 
 ## Text size
 
@@ -158,9 +160,9 @@ Every rule here has at least one test. If you change a rule, change its test in 
 
 - Rows show the full URL and wrap; nothing truncates URLs on the folder page.
 - Title mode: title, then URL only if they differ (`sameAsUrl`). URL mode: URL, then title only if they differ.
-- Sort per folder: manual (Chrome index), name (case-insensitive, numeric), URL, environment (PROD, TEST, STAGE, LOCAL, none; with collapsible env groups when there are no sections), date added (newest first), host.
+- Sort per folder: manual (Chrome index), name (case-insensitive, numeric), URL, tag (PROD, TEST, STAGE, LOCAL, custom tags, NO TAG; with collapsible tag groups when there are no sections), date added (newest first), host.
 - Row drag-reorder only in Manual sort. Index rule for the same parent: pass the target's current index for "before" and `index + 1` for "after".
-- Env matrix: rows = same path across envs; `+ derive` uses the host map; Alt+click saves the derived link.
+- Tag matrix: rows = same path across tags; `+ derive` uses the host map; Alt+click saves the derived link. No tagged link → "No link in this folder has a tag, so there is nothing to lay out as a matrix. Use List view or add tags by address in Settings › Tags."
 - Folder filter matches title + URL + note, all terms must match; shows "Nothing matches the filter." when empty.
 - Edit form: `novalidate`; a URL without a scheme gets `https://`; Chrome errors show as a toast and keep the old value; Cancel/Escape discard.
 - Each row has Edit (pencil), Delete (trash, `aria-label="Delete link"`) and the ⋯ menu. Delete does not open the link.
@@ -173,8 +175,8 @@ Every rule here has at least one test. If you change a rule, change its test in 
 - Set in the popup (priority picker None/High/Medium/Low + one-line note box, saved with the new bookmark id; nothing is stored when both are empty), in the row edit form (same picker + note), and in the row ⋯ menu: _Add note_ / _Edit note_ (opens the edit form with the note box focused), _Mark as High/Medium/Low_ (except the current one), _Clear priority_ (only when set).
 - Row: a 3 px stripe in the priority color at the left edge (`--pri-high` red, `--pri-med` yellow, `--pri-low` grey; never the env colors) and the note on its own line under the URL. Note text is rendered with `h()`/`highlight()`, never `innerHTML`.
 - Order: priority links always come first (High, Medium, Low, then the rest); the folder's sort applies inside each group (`priGroups`, `priFirst`).
-  - Plain folder, any sort except Environment, with at least one priority link: headers **High / Medium / Low / Other** (`Name  count`), empty groups skipped, collapsible per folder (`folders[id].closed['pri:<pri|none>']`).
-  - Folder with sections, or Environment sort: no priority headers; inside each section / env group, priority links come first.
+  - Plain folder, any sort except Tag, with at least one priority link: headers **High / Medium / Low / Other** (`Name  count`), empty groups skipped, collapsible per folder (`folders[id].closed['pri:<pri|none>']`).
+  - Folder with sections, or Tag sort: no priority headers; inside each section / env group, priority links come first.
   - No priority link: the plain list, unchanged.
 - Drop a link on a priority header → it gets that priority; in Manual sort it also moves after the last link of that group. Drop before/after a row inside priority groups (Manual sort) → it moves there and takes that row's priority.
 - Filter buttons (All, High, Medium, Low, Has note) above the list, only when the folder has a link with a note or priority. They combine with the folder filter, reset to All when another folder opens, and an empty result says "Nothing matches the filter.". The folder filter also matches the note text.
@@ -189,7 +191,7 @@ Every rule here has at least one test. If you change a rule, change its test in 
 - Drop a link on a header → move into that subfolder. Drop a link before/after a row of another section (Manual sort) → move to that position.
 - Link menu: _Move to <section>_ for every section except the current one, including _No section_.
 - Header menu: color (saved in `settings.partColors[folderId]`), Rename (Chrome title), Move up/down (Chrome order), Delete (moves its children to the parent first, then removes the empty folder; asks `confirm()`). Drag a header onto another header to reorder.
-- Folder count, Open all, Copy all URLs, Env matrix and search include links in sections.
+- Folder count, Open all, Copy all URLs, Tag matrix and search include links in sections.
 
 ## Home
 
@@ -208,7 +210,7 @@ Every rule here has at least one test. If you change a rule, change its test in 
 
 - Shows the active tab title (editable), the full URL and its env badge. No tab → message, Save disabled.
 - **Open this page in** (`#switch`, under the page): when the tab's host is in a row of _Same site in each version_ (`switchTargets()`), one button per other filled box of that row: env badge, the same page on that host (`deriveUrl`: path, query and `#part` kept; `localhost…` gets `http:`; cut with …, the full URL is the tooltip) and the plain name (`ENV_NAMES`). Click opens it in a new tab right after the current one and closes the popup; Shift/⌘/Ctrl+click opens it in the background, keeps the popup open and shows "Opened in a background tab".
-- No site row but the page has an env label → the hint "To open this page in your other versions, add this site in Settings › Environments.". No site row and no label, or a row with no other box → the section is hidden.
+- No site row but the page has an env label → the hint "To open this page in your other versions, add this site in Settings › Tags.". No site row and no label, or a row with no other box → the section is hidden.
 - Layout (top to bottom): page, **Open this page in**, options, _Already in_, folder search and list, then the bottom bar. The popup is at most 600 px tall (Chrome's limit); only the folder list shrinks and scrolls, so the bottom bar with **Save** is always visible without scrolling.
 - Options: row 1 is the priority picker with names (● None, ● High, ● Medium, ● Low). Row 2 splits the width in 3: a one-line note box (`#note`, max 200 chars, 2 parts) and the **Page** / **Site** switch (`#modes`, 1 part). Enter in the note box saves.
 - Bottom bar: the status line (only when there is text), the key hints, _Open Tab Warehouse_ and **Save to <folder>** (cut with …; the full label is the tooltip).

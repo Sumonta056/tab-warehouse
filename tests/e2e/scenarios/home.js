@@ -297,7 +297,7 @@ export default [
       t.ok(t.$('#settingsBtn').classList.contains('on'), 'gear marked on');
       t.eq(
         t.$$('.set-tab').map((b) => b.textContent),
-        ['Appearance', 'Home page', 'Bookmarks', 'Duplicates', 'Environments', 'Backup'],
+        ['Appearance', 'Home page', 'Bookmarks', 'Duplicates', 'Tags', 'Backup'],
         'tabs',
       );
       t.eq(t.$('.set-tab.on').dataset.tab, 'appearance', 'first tab by default');

@@ -214,7 +214,7 @@ export default [
         ],
         'labels replaced',
       );
-      t.eq(t.toast()?.firstChild.textContent, 'Imported 1 tag, 2 labels and 0 sites', 'toast counts the tag');
+      t.eq(t.toast()?.firstChild.textContent, 'Imported 1 tag, 2 rules and 0 sites', 'toast counts the tag');
       t.click(t.toast().querySelector('button'));
       await t.settle();
       t.eq(t.settings().customTags, [QA], 'Undo removes the new tag');
@@ -223,7 +223,7 @@ export default [
   },
   {
     area,
-    name: 'tags: Environment sort shows a group for a custom tag after the built-ins, in its color',
+    name: 'tags: Tag sort shows a group for a custom tag after the built-ins, in its color',
     page: 'newtab',
     fixture: () => withMixed(),
     async run(t) {
@@ -236,6 +236,7 @@ export default [
       );
       t.ok(grps[1].classList.contains('tag') && grps[1].dataset.tag === 'pink', 'QA header in its color');
       t.ok(grps[1].textContent.startsWith('QA'), 'QA header text');
+      t.ok(grps[2].textContent.startsWith('NO TAG'), 'untagged header text');
       t.ok(t.row('82'), 'QA link shown');
       t.click(grps[1]);
       await t.settle();
@@ -260,12 +261,12 @@ export default [
   },
   {
     area,
-    name: 'tags: the Env matrix has a column for a custom tag with its links in its color',
+    name: 'tags: the Tag matrix has a column for a custom tag with its links in its color',
     page: 'newtab',
     fixture: () => withQa({ hostMap: [QA_SITE] }),
     async run(t) {
       await t.folder('Shop API');
-      t.click(t.$$('.seg button').find((b) => b.textContent === 'Env matrix'));
+      t.click(t.$$('.seg button').find((b) => b.textContent === 'Tag matrix'));
       await t.settle();
       t.eq(
         t.$$('.matrix thead th.env').map((th) => th.textContent),
@@ -281,7 +282,7 @@ export default [
   },
   {
     area,
-    name: 'tags: the Env matrix derives a missing custom tag from the site row',
+    name: 'tags: the Tag matrix derives a missing custom tag from the site row',
     page: 'newtab',
     fixture: () =>
       withQa({
@@ -290,7 +291,7 @@ export default [
       }),
     async run(t) {
       await t.folder('Shop API');
-      t.click(t.$$('.seg button').find((b) => b.textContent === 'Env matrix'));
+      t.click(t.$$('.seg button').find((b) => b.textContent === 'Tag matrix'));
       await t.settle();
       const d = t.$$('.matrix tbody tr td')[5].querySelector('.pill.derive');
       t.ok(d?.title.startsWith('https://qa.shop.example.com/api/x'), 'derive into QA');
@@ -392,6 +393,30 @@ export default [
         'labels imported',
       );
       t.eq(t.settings().hostMap, [{ PROD: 'shop.example.com', UAT: 'uat.example.com' }], 'sites imported');
+    },
+  },
+  {
+    area,
+    name: 'tags: the matrix empty state and the palette use the word Tags',
+    page: 'newtab',
+    fixture: () => base(),
+    async run(t) {
+      await t.folder('Sprint tasks');
+      t.click(t.$$('.seg button').find((b) => b.textContent === 'Tag matrix'));
+      await t.settle();
+      t.eq(
+        t.$('#body .empty')?.textContent,
+        'No link in this folder has a tag, so there is nothing to lay out as a matrix. Use List view or add tags by address in Settings › Tags.',
+        'empty state',
+      );
+      t.key(t.d.body, 'k', { metaKey: true });
+      await t.settle();
+      t.type(t.$('#palQ'), 'tags');
+      await t.settle();
+      t.ok(
+        t.$$('#palList .pal-item').some((i) => i.textContent.includes('Settings › Tags')),
+        'palette place',
+      );
     },
   },
 ];

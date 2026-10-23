@@ -492,11 +492,12 @@ export default [
   },
   {
     area,
-    name: 'Environment sort shows collapsible env groups',
+    name: 'Tag sort shows collapsible tag groups',
     page: 'newtab',
     fixture: () => base(),
     async run(t) {
       await t.folder('Shop API');
+      t.eq(t.$('select[aria-label="Sort"] option[value="env"]').textContent, 'Tag', 'sort name');
       t.type(t.$('select[aria-label="Sort"]'), 'env');
       await t.settle();
       t.eq(
@@ -539,12 +540,12 @@ export default [
   },
   {
     area,
-    name: 'Env matrix lays out one row with all four envs',
+    name: 'Tag matrix lays out one row with all four built-in tags',
     page: 'newtab',
     fixture: () => base(),
     async run(t) {
       await t.folder('Shop API');
-      t.click(t.$$('.seg button').find((b) => b.textContent === 'Env matrix'));
+      t.click(t.$$('.seg button').find((b) => b.textContent === 'Tag matrix'));
       await t.settle();
       t.eq(t.$$('.matrix tbody tr').length, 1, 'one path row');
       t.eq(

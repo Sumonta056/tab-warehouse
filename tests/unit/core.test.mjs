@@ -682,7 +682,7 @@ describe('environment labels: explain and text format', () => {
     ];
     const map = [{ PROD: 'shop.example.com', TEST: 'test.shop.example.com', STAGE: '', LOCAL: 'localhost:3000' }];
     const text = envText(rules, map);
-    assert.match(text, /^# Labels/);
+    assert.match(text, /^# Tags by address/);
     assert.ok(text.includes('shop.example.com test.shop.example.com - localhost:3000'));
     assert.deepEqual(parseEnvText(text), { rules, hostMap: map, tags: [], skipped: 0 });
   });

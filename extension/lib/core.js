@@ -2,7 +2,7 @@
 
 export const ENVS = ['PROD', 'TEST', 'STAGE', 'LOCAL'];
 const ENV_WORDS = ENVS.map((e) => [e, new RegExp(`\\b${e}\\b`)]);
-export const SORTS = { manual: 'Manual', name: 'Name', url: 'URL', env: 'Environment', added: 'Date added', host: 'Host' };
+export const SORTS = { manual: 'Manual', name: 'Name', url: 'URL', env: 'Tag', added: 'Date added', host: 'Host' };
 
 export const ENV_NAMES = { PROD: 'Live', TEST: 'Test', STAGE: 'Staging', LOCAL: 'Your computer' };
 
@@ -218,7 +218,7 @@ export function envText(rules, hostMap, customTags = []) {
   const cols = [...ENVS, ...customTags.map((t) => t.name)];
   return [
     ...(customTags.length ? ['# Tags: NAME color plain name', ...customTags.map((t) => `${t.name} ${t.color} ${t.plain}`.trim()), ''] : []),
-    '# Labels: text-in-address LABEL (first match wins)',
+    '# Tags by address: text-in-address TAG (first match wins)',
     ...rules.map((r) => `${r.pattern} ${r.env}`),
     '',
     `# Same site in each version: ${cols.join(' ')} (- for none)`,

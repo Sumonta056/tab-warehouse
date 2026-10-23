@@ -223,7 +223,7 @@ export default [
   },
   {
     area,
-    name: 'Env matrix includes links inside sections',
+    name: 'Tag matrix includes links inside sections',
     page: 'newtab',
     fixture: () =>
       base({
@@ -233,7 +233,7 @@ export default [
       }),
     async run(t) {
       await t.folder('Sprint tasks');
-      t.click(t.$$('.seg button').find((b) => b.textContent === 'Env matrix'));
+      t.click(t.$$('.seg button').find((b) => b.textContent === 'Tag matrix'));
       await t.settle();
       t.eq(t.$$('.matrix tbody tr').length, 1, 'matrix row from section links');
     },
