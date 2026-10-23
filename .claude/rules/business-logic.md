@@ -39,12 +39,20 @@ Every rule here has at least one test. If you change a rule, change its test in 
 ## Settings
 
 - One settings button: the gear in the sidebar header (`#settingsBtn`). It opens the Settings view in the right pane (the sidebar stays); clicking it again, **Done**, or Escape (when focus is not in a text field) returns to the page that was open before, and focus goes back to the gear. The gear is marked `on` while Settings is open. There is no settings `<dialog>`.
-- Tabs, in order: Appearance (your name, text size, accent color, sidebar background), Home page (links, background, clock, tiles, live preview), Bookmarks (root folder, site favicons, reset sidebar order), Environments (explanation + Try it, labels, sites, copy/paste), Backup (export JSON / HTML, import). ←/→ move between tabs. The last tab is remembered for the session.
+- Tabs, in order: Appearance (your name, text size, accent color, sidebar background), Home page (links, background, clock, tiles, live preview), Bookmarks (root folder, site favicons, reset sidebar order), Duplicates (duplicate links), Environments (explanation + Try it, labels, sites, copy/paste), Backup (export JSON / HTML, import). ←/→ move between tabs. The last tab is remembered for the session.
 - Every change saves without a Save button. Toggles, swatches, the root folder and buttons save at once; sliders and color pickers save after 300 ms; Environments rows and the name save when a box loses focus; the name is trimmed and updates the header and tab title at once. The header status shows "Saving…" then "Saved".
 - Saves go through one queue so two quick saves never overwrite each other.
 - Settings changed in another tab: a hidden tab only marks itself stale; when it is shown again it reloads settings and Home assets and re-renders (test "a hidden tab picks up settings changed in another tab when it is shown"). A visible tab never re-renders on a settings storage event, so its own sliders and text boxes are not interrupted. A `linkMeta` change (for example a save from the popup) re-renders only the folder list or search results, and not while a row is being edited.
 - Backup › Import (JSON) keeps only valid preferences (`cleanImport()`): env rules need a text pattern and a known label; host rows keep only PROD/TEST/STAGE/LOCAL text values; folder prefs keep only a known sort, `list`/`matrix`, `title`/`url` and boolean `closed`; `board.group` is kept only when it is `cat` or `flat`; links need a text URL; a link's `note`/`pri` pass through `cleanMeta()`. Anything else is dropped, so a bad file cannot break the page.
 - Settings re-render on bookmark changes and keep their tab and scroll position.
+
+## Duplicate links
+
+- Settings › Duplicates (its own tab, after Bookmarks) has the **Duplicate links (n)** card (`#dupCard`). It checks every link under the root folder, in any depth, except the Home folder. n = number of groups.
+- Two links are the same address when `dupKey()` matches: same scheme, host (any case), path without trailing `/`, query and `#part`. The toggle **Ignore #part and tracking parameters** also drops the `#part` and `utm_*`, `gclid`, `fbclid`, `msclkid`, `mc_eid` from the query. The toggle is not saved; it resets when the page reloads.
+- A group (`findDuplicates()`) lists its copies oldest first (`dateAdded`): the folder path (`Folder › Section`, or `Unsorted` for links directly under the root), the date added and **Keep this**. A copy whose address differs from the first one shows its own address.
+- **Keep this** deletes every other copy in the group. **Keep the oldest in every group** (shown only with 2 or more groups) deletes every copy but the first in each group. Both show one toast "Deleted 1 copy" / "Deleted N copies" with an 8 s Undo that recreates each copy at the same parent and index, with its note and priority under the new id.
+- No groups → "No duplicate links.".
 
 ## Environments (labels and sites)
 

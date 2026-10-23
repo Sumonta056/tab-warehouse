@@ -30,6 +30,8 @@ import {
   priGroups,
   priFirst,
   matchLink,
+  dupKey,
+  findDuplicates,
   buildMatrix,
   googleIcon,
   normalizeUrl,
@@ -343,6 +345,41 @@ describe('link notes and priority', () => {
     assert.equal(matchLink(bm, 'Ask Rafi for the token', 'jenkins token'), true);
     assert.equal(matchLink(bm, '', 'rafi'), false);
     assert.equal(matchLink(bm, undefined, 'jenkins'), true);
+  });
+});
+
+describe('duplicates', () => {
+  const ids = (xs) => xs.map((x) => x.id);
+  test('dupKey: a trailing slash and host case do not matter; query and hash do', () => {
+    assert.equal(dupKey('https://A.example.com/x/'), dupKey('https://a.example.com/x'));
+    assert.equal(dupKey('http://localhost:3000/'), dupKey('http://localhost:3000'));
+    assert.notEqual(dupKey('https://a.com/x?id=1'), dupKey('https://a.com/x?id=2'));
+    assert.notEqual(dupKey('https://a.com/x#top'), dupKey('https://a.com/x'));
+    assert.notEqual(dupKey('http://a.com/x'), dupKey('https://a.com/x'));
+    assert.equal(dupKey('not a url'), 'not a url');
+  });
+
+  test('dupKey loose: drops the hash and tracking parameters, keeps the others', () => {
+    const plain = dupKey('https://a.com/x?q=a%20b', true);
+    assert.equal(dupKey('https://a.com/x?q=a%20b&utm_source=slack&gclid=1&fbclid=2#intro', true), plain);
+    assert.equal(dupKey('https://a.com/x?utm_medium=mail', true), dupKey('https://a.com/x', true));
+    assert.notEqual(dupKey('https://a.com/x?q=other', true), plain);
+    assert.notEqual(dupKey('https://a.com/x?utm_source=1'), dupKey('https://a.com/x'));
+  });
+
+  test('findDuplicates: only addresses saved twice or more, oldest first', () => {
+    const links = [
+      { ...L('1', 'A', 'https://a.com/x'), dateAdded: 30 },
+      { ...L('2', 'B', 'https://b.com/'), dateAdded: 10 },
+      { ...L('3', 'A again', 'https://a.com/x/'), dateAdded: 20 },
+      { ...L('4', 'A tracked', 'https://a.com/x?utm_source=1'), dateAdded: 5 },
+    ];
+    const g = findDuplicates(links);
+    assert.equal(g.length, 1);
+    assert.deepEqual(ids(g[0].links), ['3', '1']);
+    const loose = findDuplicates(links, true);
+    assert.deepEqual(ids(loose[0].links), ['4', '3', '1']);
+    assert.deepEqual(ids(links), ['1', '2', '3', '4']);
   });
 });
 

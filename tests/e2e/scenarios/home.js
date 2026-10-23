@@ -297,7 +297,7 @@ export default [
       t.ok(t.$('#settingsBtn').classList.contains('on'), 'gear marked on');
       t.eq(
         t.$$('.set-tab').map((b) => b.textContent),
-        ['Appearance', 'Home page', 'Bookmarks', 'Environments', 'Backup'],
+        ['Appearance', 'Home page', 'Bookmarks', 'Duplicates', 'Environments', 'Backup'],
         'tabs',
       );
       t.eq(t.$('.set-tab.on').dataset.tab, 'appearance', 'first tab by default');
@@ -335,7 +335,7 @@ export default [
       t.key(t.$('.set-tab.on'), 'ArrowLeft');
       t.key(t.$('.set-tab.on'), 'ArrowLeft');
       t.eq(t.$('.set-tab.on').dataset.tab, 'backup', 'ArrowLeft wraps');
-      const want = { appearance: '#themeSwatches', home: '#homePreview', bookmarks: '#rootSelect', env: '#envTry', backup: '#exportJson' };
+      const want = { appearance: '#themeSwatches', home: '#homePreview', bookmarks: '#rootSelect', dupes: '#dupCard', env: '#envTry', backup: '#exportJson' };
       for (const [k, sel] of Object.entries(want)) {
         t.click(t.$(`.set-tab[data-tab="${k}"]`));
         t.ok(t.$(`#settingsView ${sel}`), `${k} tab shows ${sel}`);

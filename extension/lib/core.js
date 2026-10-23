@@ -442,6 +442,35 @@ export function matchLink(bm, note, q) {
   return q.split(/\s+/).every((t) => hay.includes(t));
 }
 
+/* ---------- duplicates ---------- */
+const TRACKING = /^(utm_.+|gclid|fbclid|msclkid|mc_eid)$/i;
+
+export function dupKey(url, loose = false) {
+  let u;
+  try {
+    u = new URL(url);
+  } catch {
+    return url;
+  }
+  if (loose) {
+    const params = new URLSearchParams(u.search);
+    [...params.keys()].filter((k) => TRACKING.test(k)).forEach((k) => params.delete(k));
+    u.search = params.toString();
+    u.hash = '';
+  }
+  return `${u.protocol}//${u.host}${u.pathname.replace(/\/+$/, '')}${u.search}${u.hash}`;
+}
+
+export function findDuplicates(links, loose = false) {
+  const byKey = new Map();
+  for (const bm of links) {
+    const k = dupKey(bm.url, loose);
+    if (!byKey.has(k)) byKey.set(k, []);
+    byKey.get(k).push(bm);
+  }
+  return [...byKey].filter(([, list]) => list.length > 1).map(([key, list]) => ({ key, links: list.sort((a, b) => (a.dateAdded || 0) - (b.dateAdded || 0)) }));
+}
+
 /* ---------- env matrix ---------- */
 // Groups links by path (ignoring host) → rows with one cell per env. Links without an env go to `rest`.
 export function buildMatrix(links, rules) {

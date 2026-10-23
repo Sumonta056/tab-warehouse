@@ -1472,15 +1472,23 @@ function folderMenu(e, s) {
   ]);
 }
 
-async function deleteBookmark(bm) {
-  const meta = linkMeta[bm.id];
-  await chrome.bookmarks.remove(bm.id);
-  if (meta) linkMeta = await setLinkMeta(bm.id, null);
-  toast(`Deleted “${bm.title || displayUrl(bm.url)}”`, {
+function deleteBookmark(bm) {
+  return deleteBookmarks([bm], `Deleted “${bm.title || displayUrl(bm.url)}”`);
+}
+
+async function deleteBookmarks(bms, msg) {
+  const gone = bms.map((bm) => ({ bm, meta: linkMeta[bm.id] }));
+  for (const { bm, meta } of gone) {
+    await chrome.bookmarks.remove(bm.id);
+    if (meta) linkMeta = await setLinkMeta(bm.id, null);
+  }
+  toast(msg, {
     label: 'Undo',
     run: async () => {
-      const back = await chrome.bookmarks.create({ parentId: bm.parentId, index: bm.index, title: bm.title, url: bm.url });
-      if (meta) linkMeta = await setLinkMeta(back.id, meta);
+      for (const { bm, meta } of [...gone].sort((a, b) => a.bm.index - b.bm.index)) {
+        const back = await chrome.bookmarks.create({ parentId: bm.parentId, index: bm.index, title: bm.title, url: bm.url });
+        if (meta) linkMeta = await setLinkMeta(back.id, meta);
+      }
     },
   });
 }
@@ -1531,6 +1539,7 @@ const settingsCtx = {
     })),
   toast,
   refresh,
+  removeLinks: (bms) => deleteBookmarks(bms, bms.length === 1 ? 'Deleted 1 copy' : `Deleted ${bms.length} copies`),
   async reload() {
     settings = await loadSettings();
     applyTheme(settings.theme);
