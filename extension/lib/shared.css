@@ -23,6 +23,18 @@
   --local-fg: #6fd99a;
   --gh-bg: #2a2a2a;
   --gh-fg: #cfcfcf;
+  --tag-teal-bg: #0f3b3a;
+  --tag-teal-fg: #5fd4c4;
+  --tag-pink-bg: #45192e;
+  --tag-pink-fg: #f49ac1;
+  --tag-yellow-bg: #3a3010;
+  --tag-yellow-fg: #f2cc60;
+  --tag-red-bg: #4a1a17;
+  --tag-red-fg: #ff8a80;
+  --tag-cyan-bg: #0e3440;
+  --tag-cyan-fg: #67d5f0;
+  --tag-grey-bg: #333333;
+  --tag-grey-fg: #b8b8b8;
   --red-fg: #ff8a80;
   --yellow-fg: #f2cc60;
   --pri-high: var(--red-fg);
@@ -274,6 +286,34 @@ select {
 .badge.GH {
   background: var(--gh-bg);
   color: var(--gh-fg);
+}
+[data-tag='teal'] {
+  --tag-bg: var(--tag-teal-bg);
+  --tag-fg: var(--tag-teal-fg);
+}
+[data-tag='pink'] {
+  --tag-bg: var(--tag-pink-bg);
+  --tag-fg: var(--tag-pink-fg);
+}
+[data-tag='yellow'] {
+  --tag-bg: var(--tag-yellow-bg);
+  --tag-fg: var(--tag-yellow-fg);
+}
+[data-tag='red'] {
+  --tag-bg: var(--tag-red-bg);
+  --tag-fg: var(--tag-red-fg);
+}
+[data-tag='cyan'] {
+  --tag-bg: var(--tag-cyan-bg);
+  --tag-fg: var(--tag-cyan-fg);
+}
+[data-tag='grey'] {
+  --tag-bg: var(--tag-grey-bg);
+  --tag-fg: var(--tag-grey-fg);
+}
+.badge.tag {
+  background: var(--tag-bg);
+  color: var(--tag-fg);
 }
 
 /* Rows */

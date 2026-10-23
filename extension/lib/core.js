@@ -40,6 +40,16 @@ export function tagPlain(settings, name) {
   return ENV_NAMES[name] || (settings?.customTags || []).find((t) => t.name === name)?.plain || name;
 }
 
+export function tagBadge(name, customTags = []) {
+  const t = customTags.find((x) => x.name === name);
+  return h('span', { class: `badge ${t ? 'tag' : name}`, dataset: t ? { tag: t.color } : null }, name);
+}
+
+export function linkBadge(env, url, customTags = []) {
+  if (env) return tagBadge(env, customTags);
+  return isGithub(url) ? h('span', { class: 'badge GH' }, 'GH') : null;
+}
+
 export const DEFAULT_HOME = {
   folderId: null,
   color: '#185a63',
@@ -232,7 +242,7 @@ export function parseEnvText(text, known = []) {
       const taken = tags.map((t) => t.name);
       if (known.includes(name)) continue;
       if (tagNameError(name, taken)) skipped++;
-      else tags.push({ name, color: color.toLowerCase(), plain: plain.join(' ').slice(0, TAG_PLAIN_MAX) });
+      else tags.push({ name, plain: plain.join(' ').slice(0, TAG_PLAIN_MAX), color: color.toLowerCase() });
       continue;
     }
     rest.push(parts);

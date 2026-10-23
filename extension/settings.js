@@ -13,6 +13,10 @@ import {
   parseEnvText,
   ENVS,
   ENV_NAMES,
+  TAG_COLORS,
+  tagNameError,
+  cleanTags,
+  tagBadge,
   imageSaveError,
   clampFont,
   FONT_SCALE,
@@ -65,7 +69,6 @@ function later(key, fn, ms = 300) {
 }
 
 const cap = (s) => `${s[0].toUpperCase()}${s.slice(1)}`;
-const envBadge = (e) => h('span', { class: `badge ${e || 'none'}` }, e || 'No label');
 const cleanHost = (v) => {
   v = (v || '').trim().toLowerCase();
   return /^[a-z][a-z0-9+.-]*:\/\//.test(v) ? hostOf(v) : v.replace(/\/.*$/, '');
@@ -545,22 +548,64 @@ const VIEWS = {
   env(c) {
     let rules = c.settings.envRules.map((r) => ({ ...r }));
     let map = c.settings.hostMap.map((r) => ({ ...r }));
+    let tags = (c.settings.customTags || []).map((t) => ({ ...t }));
     const root = h('div', { class: 'env-tab' });
     const saveRules = () => c.save({ envRules: rules });
     const saveMap = () => c.save({ hostMap: map });
+    const saveTags = () => c.save({ customTags: tags });
     let updateTry = () => {};
+    const names = () => [...ENVS, ...tags.map((t) => t.name)];
+    const plain = (e) => ENV_NAMES[e] || tags.find((t) => t.name === e)?.plain || e;
+    const envBadge = (e) => (e ? tagBadge(e, tags) : h('span', { class: 'badge none' }, 'No label'));
 
     const envSelect = (value, label, onChange) => {
-      const sel = h(
-        'select',
-        { class: `env-sel ${value}`, 'aria-label': label },
-        ...ENVS.map((e) => h('option', { value: e, selected: e === value }, `${e} · ${ENV_NAMES[e]}`)),
-      );
+      const sel = h('select', { 'aria-label': label }, ...names().map((e) => h('option', { value: e, selected: e === value }, `${e} · ${plain(e)}`)));
+      const paint = () => {
+        const t = tags.find((x) => x.name === sel.value);
+        sel.className = `env-sel ${t ? 'tag' : sel.value}`;
+        if (t) sel.dataset.tag = t.color;
+        else delete sel.dataset.tag;
+      };
+      paint();
       sel.addEventListener('change', () => {
-        sel.className = `env-sel ${sel.value}`;
+        paint();
         onChange(sel.value);
       });
       return sel;
+    };
+    const sortable = (row, grip, kind, i, label, move) => {
+      const clear = () => root.querySelectorAll('.drop-before, .drop-after').forEach((n) => n.classList.remove('drop-before', 'drop-after'));
+      const mine = () => envDrag?.kind === kind && envDrag.i !== i;
+      grip.addEventListener('dragstart', (e) => {
+        envDrag = { kind, i };
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', label);
+        e.dataTransfer.setDragImage?.(row, 10, 10);
+        row.classList.add('dragging');
+      });
+      grip.addEventListener('dragend', () => {
+        envDrag = null;
+        row.classList.remove('dragging');
+        clear();
+      });
+      row.addEventListener('dragover', (e) => {
+        if (!mine()) return;
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        const b = row.getBoundingClientRect();
+        clear();
+        row.classList.add(e.clientY > b.top + b.height / 2 ? 'drop-after' : 'drop-before');
+      });
+      row.addEventListener('drop', (e) => {
+        if (!mine()) return;
+        e.preventDefault();
+        const from = envDrag.i,
+          after = row.classList.contains('drop-after');
+        envDrag = null;
+        let to = i + (after ? 1 : 0);
+        if (from < to) to--;
+        move(from, to);
+      });
     };
     const removeWithUndo = (list, i, what, save) => {
       const [item] = list.splice(i, 1);
@@ -596,16 +641,18 @@ const VIEWS = {
               ? 'No label matches this address.'
               : 'There are no labels yet.';
         const host = hostOf(url);
-        const row = host && map.find((r) => ENVS.some((e) => (r[e] || '').toLowerCase() === host));
+        const row = host && map.find((r) => names().some((e) => (r[e] || '').toLowerCase() === host));
         const others = row
-          ? ENVS.filter((e) => (row[e] || '').toLowerCase() !== host).map((e) =>
-              h(
-                'div',
-                { class: `env-other ${row[e] ? '' : 'miss'}` },
-                envBadge(e),
-                row[e] ? h('span', { class: 'u' }, deriveUrl(url, e, [row]) || '') : 'Not set in step 2',
-              ),
-            )
+          ? names()
+              .filter((e) => (row[e] || '').toLowerCase() !== host)
+              .map((e) =>
+                h(
+                  'div',
+                  { class: `env-other ${row[e] ? '' : 'miss'}` },
+                  envBadge(e),
+                  row[e] ? h('span', { class: 'u' }, deriveUrl(url, e, [row], names()) || '') : 'Not set in step 2',
+                ),
+              )
           : [h('div', { class: 'env-other miss' }, map.length ? 'This site is not in step 2 yet.' : 'Fill in step 2 to see links to the other versions.')];
         out.replaceChildren(
           h('div', { class: 'env-result' }, envBadge(x.env), h('div', { class: 't' }, h('div', { class: 'u' }, url || '—'), h('div', { class: 'why' }, why))),
@@ -637,7 +684,7 @@ const VIEWS = {
             h('b', {}, '2. Same site in each version. '),
             'When the extension knows the addresses of all versions, it can open the same page in another version with one click.',
           ),
-          h('div', { class: 'env-legend' }, ...ENVS.flatMap((e) => [envBadge(e), h('span', {}, `${ENV_NAMES[e]} — ${ENV_HINTS[e]}`)])),
+          h('div', { class: 'env-legend' }, ...names().flatMap((e) => [envBadge(e), h('span', {}, `${plain(e)} — ${ENV_HINTS[e] || 'your tag'}`)])),
           h('p', { class: 'sub' }, 'Do not use more than one version of a site? You can leave this section empty.'),
         ),
         h(
@@ -706,36 +753,7 @@ const VIEWS = {
           e.preventDefault();
           moveRule(i, i + (e.key === 'ArrowUp' ? -1 : 1), `.env-rule[data-i="{i}"] .env-in`);
         });
-        grip.addEventListener('dragstart', (e) => {
-          envDrag = i;
-          e.dataTransfer.effectAllowed = 'move';
-          e.dataTransfer.setData('text/plain', r.pattern);
-          e.dataTransfer.setDragImage?.(row, 10, 10);
-          row.classList.add('dragging');
-        });
-        grip.addEventListener('dragend', () => {
-          envDrag = null;
-          row.classList.remove('dragging');
-          root.querySelectorAll('.drop-before, .drop-after').forEach((n) => n.classList.remove('drop-before', 'drop-after'));
-        });
-        row.addEventListener('dragover', (e) => {
-          if (envDrag == null || envDrag === i) return;
-          e.preventDefault();
-          e.dataTransfer.dropEffect = 'move';
-          const b = row.getBoundingClientRect();
-          root.querySelectorAll('.drop-before, .drop-after').forEach((n) => n.classList.remove('drop-before', 'drop-after'));
-          row.classList.add(e.clientY > b.top + b.height / 2 ? 'drop-after' : 'drop-before');
-        });
-        row.addEventListener('drop', (e) => {
-          if (envDrag == null || envDrag === i) return;
-          e.preventDefault();
-          const from = envDrag,
-            after = row.classList.contains('drop-after');
-          envDrag = null;
-          let to = i + (after ? 1 : 0);
-          if (from < to) to--;
-          moveRule(from, to);
-        });
+        sortable(row, grip, 'rule', i, r.pattern, moveRule);
         return row;
       });
       const empty = h(
@@ -796,24 +814,195 @@ const VIEWS = {
       );
     }
 
+    function tagsCard() {
+      const saveAll = () => c.save({ customTags: tags, envRules: rules, hostMap: map });
+      const taken = (except) => tags.filter((t) => t !== except).map((t) => t.name);
+      const swatches = (value, label, onPick) => {
+        const group = h('div', { class: 'tag-sws', role: 'group', 'aria-label': label });
+        group.append(
+          ...TAG_COLORS.map((col) =>
+            h('button', {
+              type: 'button',
+              class: 'tag-sw',
+              dataset: { tag: col },
+              'aria-pressed': String(col === value),
+              'aria-label': cap(col),
+              title: cap(col),
+              onClick: () => {
+                group.querySelectorAll('.tag-sw').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.tag === col)));
+                onPick(col);
+              },
+            }),
+          ),
+        );
+        return group;
+      };
+      const moveTag = (from, to) => {
+        if (to < 0 || to >= tags.length || from === to) return;
+        const [t] = tags.splice(from, 1);
+        tags.splice(to, 0, t);
+        saveTags();
+        draw(`#envTags .tag-row[data-i="${to}"] .tag-name`);
+      };
+      const rows = tags.map((tg, i) => {
+        const name = h('input', {
+          type: 'text',
+          class: 'env-in tag-name',
+          value: tg.name,
+          maxlength: 8,
+          spellcheck: 'false',
+          'aria-label': `Tag ${i + 1}: name`,
+        });
+        name.addEventListener('change', () => {
+          const v = name.value.trim().toUpperCase();
+          if (v === tg.name) {
+            name.value = v;
+            return;
+          }
+          const err = tagNameError(v, taken(tg));
+          if (err) {
+            name.value = tg.name;
+            c.toast(err);
+            return;
+          }
+          const old = tg.name;
+          tg.name = v;
+          rules.forEach((r) => {
+            if (r.env === old) r.env = v;
+          });
+          map.forEach((r) => {
+            if (!(old in r)) return;
+            r[v] = r[old];
+            delete r[old];
+          });
+          saveAll();
+          draw();
+        });
+        const plainIn = h('input', {
+          type: 'text',
+          class: 'env-in tag-plain',
+          value: tg.plain,
+          placeholder: 'Plain name',
+          'aria-label': `Tag ${i + 1}: plain name`,
+        });
+        plainIn.addEventListener('change', () => {
+          tg.plain = plainIn.value;
+          tags = cleanTags(tags);
+          saveTags();
+          draw();
+        });
+        const remove = () => {
+          const n = rules.filter((r) => r.env === tg.name).length;
+          const what = n ? `Its ${n} label${n === 1 ? '' : 's'} and its site column are` : 'Its site column is';
+          if (!confirm(`Delete the tag ${tg.name}? ${what} removed too.`)) return;
+          tags.splice(i, 1);
+          rules = rules.filter((r) => r.env !== tg.name);
+          map.forEach((r) => delete r[tg.name]);
+          map = map.filter((r) => Object.values(r).some(Boolean));
+          saveAll();
+          draw();
+        };
+        const grip = h('span', { class: 'grip', draggable: true, title: 'Drag to change the order', 'aria-hidden': 'true' }, svgIcon('grip'));
+        const row = h(
+          'div',
+          { class: 'tag-row', dataset: { i } },
+          grip,
+          envBadge(tg.name),
+          name,
+          plainIn,
+          swatches(tg.color, `Tag ${tg.name}: color`, (col) => {
+            tg.color = col;
+            saveTags();
+            draw(`#envTags .tag-row[data-i="${i}"] .tag-sw[data-tag="${col}"]`);
+          }),
+          h('button', { type: 'button', class: 'x', 'aria-label': `Delete tag ${tg.name}`, title: 'Delete', onClick: remove }, svgIcon('x')),
+        );
+        row.addEventListener('keydown', (e) => {
+          if (!e.altKey || (e.key !== 'ArrowUp' && e.key !== 'ArrowDown')) return;
+          e.preventDefault();
+          moveTag(i, i + (e.key === 'ArrowUp' ? -1 : 1));
+        });
+        sortable(row, grip, 'tag', i, tg.name, moveTag);
+        return row;
+      });
+      let addColor = TAG_COLORS.find((col) => !tags.some((t) => t.color === col)) || TAG_COLORS[0];
+      const addName = h('input', {
+        type: 'text',
+        class: 'env-in tag-name',
+        id: 'tagAddName',
+        maxlength: 8,
+        spellcheck: 'false',
+        placeholder: 'e.g. QA',
+        'aria-label': 'New tag: name',
+      });
+      const addPlain = h('input', {
+        type: 'text',
+        class: 'env-in tag-plain',
+        id: 'tagAddPlain',
+        placeholder: 'Plain name',
+        'aria-label': 'New tag: plain name',
+      });
+      const add = h(
+        'form',
+        { class: 'tag-row add', novalidate: true },
+        h('span'),
+        h('span'),
+        addName,
+        addPlain,
+        swatches(addColor, 'New tag: color', (col) => {
+          addColor = col;
+        }),
+        h('button', { type: 'submit', class: 'x add', 'aria-label': 'Add tag', title: 'Add tag' }, svgIcon('plus')),
+      );
+      add.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const v = addName.value.trim().toUpperCase();
+        const err = tagNameError(v, taken());
+        if (err) {
+          c.toast(err);
+          addName.focus();
+          return;
+        }
+        tags = cleanTags([...tags, { name: v, plain: addPlain.value, color: addColor }]);
+        saveTags();
+        draw('#tagAddName');
+      });
+      return h(
+        'div',
+        { class: 'set-card', id: 'envTags' },
+        h('h3', {}, `Your tags (${tags.length})`),
+        h(
+          'p',
+          { class: 'sub' },
+          'Add your own tags next to the built-in ones, for example QA, UAT or DEMO. A label in step 1 gives a link its tag. Drag ',
+          svgIcon('grip'),
+          ' or press Alt+↑/↓ to change the order.',
+        ),
+        h('div', { class: 'tag-builtin' }, ...ENVS.map(envBadge), h('span', { class: 'sub' }, 'Built in')),
+        ...rows,
+        add,
+      );
+    }
+
     function sitesCard() {
-      const head = h('div', { class: 'env-site head' }, ...ENVS.map((e) => h('span', {}, envBadge(e))), h('span'));
+      const cols = names();
+      const head = h('div', { class: 'env-site head' }, ...cols.map((e) => h('span', {}, envBadge(e))), h('span'));
       const rows = map.map((r, i) =>
         h(
           'div',
           { class: 'env-site', dataset: { i } },
-          ...ENVS.map((e) => {
+          ...cols.map((e) => {
             const input = h('input', {
               type: 'text',
               class: 'env-in',
               value: r[e] || '',
               placeholder: 'none',
-              'aria-label': `Site ${i + 1}: ${ENV_NAMES[e]} address`,
+              'aria-label': `Site ${i + 1}: ${plain(e)} address`,
             });
             input.addEventListener('change', () => {
               r[e] = cleanHost(input.value);
               input.value = r[e];
-              if (ENVS.every((x) => !r[x])) {
+              if (cols.every((x) => !r[x])) {
                 removeWithUndo(map, i, 'site', saveMap);
                 return;
               }
@@ -847,13 +1036,13 @@ const VIEWS = {
           'Add example',
         ),
       );
-      const ins = ENVS.map((e) =>
+      const ins = cols.map((e) =>
         h('input', {
           type: 'text',
           class: 'env-in',
           id: `envAdd${e}`,
-          placeholder: `${ENV_NAMES[e]} address`,
-          'aria-label': `New site: ${ENV_NAMES[e]} address`,
+          placeholder: `${plain(e)} address`,
+          'aria-label': `New site: ${plain(e)} address`,
         }),
       );
       const add = h(
@@ -862,10 +1051,12 @@ const VIEWS = {
         ...ins,
         h('button', { type: 'submit', class: 'x add', 'aria-label': 'Add site', title: 'Add site' }, svgIcon('plus')),
       );
+      const sites = h('div', { class: `env-sites ${cols.length > ENVS.length ? 'wide' : ''}` }, head, ...(rows.length ? rows : [empty]), add);
+      sites.style.setProperty('--cols', cols.length);
       add.addEventListener('submit', (e) => {
         e.preventDefault();
-        const row = Object.fromEntries(ENVS.map((x, j) => [x, cleanHost(ins[j].value)]));
-        if (ENVS.every((x) => !row[x])) {
+        const row = Object.fromEntries(cols.map((x, j) => [x, cleanHost(ins[j].value)]));
+        if (cols.every((x) => !row[x])) {
           ins[0].focus();
           return;
         }
@@ -882,9 +1073,7 @@ const VIEWS = {
           { class: 'sub' },
           'One row for each site. Type the site’s address in each version. Then a link’s menu can open the same page in another version, and “Env matrix” can fill in missing links. Leave a box empty if that version does not exist.',
         ),
-        head,
-        ...(rows.length ? rows : [empty]),
-        add,
+        sites,
       );
     }
 
@@ -897,7 +1086,7 @@ const VIEWS = {
         'aria-label': 'Text to copy or import',
       });
       const copy = async () => {
-        ta.value = envText(rules, map);
+        ta.value = envText(rules, map, tags);
         ta.select();
         try {
           await Promise.race([navigator.clipboard.writeText(ta.value), new Promise((_, no) => setTimeout(no, 1000))]);
@@ -907,24 +1096,29 @@ const VIEWS = {
         }
       };
       const doImport = async () => {
-        const p = parseEnvText(ta.value);
-        if (!p.rules.length && !p.hostMap.length) {
+        const p = parseEnvText(
+          ta.value,
+          tags.map((t) => t.name),
+        );
+        if (!p.rules.length && !p.hostMap.length && !p.tags.length) {
           c.toast('Nothing to import. Paste text that you copied from this section.');
           return;
         }
-        const old = { envRules: rules, hostMap: map };
+        const old = { envRules: rules, hostMap: map, customTags: tags };
         rules = p.rules;
         map = p.hostMap;
-        await c.save({ envRules: rules, hostMap: map });
+        tags = [...tags, ...p.tags];
+        await c.save({ envRules: rules, hostMap: map, customTags: tags });
         draw();
         const n = (k, w) => `${k} ${w}${k === 1 ? '' : 's'}`;
         c.toast(
-          `Imported ${n(rules.length, 'label')} and ${n(map.length, 'site')}${p.skipped ? `. Skipped ${n(p.skipped, 'line')} that could not be read` : ''}`,
+          `Imported ${p.tags.length ? `${n(p.tags.length, 'tag')}, ` : ''}${n(rules.length, 'label')} and ${n(map.length, 'site')}${p.skipped ? `. Skipped ${n(p.skipped, 'line')} that could not be read` : ''}`,
           {
             label: 'Undo',
             run: async () => {
               rules = old.envRules;
               map = old.hostMap;
+              tags = old.customTags;
               await c.save(old);
               draw();
             },
@@ -952,7 +1146,7 @@ const VIEWS = {
     }
 
     function draw(focusSel) {
-      root.replaceChildren(intro(), h('div', { class: 'env-cols' }, labelsCard(), sitesCard()), copyCard());
+      root.replaceChildren(intro(), tagsCard(), h('div', { class: 'env-cols' }, labelsCard(), sitesCard()), copyCard());
       if (focusSel) root.querySelector(focusSel)?.focus();
     }
     draw();

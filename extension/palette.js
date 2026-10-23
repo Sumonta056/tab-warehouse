@@ -1,4 +1,4 @@
-import { h, svgIcon, iconEl, highlight, searchLinks, detectEnv, isGithub, displayUrl } from './lib/core.js';
+import { h, svgIcon, iconEl, highlight, searchLinks, detectEnv, linkBadge, displayUrl } from './lib/core.js';
 import { TABS } from './settings.js';
 
 const LINK_MAX = 30;
@@ -88,13 +88,7 @@ export function openPalette(ctx) {
           { class: 'pal-item', id: `pal-o-${i}`, role: 'option', dataset: { i, kind: it.kind }, title: it.bm?.url },
           it.bm ? iconEl(it.bm, ctx.settings.showFavicons) : h('span', { class: 'ico pal-sym' }, svgIcon(it.icon)),
           h('span', { class: 'pal-txt' }, t, it.sub ? s : ''),
-          it.bm
-            ? env
-              ? h('span', { class: `badge ${env}` }, env)
-              : isGithub(it.bm.url)
-                ? h('span', { class: 'badge GH' }, 'GH')
-                : ''
-            : h('span', { class: 'pal-kind' }, it.kind === 'folder' ? 'Folder' : 'Go to'),
+          it.bm ? linkBadge(env, it.bm.url, ctx.settings.customTags) : h('span', { class: 'pal-kind' }, it.kind === 'folder' ? 'Folder' : 'Go to'),
         );
       }),
     );

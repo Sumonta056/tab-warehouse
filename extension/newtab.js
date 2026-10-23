@@ -8,7 +8,7 @@ import {
   buildMatrix,
   detectEnv,
   deriveUrl,
-  isGithub,
+  linkBadge,
   sameAsUrl,
   displayUrl,
   pathKey,
@@ -922,8 +922,8 @@ function renderRow(bm, s, p, { crumb = null, q = filterQ } = {}) {
   }
   if (crumb) txt.append(h('span', { class: 'crumb' }, crumb));
   row.append(txt);
-  if (env) row.append(h('span', { class: `badge ${env}` }, env));
-  else if (isGithub(bm.url)) row.append(h('span', { class: 'badge GH' }, 'GH'));
+  const badge = linkBadge(env, bm.url, settings.customTags);
+  if (badge) row.append(badge);
   row.append(
     h(
       'span',

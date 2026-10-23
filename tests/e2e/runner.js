@@ -10,6 +10,7 @@ import duplicates from './scenarios/duplicates.js';
 import palette from './scenarios/palette.js';
 import envswitch from './scenarios/envswitch.js';
 import omnibox from './scenarios/omnibox.js';
+import tags from './scenarios/tags.js';
 
 const ALL = [
   ...newtab,
@@ -24,6 +25,7 @@ const ALL = [
   ...palette,
   ...envswitch,
   ...omnibox,
+  ...tags,
 ];
 const frame = document.getElementById('frame');
 const out = document.getElementById('results');

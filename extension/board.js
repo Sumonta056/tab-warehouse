@@ -1,4 +1,4 @@
-import { h, svgIcon, iconEl, highlight, detectEnv, isGithub, sameAsUrl, displayUrl, sortLinks, hostOf, normalizeUrl } from './lib/core.js';
+import { h, svgIcon, iconEl, highlight, detectEnv, linkBadge, sameAsUrl, displayUrl, sortLinks, hostOf, normalizeUrl } from './lib/core.js';
 
 let adding = null;
 
@@ -241,7 +241,7 @@ function card(bm, p, ctx) {
     { class: 'bcard', href: bm.url, target: '_blank', rel: 'noopener', draggable: true, dataset: { id: bm.id }, title: bm.url },
     iconEl(bm, settings.showFavicons),
     h('span', { class: 'bcard-txt' }, ttl, url),
-    env ? h('span', { class: `badge ${env}` }, env) : isGithub(bm.url) ? h('span', { class: 'badge GH' }, 'GH') : null,
+    linkBadge(env, bm.url, settings.customTags),
     h(
       'button',
       {
