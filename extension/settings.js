@@ -1263,7 +1263,6 @@ const VIEWS = {
           h(
             'ul',
             { class: 'keys-list', id: 'pageKeys', 'aria-label': 'Keys on this page' },
-            row('Open the command palette', [[mod, 'K']]),
             row('Open the result in a background tab (in the palette)', [[mod, 'Enter']]),
             row('Go to the search box', [['/']]),
             row('Next or previous page in the sidebar', [['j'], ['k']]),

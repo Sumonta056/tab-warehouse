@@ -68,7 +68,7 @@ export default [
     fixture: () => base(),
     async run(t) {
       await openKeys(t);
-      t.eq(t.$('#chromeKeys .keys-row[data-cmd="quick-save"] .keys-combo')?.textContent, 'CtrlShiftK', 'default key');
+      t.eq(t.$('#chromeKeys .keys-row[data-cmd="quick-save"] .keys-combo')?.textContent, 'CtrlK', 'default key');
       t.H.commands = [{ name: 'quick-save', description: 'Save current tab without the popup', shortcut: '' }];
       t.d.dispatchEvent(new t.w.Event('visibilitychange'));
       await t.settle();
@@ -85,8 +85,7 @@ export default [
       const mac = /mac/i.test(t.w.navigator.userAgentData?.platform || t.w.navigator.platform || '');
       const mod = mac ? '⌘' : 'Ctrl';
       const alt = mac ? '⌥' : 'Alt';
-      t.key(t.d.body, 'k', { metaKey: true });
-      await t.settle();
+      await t.palette();
       t.type(t.$('#palQ'), 'settings shortcuts');
       await t.settle();
       t.eq(
@@ -100,7 +99,6 @@ export default [
       t.eq(
         rows(t, '#pageKeys'),
         [
-          ['Open the command palette', `${mod} K`],
           ['Open the result in a background tab (in the palette)', `${mod} Enter`],
           ['Go to the search box', '/'],
           ['Next or previous page in the sidebar', 'j / k'],

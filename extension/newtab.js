@@ -1770,11 +1770,6 @@ function bindGlobal() {
       closeSettings();
       return;
     }
-    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
-      e.preventDefault();
-      showPalette();
-      return;
-    }
     if (e.key === '/' && document.activeElement === document.body) {
       e.preventDefault();
       qInput.focus();

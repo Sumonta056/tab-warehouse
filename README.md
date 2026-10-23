@@ -129,7 +129,7 @@ Developers keep the same page open in many versions: live, test, staging and `lo
 
 ### Search and command palette
 
-- `⌘K` / `Ctrl+K` opens the command palette. It finds links, folders and Settings tabs by title, address, folder, note or tag.
+- `⌘⇧K` / `Ctrl+Shift+K` on a Tab Warehouse tab opens the command palette (change the key at `chrome://extensions/shortcuts`). It finds links, folders and Settings tabs by title, address, folder, note or tag.
 - `Enter` opens the link in this tab, `⌘Enter` in a background tab.
 - `/` searches every folder from the sidebar box.
 - Type `tw` and a space in Chrome's address bar to search your links from any tab.
@@ -142,7 +142,7 @@ Developers keep the same page open in many versions: live, test, staging and `lo
 - Save the full page or the whole site (`origin/`).
 - Shows the tag and remembers the last folder.
 - Warns in orange when the page is already saved, also when only `?utm_…`, `#part` or a trailing `/` differ, and shows where. **Save again** still saves a second copy.
-- **Quick save** (`⌘⇧K` / `Ctrl+Shift+K`): saves the tab into the last folder you saved to (or the root) without opening the popup. The toolbar icon shows a green ✓ for 2.5 s. If the page is already saved, nothing is saved and the popup opens with the warning.
+- **Quick save** (`⌘K` / `Ctrl+K`): saves the tab into the last folder you saved to (or the root) without opening the popup. The toolbar icon shows a green ✓ for 2.5 s. If the page is already saved, nothing is saved and the popup opens with the warning.
 - **Open this page in**: opens the same page in your other versions (from _Same site in each version_).
 - Add a priority and a short note before you save.
 
@@ -203,27 +203,27 @@ Coming soon.
 
 ## Keyboard shortcuts
 
-| Keys                              | Action                                                    |
-| --------------------------------- | --------------------------------------------------------- |
-| `⌘⇧B` / `Ctrl+Shift+B`            | Open the save popup                                       |
-| `⌘⇧K` / `Ctrl+Shift+K`            | Quick save the tab without the popup                      |
-| `⌘K` / `Ctrl+K`                   | Open the save popup; the command palette on Tab Warehouse |
-| `⌘Enter` (in the palette)         | Open the link in a background tab                         |
-| `tw` + space (in the address bar) | Search all folders from the address bar                   |
-| `/`                               | Search all folders                                        |
-| `Enter` (in search)               | Open the first result                                     |
-| `Esc`                             | Clear search or filter; close Settings                    |
-| `j` / `k`                         | Next / previous: Home, Board, folders                     |
-| `Alt+↑` / `Alt+↓`                 | Move the focused folder or section up / down              |
-| `←` / `→` (on the sidebar edge)   | Resize the sidebar by 16 px                               |
-| `←` / `→` (in Settings)           | Next / previous tab                                       |
-| `↑` / `↓`, `Enter` (in the popup) | Pick a folder, save                                       |
+| Keys                              | Action                                       |
+| --------------------------------- | -------------------------------------------- |
+| `⌘⇧B` / `Ctrl+Shift+B`            | Open the save popup                          |
+| `⌘K` / `Ctrl+K`                   | Quick save the tab without the popup         |
+| `⌘⇧K` / `Ctrl+Shift+K`            | Open the command palette (on Tab Warehouse)  |
+| `⌘Enter` (in the palette)         | Open the link in a background tab            |
+| `tw` + space (in the address bar) | Search all folders from the address bar      |
+| `/`                               | Search all folders                           |
+| `Enter` (in search)               | Open the first result                        |
+| `Esc`                             | Clear search or filter; close Settings       |
+| `j` / `k`                         | Next / previous: Home, Board, folders        |
+| `Alt+↑` / `Alt+↓`                 | Move the focused folder or section up / down |
+| `←` / `→` (on the sidebar edge)   | Resize the sidebar by 16 px                  |
+| `←` / `→` (in Settings)           | Next / previous tab                          |
+| `↑` / `↓`, `Enter` (in the popup) | Pick a folder, save                          |
 
 Settings › Shortcuts lists these keys. To change the Chrome keys, click **Change shortcuts** there (it opens `chrome://extensions/shortcuts`).
 
-Change `⌘⇧B`, `⌘⇧K` and `⌘K` at `chrome://extensions/shortcuts`. Chrome skips a suggested key that another extension already uses; then the shortcut shows as not set until you pick one there.
+Change `⌘⇧B`, `⌘K` and `⌘⇧K` at `chrome://extensions/shortcuts`. An install that is already there keeps its old keys after an update: set them there, or paste `tools/set-shortcuts.js` into the Console of that page. Chrome skips a suggested key that another extension already uses; then the shortcut shows as not set until you pick one there.
 
-`⌘K` / `Ctrl+K` works on any page: on a Tab Warehouse tab it opens the command palette, anywhere else it opens the save popup. Many sites (GitHub, Slack, Notion) use `⌘K` themselves and lose it while the extension has it; if you want it back there, set another key or none. On Windows Chrome may keep `Ctrl+K` for itself; then the shortcut shows as not set and you can pick a key at `chrome://extensions/shortcuts`.
+`⌘K` / `Ctrl+K` quick saves on any page. Many sites (GitHub, Slack, Notion) use `⌘K` themselves and lose it while the extension has it; if you want it back there, set another key or none. On Windows Chrome may keep `Ctrl+K` for itself; then the shortcut shows as not set and you can pick a key at `chrome://extensions/shortcuts`.
 
 ## Privacy and permissions
 
@@ -240,7 +240,7 @@ Tab Warehouse has no server, no account, no analytics and no tracking. It does n
 | `favicon`   | Show site icons from Chrome's own favicon cache                                     |
 | `activeTab` | Read the current tab's title and URL, only when you open the popup or quick save    |
 
-The extension has a background service worker (`background.js`) only for the address bar search (`tw`), quick save (`⌘⇧K`) and the `⌘K` command (palette on Tab Warehouse, popup elsewhere). It reads your bookmarks on each keystroke or key press and keeps nothing. The `omnibox` key is not a permission and shows no install warning.
+The extension has a background service worker (`background.js`) only for the address bar search (`tw`), quick save (`⌘K`) and the palette key (`⌘⇧K`, so it also works while the address bar has focus). It reads your bookmarks on each keystroke or key press and keeps nothing. The `omnibox` key is not a permission and shows no install warning.
 
 ## How it works
 
@@ -252,7 +252,7 @@ Tab Warehouse is plain JavaScript with ES modules. There is no framework, no bun
 
 ```
 extension/             Everything Chrome loads (choose this folder in Load unpacked)
-  manifest.json        Manifest V3: new tab override, popup, ⌘⇧B, ⌘⇧K and ⌘K commands
+  manifest.json        Manifest V3: new tab override, popup, ⌘⇧B, ⌘K and ⌘⇧K commands
   newtab.html/.css/.js The main page: sidebar + folder page
   home.js              Home view: clock, tiles, default links
   board.js             Board view: every folder as a column of cards
@@ -299,7 +299,7 @@ python3 -I tests/serve.py 8799
 
 ## Changelog
 
-- **Unreleased** — Quick save (`⌘⇧K` / `Ctrl+Shift+K`) without the popup; the popup warns when a page is already saved and offers **Save again**; Settings › Shortcuts shows the Chrome keys and the keys of the page; `⌘K` / `Ctrl+K` opens the save popup on any page and the command palette on Tab Warehouse.
+- **Unreleased** — Quick save (`⌘K` / `Ctrl+K`) without the popup; the popup warns when a page is already saved and offers **Save again**; Settings › Shortcuts shows the Chrome keys and the keys of the page; the command palette moves to `⌘⇧K` / `Ctrl+Shift+K`.
 - **2.4.0** — Full history in [CHANGELOG.md](CHANGELOG.md).
   - Command palette (⌘K) and `tw` search from the address bar.
   - Link notes and priority, a duplicate finder and your own tags (QA, UAT …).

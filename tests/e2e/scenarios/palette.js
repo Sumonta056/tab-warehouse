@@ -1,10 +1,7 @@
 import { base } from '../fixtures.js';
 
 const area = 'palette';
-const openPal = async (t) => {
-  t.key(t.d.body, 'k', { metaKey: true });
-  await t.settle();
-};
+const openPal = (t) => t.palette();
 const items = (t) => t.$$('#palList .pal-item').map((o) => o.querySelector('.pal-t').textContent);
 const search = async (t, q) => {
   t.type(t.$('#palQ'), q);
@@ -14,7 +11,25 @@ const search = async (t, q) => {
 export default [
   {
     area,
-    name: 'palette: ⌘K opens it with focus in the box; empty box lists folders and places; Escape closes and gives focus back',
+    name: 'palette: no key on the page opens it (only the palette command does); the command closes an open menu',
+    page: 'newtab',
+    fixture: () => base(),
+    async run(t) {
+      for (const opts of [{ metaKey: true }, { metaKey: true, shiftKey: true }, { ctrlKey: true, shiftKey: true }]) t.key(t.d.body, 'k', opts);
+      await t.settle();
+      t.ok(!t.$('#palette'), 'no palette from a page key');
+      await t.folder('Shop API');
+      t.context(t.row('31'));
+      await t.settle();
+      t.ok(t.$('.menu'), 'menu open');
+      await openPal(t);
+      t.ok(!t.$('.menu'), 'menu closed');
+      t.ok(t.$('#palette'), 'palette open');
+    },
+  },
+  {
+    area,
+    name: 'palette: the command opens it with focus in the box; empty box lists folders and places; Escape closes and gives focus back',
     page: 'newtab',
     fixture: () => base(),
     async run(t) {

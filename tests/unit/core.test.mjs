@@ -987,26 +987,14 @@ describe('shortcuts', () => {
   test('commandLabel names the known commands and falls back to the description', () => {
     assert.equal(commandLabel({ name: '_execute_action', description: '' }), 'Open the save popup');
     assert.equal(commandLabel({ name: 'quick-save', description: 'Save current tab without the popup' }), 'Quick save (no popup)');
+    assert.equal(commandLabel({ name: 'palette', description: 'x' }), 'Open the command palette (on Tab Warehouse)');
     assert.equal(commandLabel({ name: 'other', description: 'Do a thing' }), 'Do a thing');
     assert.equal(commandLabel({ name: 'other' }), 'other');
-    assert.equal(commandLabel({ name: 'open', description: 'x' }), 'Open the popup (palette on this page)');
   });
 });
 
-describe('open command', async () => {
-  const { isPaletteRequest, openCommand, PALETTE_MSG } = await import('../../extension/lib/core.js');
-  const spy = (send) => {
-    const calls = { sent: [], popup: 0 };
-    return {
-      calls,
-      deps: {
-        send: (m) => (calls.sent.push(m), send(m)),
-        popup: async () => {
-          calls.popup++;
-        },
-      },
-    };
-  };
+describe('palette command', async () => {
+  const { isPaletteRequest, paletteCommand, PALETTE_MSG } = await import('../../extension/lib/core.js');
   test('isPaletteRequest matches only the open-palette message for this tab', () => {
     assert.equal(PALETTE_MSG, 'open-palette');
     assert.equal(isPaletteRequest({ type: 'open-palette', tabId: 5 }, 5), true);
@@ -1015,13 +1003,12 @@ describe('open command', async () => {
     assert.equal(isPaletteRequest({ type: 'open-palette' }, undefined), false);
     assert.equal(isPaletteRequest(null, 5), false);
   });
-  test('a page that answers true gets the palette and no popup', async () => {
-    const { calls, deps } = spy(async () => true);
-    assert.equal(await openCommand(5, deps), 'palette');
-    assert.deepEqual(calls.sent, [{ type: 'open-palette', tabId: 5 }]);
-    assert.equal(calls.popup, 0);
+  test('a page that answers true opens the palette', async () => {
+    const sent = [];
+    assert.equal(await paletteCommand(5, async (m) => (sent.push(m), true)), 'palette');
+    assert.deepEqual(sent, [{ type: 'open-palette', tabId: 5 }]);
   });
-  test('no listener (rejected or thrown), or any other answer, opens the popup', async () => {
+  test('no listener (rejected or thrown), or any other answer, does nothing', async () => {
     for (const send of [
       () => Promise.reject(new Error('Receiving end does not exist.')),
       () => {
@@ -1030,24 +1017,13 @@ describe('open command', async () => {
       async () => undefined,
       async () => 'yes',
     ]) {
-      const { calls, deps } = spy(send);
-      assert.equal(await openCommand(5, deps), 'popup');
-      assert.equal(calls.popup, 1);
+      assert.equal(await paletteCommand(5, send), 'none');
     }
   });
-  test('without a tab id it does not ask a page and opens the popup', async () => {
-    const { calls, deps } = spy(async () => true);
-    assert.equal(await openCommand(undefined, deps), 'popup');
-    assert.deepEqual(calls.sent, []);
-  });
-  test('a popup that cannot open is ignored', async () => {
-    const r = await openCommand(5, {
-      send: async () => undefined,
-      popup: async () => {
-        throw new Error('no window');
-      },
-    });
-    assert.equal(r, 'none');
+  test('without a tab id it does not ask a page', async () => {
+    const sent = [];
+    assert.equal(await paletteCommand(undefined, async (m) => (sent.push(m), true)), 'none');
+    assert.deepEqual(sent, []);
   });
 });
 

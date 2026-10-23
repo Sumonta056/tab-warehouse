@@ -12,9 +12,9 @@ import palette from './scenarios/palette.js';
 import envswitch from './scenarios/envswitch.js';
 import omnibox from './scenarios/omnibox.js';
 import tags from './scenarios/tags.js';
+import palettecmd from './scenarios/palettecmd.js';
 import quicksave from './scenarios/quicksave.js';
 import shortcuts from './scenarios/shortcuts.js';
-import opencmd from './scenarios/opencmd.js';
 
 const ALL = [
   ...newtab,
@@ -31,9 +31,9 @@ const ALL = [
   ...envswitch,
   ...omnibox,
   ...tags,
+  ...palettecmd,
   ...quicksave,
   ...shortcuts,
-  ...opencmd,
 ];
 const frame = document.getElementById('frame');
 const out = document.getElementById('results');
@@ -225,6 +225,11 @@ function makeT(scenario) {
     navTitles() {
       return t.$$('#nav .nav').map((n) => n.querySelector('.t').textContent);
     },
+    async palette() {
+      await t.w.eval("import('/extension/background.js')");
+      await t.w.__command('palette', { id: t.H.currentTabId });
+      await t.settle();
+    },
     async folder(title) {
       t.click(t.nav(title));
       await t.settle();
@@ -265,7 +270,7 @@ export async function run(filter) {
       confirm: true,
       activeTab: state.activeTab || null,
       commands: state.commands || null,
-      currentTabId: state.currentTabId ?? null,
+      currentTabId: state.currentTabId ?? 1,
       closed: false,
     };
     const t = makeT(s);

@@ -35,12 +35,12 @@
       "description": "Save current tab"
     },
     "quick-save": {
-      "suggested_key": { "default": "Ctrl+Shift+K", "mac": "Command+Shift+K" },
+      "suggested_key": { "default": "Ctrl+K", "mac": "Command+K" },
       "description": "Save current tab without the popup"
     },
-    "open": {
-      "suggested_key": { "default": "Ctrl+K", "mac": "Command+K" },
-      "description": "Open the save popup, or the command palette on Tab Warehouse"
+    "palette": {
+      "suggested_key": { "default": "Ctrl+Shift+K", "mac": "Command+Shift+K" },
+      "description": "Open the command palette on Tab Warehouse"
     }
   }
 }

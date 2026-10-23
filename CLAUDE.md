@@ -6,18 +6,18 @@ Bookmarks as a warehouse: a Home page (clock + link tiles), a resizable folder s
 
 ```
 extension/             Everything that ships; the Load unpacked folder. Paths below are relative to it.
-  manifest.json        MV3: newtab override + action popup + omnibox + ⌘⇧B / ⌘⇧K / ⌘K commands
+  manifest.json        MV3: newtab override + action popup + omnibox + ⌘⇧B / ⌘K / ⌘⇧K commands
   newtab.html/.css/.js The warehouse page (sidebar + folder page)
   home.js              Home view: clock, tiles, links list, default links
   board.js             Board view: one column of cards per folder
   settings.js          Settings view (right pane, 7 tabs); opened by the sidebar gear
   popup.html/.js       Toolbar popup: save the current tab into any folder, warns on duplicates
-  background.js        Service worker: `tw` omnibox, quick save (⌘⇧K), open command (⌘K)
+  background.js        Service worker: `tw` omnibox, quick save (⌘K), palette command (⌘⇧K)
   lib/core.js          Shared: settings schema, env detection, derive, sort, matrix, DOM helpers
   lib/transfer.js      Export (JSON w/ prefs, Netscape HTML) and merge-import
   lib/shared.css       Design tokens + shared components (.row, .badge, .btn, .menu, .toast)
   icons/               16/48/128 PNG
-tools/                 make-icons.py (build extension/icons/ from any logo), package.sh (release ZIP)
+tools/                 make-icons.py (build extension/icons/ from any logo), package.sh (release ZIP), set-shortcuts.js (console script that sets the keys)
 docs/                  Notes and requirements
 tests/                 run.sh · unit/ (node --test) · e2e/ (headless Chrome + fake chrome.* API)
 site/                  GitHub Pages website + live demo (site/build.sh, deployed by .github/workflows/pages.yml)

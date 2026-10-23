@@ -183,8 +183,8 @@
         return clone(
           H.commands || [
             { name: '_execute_action', description: 'Save current tab', shortcut: 'Ctrl+Shift+B' },
-            { name: 'quick-save', description: 'Save current tab without the popup', shortcut: 'Ctrl+Shift+K' },
-            { name: 'open', description: 'Open the save popup, or the command palette on Tab Warehouse', shortcut: 'Ctrl+K' },
+            { name: 'quick-save', description: 'Save current tab without the popup', shortcut: 'Ctrl+K' },
+            { name: 'palette', description: 'Open the command palette on Tab Warehouse', shortcut: 'Ctrl+Shift+K' },
           ],
         );
       },

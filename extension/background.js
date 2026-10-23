@@ -9,7 +9,7 @@ import {
   quickSave,
   quickSaveBadge,
   QUICK_BADGE_MS,
-  openCommand,
+  paletteCommand,
 } from './lib/core.js';
 
 chrome.omnibox.setDefaultSuggestion({ description: 'Search Tab Warehouse for <match>%s</match>' });
@@ -65,12 +65,12 @@ async function quickSaveTab() {
   flashBadge(tab?.id, quickSaveBadge(r));
 }
 
-async function openTab(tab) {
+async function paletteTab(tab) {
   const id = tab?.id ?? (await chrome.tabs.query({ active: true, currentWindow: true }))[0]?.id;
-  return openCommand(id, { send: (msg) => chrome.runtime.sendMessage(msg), popup: () => chrome.action.openPopup() });
+  return paletteCommand(id, (msg) => chrome.runtime.sendMessage(msg));
 }
 
 chrome.commands.onCommand.addListener((command, tab) => {
   if (command === 'quick-save') return quickSaveTab();
-  if (command === 'open') return openTab(tab);
+  if (command === 'palette') return paletteTab(tab);
 });

@@ -28,7 +28,7 @@ WHY TAB WAREHOUSE
 • Every URL in full. Nothing is cut, so you always see which host you are about to open.
 • Tags. Each link gets a PROD, TEST, STAGE or LOCAL badge, or a tag of your own such as QA, from rules you write.
 • Tag matrix. See the same page across all versions in one table, and jump from TEST to PROD in one click.
-• Find any link fast. Press Ctrl+K (⌘K on Mac) on the new tab page, or type "tw" and a space in the address bar.
+• Find any link fast. Press Ctrl+Shift+K (⌘⇧K on Mac) on the new tab page, or type "tw" and a space in the address bar.
 • No lock-in. Your links stay real Chrome bookmarks. They sync with your Google account and show in Chrome's bookmark manager. Remove the extension and nothing is lost.
 
 HOME
@@ -53,13 +53,13 @@ FOLDER PAGE
 • Inline edit, right-click menus, a filter, Open all and Copy all URLs.
 
 FIND LINKS
-• Command palette: press Ctrl+K (⌘K on Mac) to search links, folders and settings. Enter opens the link.
+• Command palette: press Ctrl+Shift+K (⌘⇧K on Mac) to search links, folders and settings. Enter opens the link.
 • Address bar: type "tw", a space and some text to see up to 5 matching links.
 • Search matches the title, the URL, the folder, the note and the tag.
 
 SAVE THE CURRENT TAB
-• Press Ctrl+Shift+B (⌘⇧B on Mac) or Ctrl+K (⌘K) to save the current tab into any folder, or create a new folder by name. The popup warns when the page is already saved.
-• Press Ctrl+Shift+K (⌘⇧K) to save the current tab at once, without the popup.
+• Press Ctrl+Shift+B (⌘⇧B on Mac) to save the current tab into any folder, or create a new folder by name. The popup warns when the page is already saved.
+• Press Ctrl+K (⌘K) to save the current tab at once, without the popup.
 • Add a note and a priority when you save.
 • Open the same page on your other versions (live, test, staging, local) with one click.
 
@@ -102,12 +102,12 @@ Tab Warehouse replaces the new tab page with a bookmark manager: it shows, organ
 
 **Permission justification:**
 
-| Permission  | Justification                                                                                                                                                                                                                             |
-| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `bookmarks` | The extension is a bookmark manager. It reads the bookmark tree to show folders and links, and creates, edits, moves and deletes bookmarks when the user asks.                                                                            |
-| `storage`   | Saves the user's preferences on the device: sidebar order, categories, tag rules and custom tags, link notes and priorities, Home look, custom icons and the Home background image. No bookmark titles or URLs are stored.                |
-| `favicon`   | Shows each site's icon next to its link, from Chrome's own favicon cache.                                                                                                                                                                 |
-| `activeTab` | When the user clicks the toolbar button or presses one of its shortcuts (Ctrl+Shift+B, Ctrl+K, Ctrl+Shift+K), the extension reads the current tab's title and URL so the user can save it as a bookmark (quick save creates it directly). |
+| Permission  | Justification                                                                                                                                                                                                               |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `bookmarks` | The extension is a bookmark manager. It reads the bookmark tree to show folders and links, and creates, edits, moves and deletes bookmarks when the user asks.                                                              |
+| `storage`   | Saves the user's preferences on the device: sidebar order, categories, tag rules and custom tags, link notes and priorities, Home look, custom icons and the Home background image. No bookmark titles or URLs are stored.  |
+| `favicon`   | Shows each site's icon next to its link, from Chrome's own favicon cache.                                                                                                                                                   |
+| `activeTab` | When the user clicks the toolbar button or presses one of its shortcuts (Ctrl+Shift+B, Ctrl+K), the extension reads the current tab's title and URL so the user can save it as a bookmark (quick save creates it directly). |
 
 **Host permissions:** none.
 

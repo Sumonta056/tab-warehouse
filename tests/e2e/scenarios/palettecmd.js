@@ -1,18 +1,18 @@
 import { base } from '../fixtures.js';
 
-const area = 'open command';
+const area = 'palette command';
 const own = () => ({ ...base(), currentTabId: 5 });
 
 async function command(t, tab) {
   await t.w.eval("import('/extension/background.js')");
-  await t.w.__command('open', tab);
+  await t.w.__command('palette', tab);
   await t.settle();
 }
 
 export default [
   {
     area,
-    name: 'open command: on the Tab Warehouse tab it opens the palette, not the popup',
+    name: 'palette command: on the Tab Warehouse tab it opens the palette, also while the page has no focus',
     page: 'newtab',
     fixture: own,
     async run(t) {
@@ -29,36 +29,29 @@ export default [
   },
   {
     area,
-    name: 'open command: for another tab it opens the popup and no palette',
+    name: 'palette command: on another tab nothing opens',
     page: 'newtab',
     fixture: own,
     async run(t) {
       await command(t, { id: 9, url: 'https://github.com/' });
-      t.eq(t.H.popupOpened, 1, 'popup opened');
+      t.ok(!t.H.popupOpened, 'no popup');
       t.ok(!t.$('#palette'), 'no palette on the warehouse page');
-    },
-  },
-  {
-    area,
-    name: 'open command: without a tab it uses the active tab, and a failing popup is ignored',
-    page: 'newtab',
-    fixture: () => ({ ...own(), activeTab: { id: 5, url: 'chrome://newtab/' } }),
-    async run(t) {
-      await command(t);
-      t.ok(t.$('#palette'), 'active tab is this page, palette open');
-      t.key(t.$('#palQ'), 'Escape');
-      await t.settle();
-      t.H.activeTab = { id: 9, url: 'https://example.com/' };
-      t.H.openPopupFails = true;
-      await command(t);
-      t.ok(!t.$('#palette'), 'no palette for another tab');
-      t.ok(!t.H.popupOpened, 'popup could not open');
       t.ok(!t.H.badges, 'no badge');
     },
   },
   {
     area,
-    name: 'open command: opening the palette by message closes an open menu like ⌘K',
+    name: 'palette command: without a tab it uses the active tab',
+    page: 'newtab',
+    fixture: () => ({ ...own(), activeTab: { id: 5, url: 'chrome://newtab/' } }),
+    async run(t) {
+      await command(t);
+      t.ok(t.$('#palette'), 'active tab is this page, palette open');
+    },
+  },
+  {
+    area,
+    name: 'palette command: it closes an open menu like the page key',
     page: 'newtab',
     fixture: own,
     async run(t) {
@@ -73,7 +66,7 @@ export default [
   },
   {
     area,
-    name: 'open command: Settings › Shortcuts shows the open row with its key',
+    name: 'palette command: Settings › Shortcuts shows the palette row with its key',
     page: 'newtab',
     fixture: () => base(),
     async run(t) {
@@ -81,11 +74,11 @@ export default [
       await t.settle();
       t.click(t.$('.set-tab[data-tab="keys"]'));
       await t.settle();
-      const row = t.$('#chromeKeys .keys-row[data-cmd="open"]');
-      t.eq(row?.querySelector('.keys-what').textContent, 'Open the popup (palette on this page)', 'label');
+      const row = t.$('#chromeKeys .keys-row[data-cmd="palette"]');
+      t.eq(row?.querySelector('.keys-what').textContent, 'Open the command palette (on Tab Warehouse)', 'label');
       t.eq(
         [...row.querySelectorAll('kbd')].map((k) => k.textContent),
-        ['Ctrl', 'K'],
+        ['Ctrl', 'Shift', 'K'],
         'keys',
       );
     },

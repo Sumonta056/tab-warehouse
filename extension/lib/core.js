@@ -336,7 +336,7 @@ export function clampFont(v) {
 export const COMMAND_LABELS = {
   _execute_action: 'Open the save popup',
   'quick-save': 'Quick save (no popup)',
-  open: 'Open the popup (palette on this page)',
+  palette: 'Open the command palette (on Tab Warehouse)',
 };
 
 export function commandLabel(cmd) {
@@ -740,19 +740,12 @@ export function isPaletteRequest(msg, tabId) {
   return msg?.type === PALETTE_MSG && tabId != null && msg.tabId === tabId;
 }
 
-export async function openCommand(tabId, { send, popup }) {
-  if (tabId != null) {
-    const ok = await Promise.resolve()
-      .then(() => send({ type: PALETTE_MSG, tabId }))
-      .catch(() => false);
-    if (ok === true) return 'palette';
-  }
-  try {
-    await popup();
-    return 'popup';
-  } catch {
-    return 'none';
-  }
+export async function paletteCommand(tabId, send) {
+  if (tabId == null) return 'none';
+  const ok = await Promise.resolve()
+    .then(() => send({ type: PALETTE_MSG, tabId }))
+    .catch(() => false);
+  return ok === true ? 'palette' : 'none';
 }
 
 /* ---------- env matrix ---------- */
