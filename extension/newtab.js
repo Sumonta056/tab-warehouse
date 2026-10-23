@@ -161,7 +161,6 @@ function navOrder() {
 function bindHomeButtons() {
   const btn = $('#homeBtn');
   btn.addEventListener('click', () => {
-    if (query) clearQuery();
     select(HOME);
   });
   bindNavDrag(btn, {
@@ -172,11 +171,9 @@ function bindHomeButtons() {
     },
   });
   $('#boardBtn').addEventListener('click', () => {
-    if (query) clearQuery();
     select(BOARD);
   });
   $('#homeFab').addEventListener('click', () => {
-    if (query) clearQuery();
     select(HOME);
   });
 }
@@ -423,6 +420,7 @@ async function moveToCategory(s, target) {
 }
 
 async function select(s) {
+  if (query) clearQuery();
   current = s;
   filterQ = '';
   priF = 'all';
@@ -1585,11 +1583,9 @@ const paletteCtx = {
     } else chrome.tabs.update({ url });
   },
   go(where) {
-    if (query) clearQuery();
     select(where === 'board' ? BOARD : HOME);
   },
   select(s) {
-    if (query) clearQuery();
     select(s);
   },
   openSettings(key) {

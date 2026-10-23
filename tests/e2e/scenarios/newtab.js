@@ -203,6 +203,27 @@ export default [
   },
   {
     area,
+    name: 'search results: a sidebar folder click or j/k clears the search and opens that page',
+    page: 'newtab',
+    search: '?q=shop',
+    fixture: () => base(),
+    async run(t) {
+      t.click(t.nav('Shop API'));
+      await t.settle();
+      t.eq(t.$('.head h2')?.textContent, 'Shop API', 'folder page shown');
+      t.eq(t.$('#q').value, '', 'search box cleared');
+      t.ok(t.nav('Shop API').classList.contains('on'), 'folder marked');
+      t.type(t.$('#q'), 'shop');
+      await t.settle();
+      t.d.activeElement?.blur();
+      t.key(t.d, 'j');
+      await t.settle();
+      t.eq(t.$('#q').value, '', 'j clears the search');
+      t.ok(t.$('.head h2')?.textContent !== 'Search', 'j opens a page');
+    },
+  },
+  {
+    area,
     name: 'sidebar theme: a preset applies and saves at once, and survives reload',
     page: 'newtab',
     fixture: () => base(),
