@@ -59,15 +59,17 @@ async function mount(name, ready, motion, search = '') {
   const html = await pageHtml(name, motion);
   await new Promise((resolve) => {
     frame.onload = resolve;
-    if (!search) {
-      frame.srcdoc = html;
-      return;
-    }
+    if (search) {
+      frame.removeAttribute('srcdoc');
+      frame.src = 'about:blank';
+    } else frame.srcdoc = html;
+  });
+  if (search) {
     const d = frame.contentDocument;
     d.open();
     d.write(html.replace('<head>', `<head><script>history.replaceState(null, '', ${JSON.stringify(search)});</script>`));
     d.close();
-  });
+  }
   const w = frame.contentWindow;
   w.prompt = (_msg, def) => (window.__harness.answers.length ? window.__harness.answers.shift() : (def ?? null));
   w.confirm = () => window.__harness.confirm;
