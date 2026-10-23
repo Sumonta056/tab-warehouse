@@ -397,7 +397,7 @@ export default [
   },
   {
     area,
-    name: 'tags: the matrix empty state and the palette use the word Tags',
+    name: 'tags: the matrix empty state, the palette and Backup use the word tags',
     page: 'newtab',
     fixture: () => base(),
     async run(t) {
@@ -417,6 +417,13 @@ export default [
         t.$$('#palList .pal-item').some((i) => i.textContent.includes('Settings › Tags')),
         'palette place',
       );
+      t.key(t.$('#palQ'), 'Escape');
+      await t.settle();
+      t.click(t.$('#settingsBtn'));
+      await t.settle();
+      t.click(t.$('.set-tab[data-tab="backup"]'));
+      await t.settle();
+      t.ok(t.$('#page').textContent.includes('JSON keeps sidebar order, categories, per-folder sort, tags and link notes.'), 'backup text');
     },
   },
 ];

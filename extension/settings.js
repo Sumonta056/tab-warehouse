@@ -1177,7 +1177,7 @@ const VIEWS = {
         { class: 'set-col' },
         card(
           'Export',
-          "JSON keeps sidebar order, categories, per-folder sort and env rules. HTML is Chrome's own bookmark format.",
+          "JSON keeps sidebar order, categories, per-folder sort, tags and link notes. HTML is Chrome's own bookmark format.",
           h(
             'div',
             { class: 'set-row' },
