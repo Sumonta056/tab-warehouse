@@ -90,6 +90,12 @@ async function boot() {
   bindGlobal();
   bindHomeButtons();
   bindResizer();
+  const q0 = new URLSearchParams(location.search).get('q')?.trim();
+  if (q0) {
+    qInput.value = q0;
+    query = q0.toLowerCase();
+    renderPage();
+  }
 }
 
 async function refresh() {

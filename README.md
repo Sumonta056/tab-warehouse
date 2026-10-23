@@ -188,6 +188,7 @@ Coming soon.
 | `⌘⇧B` / `Ctrl+Shift+B`            | Open the save popup                          |
 | `⌘K` / `Ctrl+K`                   | Open the command palette                     |
 | `⌘Enter` (in the palette)         | Open the link in a background tab            |
+| `tw` + space (in the address bar) | Search all folders from the address bar      |
 | `/`                               | Search all folders                           |
 | `Enter` (in search)               | Open the first result                        |
 | `Esc`                             | Clear search or filter; close Settings       |
@@ -211,6 +212,8 @@ Tab Warehouse has no server, no account, no analytics and no tracking. It does n
 | `storage`   | Save sidebar order, per-folder preferences, env rules, link notes and the Home look |
 | `favicon`   | Show site icons from Chrome's own favicon cache                                     |
 | `activeTab` | Read the current tab's title and URL, only when you open the popup                  |
+
+The extension has a background service worker (`background.js`) only for the address bar search (`tw`). It reads your bookmarks on each keystroke and keeps nothing. The `omnibox` key is not a permission and shows no install warning.
 
 ## How it works
 

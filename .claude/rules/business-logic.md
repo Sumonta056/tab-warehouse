@@ -56,6 +56,15 @@ Every rule here has at least one test. If you change a rule, change its test in 
 - Escape or a click outside the box closes the palette and gives focus back to where it was. Escape in the palette does not also close Settings.
 - No result: "Nothing matches. Try part of a name, host or note.".
 
+## Address bar search
+
+- Keyword `tw` (`manifest.json` `omnibox`). Type `tw`, a space, then text in Chrome's address bar. `background.js` is a module service worker that exists only for this.
+- On each keystroke the worker reads settings, the bookmark tree and `linkMeta` fresh (no cache) and builds the sidebar sections without the Home folder. `omniboxSuggestions()` uses `searchLinks()` (same match as the palette), puts links whose title has every term first, and returns at most 5 (`OMNI_MAX`). Empty text → no suggestion.
+- A suggestion is `Title <dim>LABEL · Folder › Section</dim> <url>address</url>`; the title (or the address when there is no title) and the address mark the matched terms with `<match>`. Chrome reads the description as XML, so every title, URL and crumb goes through `xmlEscape()`.
+- The default row says "Search Tab Warehouse for <text>".
+- Enter (`omniboxTarget()`): a suggestion opens its URL; typed text that is not a `scheme://` address opens `newtab.html?q=<text>`. `disposition` picks the tab: `currentTab` → `chrome.tabs.update`, `newForegroundTab` → `chrome.tabs.create({ active: true })`, `newBackgroundTab` → `chrome.tabs.create({ active: false })`.
+- The new-tab page with `?q=<text>` puts the text in the sidebar search box and shows the global search results. Without `q` it opens Home as before.
+
 ## Duplicate links
 
 - Settings › Duplicates (its own tab, after Bookmarks) has the **Duplicate links (n)** card (`#dupCard`). It checks every link under the root folder, in any depth, except the Home folder. n = number of groups.

@@ -5,6 +5,13 @@
   "version": "2.3.0",
   "description": "Bookmark manager and new tab page for developers: folders, full URLs, PROD/TEST/STAGE/LOCAL env tags, env matrix, drag and drop.",
   "permissions": ["bookmarks", "storage", "favicon", "activeTab"],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "omnibox": {
+    "keyword": "tw"
+  },
   "chrome_url_overrides": {
     "newtab": "newtab.html"
   },

@@ -9,8 +9,22 @@ import notes from './scenarios/notes.js';
 import duplicates from './scenarios/duplicates.js';
 import palette from './scenarios/palette.js';
 import envswitch from './scenarios/envswitch.js';
+import omnibox from './scenarios/omnibox.js';
 
-const ALL = [...newtab, ...sections, ...categories, ...home, ...popup, ...environments, ...board, ...notes, ...duplicates, ...palette, ...envswitch];
+const ALL = [
+  ...newtab,
+  ...sections,
+  ...categories,
+  ...home,
+  ...popup,
+  ...environments,
+  ...board,
+  ...notes,
+  ...duplicates,
+  ...palette,
+  ...envswitch,
+  ...omnibox,
+];
 const frame = document.getElementById('frame');
 const out = document.getElementById('results');
 const summary = document.getElementById('summary');
@@ -41,11 +55,18 @@ async function pageHtml(name, motion = false) {
   return pages[key];
 }
 
-async function mount(name, ready, motion) {
+async function mount(name, ready, motion, search = '') {
   const html = await pageHtml(name, motion);
   await new Promise((resolve) => {
     frame.onload = resolve;
-    frame.srcdoc = html;
+    if (!search) {
+      frame.srcdoc = html;
+      return;
+    }
+    const d = frame.contentDocument;
+    d.open();
+    d.write(html.replace('<head>', `<head><script>history.replaceState(null, '', ${JSON.stringify(search)});</script>`));
+    d.close();
   });
   const w = frame.contentWindow;
   w.prompt = (_msg, def) => (window.__harness.answers.length ? window.__harness.answers.shift() : (def ?? null));
@@ -181,7 +202,7 @@ function makeT(scenario) {
         name === 'popup'
           ? (d) => d.querySelector('#folders')?.children.length || d.querySelector('#page .muted')
           : (d) => d.querySelector('#page')?.children.length;
-      return mount(name, opts.ready || ready, !!scenario.motion);
+      return mount(name, opts.ready || ready, !!scenario.motion, opts.search ?? scenario.search);
     },
     async reload(name = scenario.page) {
       return t.open(name);
