@@ -150,7 +150,11 @@ export default [
     fixture: () => {
       const f = base({
         extraRoot: [
-          F('80', 'Mixed', [L('81', 'a PROD', 'https://www.example.com/a'), L('82', 'b PROD', 'https://www.example.com/b'), L('83', 'c TEST', 'https://test.example.com/c')]),
+          F('80', 'Mixed', [
+            L('81', 'a PROD', 'https://www.example.com/a'),
+            L('82', 'b PROD', 'https://www.example.com/b'),
+            L('83', 'c TEST', 'https://test.example.com/c'),
+          ]),
         ],
         settings: { folders: { 80: { sort: 'env' } } },
       });
