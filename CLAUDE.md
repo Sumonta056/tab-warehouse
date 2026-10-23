@@ -21,7 +21,7 @@ docs/                  Notes and requirements
 tests/                 run.sh · unit/ (node --test) · e2e/ (headless Chrome + fake chrome.* API)
 site/                  GitHub Pages website + live demo (site/build.sh, deployed by .github/workflows/pages.yml)
 .claude/rules/         Always-on conventions; business-logic.md is the behaviour spec
-.claude/skills/        Workflows: add-feature, regression-check, debug-extension, release, update-website
+.claude/skills/        Workflows: add-feature, regression-check, debug-extension, release, update-website, web-store
 .claude/agents/        feature-builder (implements), regression-guard (verifies)
 ```
 
