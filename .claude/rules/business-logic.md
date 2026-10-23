@@ -85,6 +85,15 @@ Every rule here has at least one test. If you change a rule, change its test in 
 - Empty states offer **Add examples** (neutral `example.com` / `localhost:3000` data).
 - Copy or paste: **Copy to clipboard** writes `envText()` (a `#` header per list; `pattern LABEL` lines; `PROD TEST STAGE LOCAL` host lines with `-` for none) to the box and the clipboard. **Import** parses with `parseEnvText()` (comments/blank lines ignored, any order, bad lines counted), replaces both lists and shows "Imported N labels and M sites[. Skipped K lines …]" with Undo. Text with no valid line imports nothing and says so.
 
+## Custom tags
+
+- `settings.customTags = [{ name, plain, color }]`, default `[]`. Only custom tags are stored; the built-ins stay `ENVS` (PROD, TEST, STAGE, LOCAL) with fixed names and colors. `tagNames(settings)` = built-ins, then custom tags in their saved order. `tagPlain()` gives the plain name (`ENV_NAMES` for built-ins, the custom `plain`, else the name).
+- Name (`tagNameError()`): 1–8 capital letters or digits; not `PROD TEST STAGE LOCAL DEV GH NONE` or a color word; unique. `cleanTags()` upper-cases, drops bad or repeated names, cuts `plain` to 40 characters and replaces an unknown color with `teal`.
+- Colors: `TAG_COLORS` = teal, pink, yellow, red, cyan, grey (never the env colors).
+- A custom tag comes **only from an address rule** (`envRules` `{ pattern, env: 'QA' }`). Title words stay PROD/TEST/STAGE/DEV for the built-ins.
+- Sites: a `hostMap` row may hold a key for each custom tag. `deriveUrl()`, `switchTargets()` and `buildMatrix()` take the tag list; Environment sort ranks built-ins, then custom tags, then unknown tags with the untagged links.
+- Text format: with custom tags, `envText()` starts with `# Tags: NAME color plain name` lines (`QA teal QA team`), and the sites header names the columns (`# Same site in each version: PROD TEST STAGE LOCAL QA (- for none)`). `parseEnvText(text, known)` reads tag lines first (any order), returns new tags in `tags`, accepts rules for built-in, known and new tags, reads site rows by the header columns (old text without a header = the 4 built-ins), drops columns of unknown tags and skips a row that is then empty.
+
 ## Text size
 
 - `settings.fontSide`, `settings.fontPage` and `settings.fontBoard` are percents (80–140, default 100; `clampFont()`; bad values → 100).

@@ -51,6 +51,11 @@ import {
   DEFAULT_SIDE_LOOK,
   DEFAULT_BOARD,
   sideLookVars,
+  TAG_COLORS,
+  tagNameError,
+  cleanTags,
+  tagNames,
+  tagPlain,
 } from '../../extension/lib/core.js';
 
 const SAMPLE_ENV_RULES = [
@@ -572,6 +577,7 @@ describe('settings storage', () => {
     assert.deepEqual(s.home, DEFAULT_HOME);
     assert.deepEqual(s.envRules, [], 'no default labels');
     assert.deepEqual(s.hostMap, [], 'no default sites');
+    assert.deepEqual(s.customTags, [], 'no custom tags');
   });
   test('saveSettings merges a patch and keeps other keys', async () => {
     await saveSettings({ order: ['a'] });
@@ -668,14 +674,137 @@ describe('environment labels: explain and text format', () => {
     const text = envText(rules, map);
     assert.match(text, /^# Labels/);
     assert.ok(text.includes('shop.example.com test.shop.example.com - localhost:3000'));
-    assert.deepEqual(parseEnvText(text), { rules, hostMap: map, skipped: 0 });
+    assert.deepEqual(parseEnvText(text), { rules, hostMap: map, tags: [], skipped: 0 });
   });
   test('parseEnvText skips bad lines, ignores comments and blanks, lower-cases, accepts any order', () => {
     const p = parseEnvText('a.com B.COM - -\n# note\n\nFoo.com prod\nthis is bad\nx.com NOPE\n- - - -');
     assert.deepEqual(p.rules, [{ pattern: 'foo.com', env: 'PROD' }]);
     assert.deepEqual(p.hostMap, [{ PROD: 'a.com', TEST: 'b.com', STAGE: '', LOCAL: '' }]);
     assert.equal(p.skipped, 3);
-    assert.deepEqual(parseEnvText(''), { rules: [], hostMap: [], skipped: 0 });
+    assert.deepEqual(parseEnvText(''), { rules: [], hostMap: [], tags: [], skipped: 0 });
+  });
+});
+
+describe('custom tags', () => {
+  const QA = { name: 'QA', plain: 'QA team', color: 'teal' };
+  const tags = [...ENVS, 'QA'];
+  const rules = [
+    { pattern: 'qa.example.com', env: 'QA' },
+    { pattern: 'test.', env: 'TEST' },
+    { pattern: 'shop.example.com', env: 'PROD' },
+  ];
+  const map = [{ PROD: 'shop.example.com', TEST: 'test.shop.example.com', STAGE: '', LOCAL: '', QA: 'qa.example.com' }];
+
+  test('tagNameError: 1 to 8 capital letters or digits, not reserved, not taken', () => {
+    assert.equal(tagNameError('QA'), '');
+    assert.equal(tagNameError('UAT2'), '');
+    assert.equal(tagNameError('ABCDEFGH'), '');
+    assert.equal(tagNameError(''), 'Use 1 to 8 capital letters or digits.');
+    assert.equal(tagNameError('ABCDEFGHI'), 'Use 1 to 8 capital letters or digits.');
+    assert.equal(tagNameError('qa'), 'Use 1 to 8 capital letters or digits.');
+    assert.equal(tagNameError('Q-A'), 'Use 1 to 8 capital letters or digits.');
+    for (const n of ['PROD', 'TEST', 'STAGE', 'LOCAL', 'DEV', 'GH', 'NONE', 'TEAL']) assert.equal(tagNameError(n), `${n} is a built-in name.`, n);
+    assert.equal(tagNameError('QA', ['QA']), 'There is already a tag QA.');
+  });
+  test('TAG_COLORS are 6 fixed colors', () => assert.deepEqual(TAG_COLORS, ['teal', 'pink', 'yellow', 'red', 'cyan', 'grey']));
+  test('cleanTags keeps valid unique tags, upper-cases names, fixes colors, cuts plain names', () => {
+    assert.deepEqual(
+      cleanTags([
+        QA,
+        { name: ' uat ', plain: ' Users ', color: 'nope' },
+        { name: 'QA', plain: 'again', color: 'red' },
+        { name: 'PROD', color: 'red' },
+        { name: 'TOOLONGNAME', color: 'red' },
+        { name: 7 },
+        null,
+        { name: 'DEMO', plain: 'x'.repeat(50), color: 'pink' },
+      ]),
+      [QA, { name: 'UAT', plain: 'Users', color: 'teal' }, { name: 'DEMO', plain: 'x'.repeat(40), color: 'pink' }],
+    );
+    assert.deepEqual(cleanTags('bad'), []);
+    assert.deepEqual(cleanTags(undefined), []);
+  });
+  test('tagNames: built-ins first, then custom tags in their order', () => {
+    assert.deepEqual(tagNames({ customTags: [QA, { name: 'UAT' }] }), ['PROD', 'TEST', 'STAGE', 'LOCAL', 'QA', 'UAT']);
+    assert.deepEqual(tagNames({}), ENVS);
+  });
+  test('tagPlain: built-in plain name, custom plain name, else the name', () => {
+    const s = { customTags: [QA, { name: 'UAT', plain: '', color: 'red' }] };
+    assert.equal(tagPlain(s, 'PROD'), 'Live');
+    assert.equal(tagPlain(s, 'QA'), 'QA team');
+    assert.equal(tagPlain(s, 'UAT'), 'UAT');
+  });
+  test('a custom tag comes only from an address rule, never from a title word', () => {
+    assert.equal(detectEnv({ url: 'https://qa.example.com/a' }, rules), 'QA');
+    assert.equal(detectEnv({ url: 'https://x.org/a', title: 'Admin QA' }, rules), '');
+  });
+  test('sortLinks env: custom tags after the built-ins, unknown tags with the untagged links', () => {
+    const links = [
+      L('1', 'n', 'https://none.org/1'),
+      L('2', 'q', 'https://qa.example.com/1'),
+      L('3', 'p', 'https://shop.example.com/1'),
+      L('4', 'g', 'https://gone.example.com/1'),
+    ];
+    const r = [...rules, { pattern: 'gone.example.com', env: 'GONE' }];
+    assert.deepEqual(
+      sortLinks(links, 'env', r, tags).map((x) => x.id),
+      ['3', '2', '1', '4'],
+    );
+    assert.deepEqual(
+      sortLinks(links, 'env', r).map((x) => x.id),
+      ['3', '1', '2', '4'],
+    );
+  });
+  test('buildMatrix has one cell per tag; a link with an unknown tag goes to rest', () => {
+    const links = [L('1', 'p', 'https://shop.example.com/a'), L('2', 'q', 'https://qa.example.com/a')];
+    const m = buildMatrix(links, rules, tags);
+    assert.deepEqual(Object.keys(m.rows[0].cells), tags);
+    assert.equal(m.rows[0].cells.QA[0].id, '2');
+    assert.deepEqual(
+      buildMatrix(links, rules).rest.map((x) => x.id),
+      ['2'],
+    );
+  });
+  test('deriveUrl and switchTargets use the custom column', () => {
+    assert.equal(deriveUrl('https://shop.example.com/a?b=1', 'QA', map, tags), 'https://qa.example.com/a?b=1');
+    assert.equal(deriveUrl('https://qa.example.com/a', 'TEST', map, tags), 'https://test.shop.example.com/a');
+    assert.equal(deriveUrl('https://qa.example.com/a', 'TEST', map), null, 'QA host is unknown without the tag list');
+    assert.deepEqual(switchTargets('https://qa.example.com/x', map, tags), {
+      from: 'QA',
+      to: [
+        { env: 'PROD', url: 'https://shop.example.com/x' },
+        { env: 'TEST', url: 'https://test.shop.example.com/x' },
+      ],
+    });
+  });
+  test('envText and parseEnvText round-trip custom tags, their rules and their site column', () => {
+    const text = envText(rules, map, [QA]);
+    assert.match(text, /^# Tags: NAME color plain name\nQA teal QA team\n/);
+    assert.ok(text.includes('# Same site in each version: PROD TEST STAGE LOCAL QA (- for none)'));
+    assert.ok(text.includes('shop.example.com test.shop.example.com - - qa.example.com'));
+    assert.deepEqual(parseEnvText(text), { rules, hostMap: map, tags: [QA], skipped: 0 });
+  });
+  test('parseEnvText: a rule for a tag that already exists imports without a tag line', () => {
+    assert.deepEqual(parseEnvText('qa.example.com QA', ['QA']).rules, [{ pattern: 'qa.example.com', env: 'QA' }]);
+    const p = parseEnvText('qa.example.com QA');
+    assert.deepEqual(p.rules, []);
+    assert.equal(p.skipped, 1);
+  });
+  test('parseEnvText: old text without a sites header reads 4 columns; a tag line already known is not added again', () => {
+    const p = parseEnvText('a.com b.com - -\nQA teal QA team', ['QA']);
+    assert.deepEqual(p.hostMap, [{ PROD: 'a.com', TEST: 'b.com', STAGE: '', LOCAL: '' }]);
+    assert.deepEqual(p.tags, []);
+    assert.equal(p.skipped, 0);
+  });
+  test('parseEnvText: a site column for an unknown tag is dropped; a row with only that column is skipped', () => {
+    const p = parseEnvText('# Same site in each version: PROD TEST STAGE LOCAL ZZ (- for none)\na.com - - - z.com\n- - - - z.com');
+    assert.deepEqual(p.hostMap, [{ PROD: 'a.com', TEST: '', STAGE: '', LOCAL: '' }]);
+    assert.equal(p.skipped, 1);
+  });
+  test('parseEnvText: a bad tag line is skipped', () => {
+    const p = parseEnvText('PROD red\nlower pink\nQA nocolor x');
+    assert.deepEqual(p.tags, []);
+    assert.equal(p.skipped, 3);
   });
 });
 

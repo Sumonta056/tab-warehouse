@@ -6,6 +6,40 @@ export const SORTS = { manual: 'Manual', name: 'Name', url: 'URL', env: 'Environ
 
 export const ENV_NAMES = { PROD: 'Live', TEST: 'Test', STAGE: 'Staging', LOCAL: 'Your computer' };
 
+export const TAG_COLORS = ['teal', 'pink', 'yellow', 'red', 'cyan', 'grey'];
+const TAG_RESERVED = [...ENVS, 'DEV', 'GH', 'NONE', ...TAG_COLORS.map((c) => c.toUpperCase())];
+const TAG_PLAIN_MAX = 40;
+
+export function tagNameError(name, taken = []) {
+  if (!/^[A-Z0-9]{1,8}$/.test(name)) return 'Use 1 to 8 capital letters or digits.';
+  if (TAG_RESERVED.includes(name)) return `${name} is a built-in name.`;
+  if (taken.includes(name)) return `There is already a tag ${name}.`;
+  return '';
+}
+
+export function cleanTags(list) {
+  const out = [];
+  for (const t of Array.isArray(list) ? list : []) {
+    const name = typeof t?.name === 'string' ? t.name.trim().toUpperCase() : '';
+    const taken = out.map((x) => x.name);
+    if (tagNameError(name, taken)) continue;
+    out.push({
+      name,
+      plain: typeof t.plain === 'string' ? t.plain.trim().slice(0, TAG_PLAIN_MAX) : '',
+      color: TAG_COLORS.includes(t.color) ? t.color : TAG_COLORS[0],
+    });
+  }
+  return out;
+}
+
+export function tagNames(settings) {
+  return [...ENVS, ...(settings?.customTags || []).map((t) => t.name)];
+}
+
+export function tagPlain(settings, name) {
+  return ENV_NAMES[name] || (settings?.customTags || []).find((t) => t.name === name)?.plain || name;
+}
+
 export const DEFAULT_HOME = {
   folderId: null,
   color: '#185a63',
@@ -80,6 +114,7 @@ const DEFAULT_SETTINGS = {
   folders: {}, // folderId -> { sort, view: 'list'|'matrix', show: 'title'|'url', collapsedGroups: {} }
   envRules: [], // ordered [{ pattern, env }]; first host-substring match wins
   hostMap: [], // [{ PROD, TEST, STAGE, LOCAL }] hosts of one site; '' = none
+  customTags: [],
   showFavicons: true,
   theme: 'blue',
   sideLook: DEFAULT_SIDE_LOOK,
@@ -167,37 +202,61 @@ export function detectEnv(bm, rules) {
   return explainEnv(bm, rules).env;
 }
 
-export function envText(rules, hostMap) {
+const SITES_HEAD = /^#\s*Same site in each version:\s*([^(]*)/;
+
+export function envText(rules, hostMap, customTags = []) {
+  const cols = [...ENVS, ...customTags.map((t) => t.name)];
   return [
+    ...(customTags.length ? ['# Tags: NAME color plain name', ...customTags.map((t) => `${t.name} ${t.color} ${t.plain}`.trim()), ''] : []),
     '# Labels: text-in-address LABEL (first match wins)',
     ...rules.map((r) => `${r.pattern} ${r.env}`),
     '',
-    '# Same site in each version: PROD TEST STAGE LOCAL (- for none)',
-    ...hostMap.map((r) => ENVS.map((e) => r[e] || '-').join(' ')),
+    `# Same site in each version: ${cols.join(' ')} (- for none)`,
+    ...hostMap.map((r) => cols.map((e) => r[e] || '-').join(' ')),
   ].join('\n');
 }
 
-export function parseEnvText(text) {
+export function parseEnvText(text, known = []) {
+  const lines = (text || '').split('\n').map((raw) => raw.trim());
+  const tags = [];
+  let cols = ENVS;
+  let skipped = 0;
+  const rest = [];
+  for (const line of lines) {
+    const head = line.match(SITES_HEAD);
+    if (head) cols = head[1].split(/\s+/).filter(Boolean);
+    const parts = line.split(/\s+/).filter(Boolean);
+    if (!parts.length || parts[0].startsWith('#')) continue;
+    if (parts.length >= 2 && TAG_COLORS.includes(parts[1].toLowerCase())) {
+      const [name, color, ...plain] = parts;
+      const taken = tags.map((t) => t.name);
+      if (known.includes(name)) continue;
+      if (tagNameError(name, taken)) skipped++;
+      else tags.push({ name, color: color.toLowerCase(), plain: plain.join(' ').slice(0, TAG_PLAIN_MAX) });
+      continue;
+    }
+    rest.push(parts);
+  }
+  const names = [...ENVS, ...known, ...tags.map((t) => t.name)];
   const rules = [],
     hostMap = [];
-  let skipped = 0;
-  for (const raw of (text || '').split('\n')) {
-    const parts = raw.trim().split(/\s+/).filter(Boolean);
-    if (!parts.length || parts[0].startsWith('#')) continue;
+  for (const parts of rest) {
     const env = (parts[1] || '').toUpperCase();
-    if (parts.length === 2 && ENVS.includes(env)) rules.push({ pattern: parts[0].toLowerCase(), env });
-    else if (parts.length === ENVS.length && parts.some((p) => p !== '-'))
-      hostMap.push(Object.fromEntries(ENVS.map((e, i) => [e, parts[i] === '-' ? '' : parts[i].toLowerCase()])));
+    const row =
+      parts.length === cols.length &&
+      Object.fromEntries(cols.flatMap((e, i) => (names.includes(e) ? [[e, parts[i] === '-' ? '' : parts[i].toLowerCase()]] : [])));
+    if (parts.length === 2 && names.includes(env)) rules.push({ pattern: parts[0].toLowerCase(), env });
+    else if (row && Object.values(row).some(Boolean)) hostMap.push(row);
     else skipped++;
   }
-  return { rules, hostMap, skipped };
+  return { rules, hostMap, tags, skipped };
 }
 
 // Derive the same resource on another env. Returns url or null.
-export function deriveUrl(url, targetEnv, hostMap) {
+export function deriveUrl(url, targetEnv, hostMap, tags = ENVS) {
   const host = hostOf(url);
   for (const row of hostMap) {
-    const fromEnv = ENVS.find((e) => (row[e] || '').toLowerCase() === host);
+    const fromEnv = tags.find((e) => (row[e] || '').toLowerCase() === host);
     if (!fromEnv || fromEnv === targetEnv) continue;
     const toHost = row[targetEnv];
     if (!toHost) return null;
@@ -223,15 +282,16 @@ const GOOGLE_APPS = {
 };
 const GOOGLE_DOCS = { document: 'docs', spreadsheets: 'sheets', presentation: 'slides', forms: 'forms' };
 
-export function switchTargets(url, hostMap) {
+export function switchTargets(url, hostMap, tags = ENVS) {
   const host = hostOf(url);
-  const row = host && hostMap.find((r) => ENVS.some((e) => (r[e] || '').toLowerCase() === host));
+  const row = host && hostMap.find((r) => tags.some((e) => (r[e] || '').toLowerCase() === host));
   if (!row) return null;
-  const from = ENVS.find((e) => (row[e] || '').toLowerCase() === host);
+  const from = tags.find((e) => (row[e] || '').toLowerCase() === host);
   return {
     from,
-    to: ENVS.filter((e) => e !== from && row[e])
-      .map((env) => ({ env, url: deriveUrl(url, env, hostMap) }))
+    to: tags
+      .filter((e) => e !== from && row[e])
+      .map((env) => ({ env, url: deriveUrl(url, env, hostMap, tags) }))
       .filter((x) => x.url),
   };
 }
@@ -391,7 +451,7 @@ export function imageSaveError(err) {
 
 const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
 
-export function sortLinks(links, sort, rules) {
+export function sortLinks(links, sort, rules, tags = ENVS) {
   const cmp = collator.compare;
   const by = (key, compare) =>
     links
@@ -413,8 +473,8 @@ export function sortLinks(links, sort, rules) {
     case 'env':
       return by(
         (bm) => {
-          const e = detectEnv(bm, rules);
-          return [e ? ENVS.indexOf(e) : ENVS.length, pathKey(bm.url)];
+          const i = tags.indexOf(detectEnv(bm, rules));
+          return [i < 0 ? tags.length : i, pathKey(bm.url)];
         },
         (a, b) => a[0] - b[0] || cmp(a[1], b[1]),
       );
@@ -536,19 +596,19 @@ export function findDuplicates(links, loose = false) {
 
 /* ---------- env matrix ---------- */
 // Groups links by path (ignoring host) → rows with one cell per env. Links without an env go to `rest`.
-export function buildMatrix(links, rules) {
+export function buildMatrix(links, rules, tags = ENVS) {
   const rows = new Map();
   const rest = [];
   for (const bm of links) {
     const env = detectEnv(bm, rules);
     const key = pathKey(bm.url);
-    if (!env || !key) {
+    if (!tags.includes(env) || !key) {
       rest.push(bm);
       continue;
     }
     // strip query that only differs by env-ish params? keep exact; show params in cell label
     const base = key.split('?')[0];
-    const row = rows.get(base) || { key: base, cells: { PROD: [], TEST: [], STAGE: [], LOCAL: [] } };
+    const row = rows.get(base) || { key: base, cells: Object.fromEntries(tags.map((t) => [t, []])) };
     row.cells[env].push(bm);
     rows.set(base, row);
   }
