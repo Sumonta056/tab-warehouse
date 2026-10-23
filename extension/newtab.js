@@ -34,6 +34,10 @@ import {
   priFirst,
   matchLink,
   priPicker,
+  duePicker,
+  dueState,
+  dueLabel,
+  gcalUrl,
   loadLinkMeta,
   setLinkMeta,
   searchLinks,
@@ -635,7 +639,11 @@ function renderBody() {
   if (!hasMeta) priF = 'all';
   const priMatch = (bm) => {
     const m = linkMeta[bm.id];
-    return priF === 'all' || (priF === 'note' ? !!m?.note : m?.pri === priF);
+    if (priF === 'all') return true;
+    if (priF === 'note') return !!m?.note;
+    if (priF === 'due') return !!m?.due;
+    if (priF === 'overdue') return dueState(m?.due) === 'overdue';
+    return m?.pri === priF;
   };
   const match = (bm) => matchLink(bm, linkMeta[bm.id]?.note, filterQ) && priMatch(bm);
   const links = s.all.filter(match);
@@ -653,7 +661,7 @@ function filtering() {
 }
 
 function priFilter() {
-  const opts = [['all', 'All'], ...PRIS.map((x) => [x, PRI_NAMES[x]]), ['note', 'Has note']];
+  const opts = [['all', 'All'], ...PRIS.map((x) => [x, PRI_NAMES[x]]), ['note', 'Has note'], ['overdue', 'Overdue'], ['due', 'Has due date']];
   return h(
     'div',
     { class: 'pri-filter', role: 'group', 'aria-label': 'Show' },
@@ -717,6 +725,15 @@ function priHeader(g, s, p, last) {
 async function setPri(id, pri) {
   linkMeta = await setLinkMeta(id, { ...linkMeta[id], pri });
   renderBody();
+}
+
+async function setDue(id, due) {
+  linkMeta = await setLinkMeta(id, { ...linkMeta[id], due });
+  renderBody();
+}
+
+function openCalendar(bm, meta) {
+  chrome.tabs.create({ url: gcalUrl({ title: bm.title, url: bm.url, note: meta?.note, due: meta?.due }) });
 }
 
 function renderParts(body, s, p, match) {
@@ -926,6 +943,8 @@ function renderRow(bm, s, p, { crumb = null, q = filterQ } = {}) {
     highlight(note, meta.note, q);
     txt.append(h('span', { class: 'note' }, svgIcon('note'), note));
   }
+  const due = dueState(meta?.due);
+  if (due) txt.append(h('span', { class: `due-chip ${due}`, title: meta.due }, svgIcon('calendar'), dueLabel(meta.due)));
   if (crumb) txt.append(h('span', { class: 'crumb' }, crumb));
   row.append(txt);
   const badge = linkBadge(env, bm.url, settings.customTags);
@@ -1212,7 +1231,7 @@ function clearMarks() {
 }
 
 /* ================= inline edit / add / rename ================= */
-function startEdit(bm, row, focusNote = false) {
+function startEdit(bm, row, focus = null) {
   if (editingId) return;
   editingId = bm.id;
   const meta = linkMeta[bm.id] || {};
@@ -1221,6 +1240,7 @@ function startEdit(bm, row, focusNote = false) {
   const urlIn = h('input', { type: 'url', class: 'url-in', value: bm.url || '' });
   const noteIn = h('textarea', { class: 'note-in', rows: '2', maxlength: String(NOTE_MAX), placeholder: 'Why you saved it, what to check…' });
   noteIn.value = meta.note || '';
+  const dueIn = duePicker(meta.due);
   const form = h(
     'form',
     { class: 'edit', novalidate: true },
@@ -1233,6 +1253,7 @@ function startEdit(bm, row, focusNote = false) {
       priPicker(pri, (v) => (pri = v)),
     ),
     h('label', {}, 'Note', noteIn),
+    h('div', { class: 'edit-due' }, 'Due date', dueIn.el),
     h(
       'div',
       { class: 'actions' },
@@ -1258,9 +1279,10 @@ function startEdit(bm, row, focusNote = false) {
     editingId = null;
     try {
       await chrome.bookmarks.update(bm.id, { title: titleIn.value.trim(), url });
-      linkMeta = await setLinkMeta(bm.id, { pri, note: noteIn.value });
+      linkMeta = await setLinkMeta(bm.id, { pri, note: noteIn.value, due: dueIn.value() });
       renderBody();
       toast('Saved');
+      if (dueIn.calendar()) openCalendar({ title: titleIn.value.trim(), url }, linkMeta[bm.id]);
     } catch (err) {
       toast(`Couldn't save: ${err.message}`);
       renderBody();
@@ -1278,9 +1300,9 @@ function startEdit(bm, row, focusNote = false) {
   row.querySelector('.txt').replaceWith(form);
   row.querySelector('.acts')?.remove();
   row.querySelector('.pri-bar')?.remove();
-  const first = focusNote ? noteIn : titleIn;
+  const first = focus === 'note' ? noteIn : focus === 'due' ? dueIn.date : titleIn;
   first.focus();
-  first.select();
+  if (first !== dueIn.date) first.select();
 }
 
 function addLink(s) {
@@ -1430,7 +1452,14 @@ function linkMenu(e, bm, row) {
     { label: 'Open in new tab', icon: 'external', run: () => chrome.tabs.create({ url: bm.url }) },
     { label: 'Copy URL', icon: 'copy', run: () => navigator.clipboard.writeText(bm.url).then(() => toast('URL copied')) },
     { label: 'Edit title / URL', icon: 'pencil', run: () => startEdit(bm, row) },
-    { label: linkMeta[bm.id]?.note ? 'Edit note' : 'Add note', icon: 'note', run: () => startEdit(bm, row, true) },
+    { label: linkMeta[bm.id]?.note ? 'Edit note' : 'Add note', icon: 'note', run: () => startEdit(bm, row, 'note') },
+    { label: linkMeta[bm.id]?.due ? 'Change due date' : 'Set due date', icon: 'calendar', run: () => startEdit(bm, row, 'due') },
+    ...(linkMeta[bm.id]?.due
+      ? [
+          { label: 'Add to Google Calendar', icon: 'calendar', run: () => openCalendar(bm, linkMeta[bm.id]) },
+          { label: 'Clear due date', run: () => setDue(bm.id, '') },
+        ]
+      : []),
     '-',
     ...[...PRIS, null]
       .filter((x) => x !== (linkMeta[bm.id]?.pri || null))

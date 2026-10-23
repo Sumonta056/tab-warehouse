@@ -199,6 +199,58 @@ export default [
   },
   {
     area,
+    name: 'due date: date and time are saved with the link; no calendar tab when the box is off',
+    page: 'popup',
+    fixture: () => base({ activeTab: tab }),
+    async run(t) {
+      const cal = t.$('#meta .due-cal-box');
+      t.ok(cal.disabled, 'calendar box disabled without a date');
+      t.ok(t.$('#meta .due-clr').hidden, 'clear hidden without a date');
+      t.type(t.$('#meta .due-date'), '2026-04-10');
+      t.type(t.$('#meta .due-time'), '10:00');
+      t.ok(!cal.disabled && !cal.checked, 'box enabled and off by default');
+      t.click(t.$('#save'));
+      await t.settle();
+      const saved = t.node('10').children.find((c) => c.url === tab.url);
+      t.eq(t.store.linkMeta?.[saved?.id]?.due, '2026-04-10T10:00', 'due stored');
+      t.ok(!t.tabs.some((x) => x.url?.includes('calendar.google.com')), 'no calendar tab');
+    },
+  },
+  {
+    area,
+    name: 'due date: "Also add to Google Calendar" opens the filled-in event after save',
+    page: 'popup',
+    fixture: () => base({ activeTab: tab }),
+    async run(t) {
+      t.type(t.$('#meta .due-date'), '2026-04-10');
+      t.click(t.$('#meta .due-cal-box'));
+      t.click(t.$('#save'));
+      await t.settle();
+      const saved = t.node('10').children.find((c) => c.url === tab.url);
+      t.eq(t.store.linkMeta?.[saved?.id]?.due, '2026-04-10', 'all-day due stored');
+      const cal = t.tabs.find((x) => x.url?.startsWith('https://calendar.google.com/calendar/render'));
+      t.ok(cal, 'calendar tab opened');
+      const q = new URL(cal?.url || 'https://x').searchParams;
+      t.eq(q.get('dates'), '20260410/20260411', 'all-day dates');
+      t.eq(q.get('text'), 'Deploy app PROD', 'event title is the link title');
+    },
+  },
+  {
+    area,
+    name: 'due date: clearing the date turns the calendar box off',
+    page: 'popup',
+    fixture: () => base({ activeTab: tab }),
+    async run(t) {
+      t.type(t.$('#meta .due-date'), '2026-04-10');
+      const cal = t.$('#meta .due-cal-box');
+      t.click(cal);
+      t.click(t.$('#meta .due-clr'));
+      t.ok(cal.disabled && !cal.checked, 'box off and disabled');
+      t.eq(t.$('#meta .due-date').value, '', 'date cleared');
+    },
+  },
+  {
+    area,
     name: 'no active tab shows a message and disables Save',
     page: 'popup',
     fixture: () => base({ activeTab: null }),

@@ -6,6 +6,7 @@ import popup from './scenarios/popup.js';
 import environments from './scenarios/environments.js';
 import board from './scenarios/board.js';
 import notes from './scenarios/notes.js';
+import due from './scenarios/due.js';
 import duplicates from './scenarios/duplicates.js';
 import palette from './scenarios/palette.js';
 import envswitch from './scenarios/envswitch.js';
@@ -24,6 +25,7 @@ const ALL = [
   ...environments,
   ...board,
   ...notes,
+  ...due,
   ...duplicates,
   ...palette,
   ...envswitch,

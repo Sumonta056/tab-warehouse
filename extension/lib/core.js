@@ -526,7 +526,76 @@ export function cleanMeta(m) {
   const note = typeof m.note === 'string' ? m.note.trim().slice(0, NOTE_MAX) : '';
   if (note) out.note = note;
   if (PRIS.includes(m.pri)) out.pri = m.pri;
+  if (isDue(m.due)) out.due = m.due;
   return Object.keys(out).length ? out : null;
+}
+
+export const DUE_SOON_DAYS = 7;
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const pad2 = (n) => String(n).padStart(2, '0');
+
+function parseDue(due) {
+  const m = typeof due === 'string' && /^(\d{4})-(\d{2})-(\d{2})(?:T(\d{2}):(\d{2}))?$/.exec(due);
+  if (!m) return null;
+  const [y, mo, d] = [+m[1], +m[2], +m[3]];
+  const day = new Date(y, mo - 1, d);
+  if (day.getFullYear() !== y || day.getMonth() !== mo - 1 || day.getDate() !== d) return null;
+  if (m[4] === undefined) return { day, at: null };
+  const [hh, mm] = [+m[4], +m[5]];
+  if (hh > 23 || mm > 59) return null;
+  return { day, at: new Date(y, mo - 1, d, hh, mm) };
+}
+
+export function isDue(due) {
+  return !!parseDue(due);
+}
+
+const daysBetween = (a, b) => Math.round((b - a) / 864e5);
+const startOfDay = (t) => new Date(t.getFullYear(), t.getMonth(), t.getDate());
+
+export function dueState(due, now = new Date()) {
+  const p = parseDue(due);
+  if (!p) return null;
+  const today = startOfDay(now);
+  if (p.at ? p.at < now : p.day < today) return 'overdue';
+  if (+p.day === +today) return 'today';
+  return daysBetween(today, p.day) <= DUE_SOON_DAYS ? 'soon' : 'later';
+}
+
+export function dueLabel(due, now = new Date()) {
+  const p = parseDue(due);
+  if (!p) return '';
+  const time = p.at ? `${pad2(p.at.getHours())}:${pad2(p.at.getMinutes())}` : '';
+  const withTime = (s) => (time ? `${s} ${time}` : s);
+  const date = `${p.day.getDate()} ${MONTHS[p.day.getMonth()]}`;
+  const state = dueState(due, now);
+  if (state === 'overdue') {
+    const late = daysBetween(p.day, startOfDay(now));
+    if (!late) return `Overdue · today ${time}`;
+    return `${withTime(`Overdue · ${date}`)} (${late} ${late === 1 ? 'day' : 'days'})`;
+  }
+  if (state === 'today') return time ? `Today ${time}` : 'Due today';
+  if (state === 'soon') return withTime(`Due ${WEEKDAYS[p.day.getDay()]} ${date}`);
+  return withTime(`Due ${date} ${p.day.getFullYear()}`);
+}
+
+export function gcalUrl({ title, url, note, due }) {
+  const p = parseDue(due);
+  if (!p) return '';
+  const ymd = (t) => `${t.getFullYear()}${pad2(t.getMonth() + 1)}${pad2(t.getDate())}`;
+  const stamp = (t) => `${ymd(t)}T${pad2(t.getHours())}${pad2(t.getMinutes())}00`;
+  let dates;
+  if (p.at) {
+    dates = `${stamp(p.at)}/${stamp(new Date(p.at.getTime() + 30 * 60000))}`;
+  } else {
+    const next = new Date(p.day);
+    next.setDate(next.getDate() + 1);
+    dates = `${ymd(p.day)}/${ymd(next)}`;
+  }
+  const details = [note, url].filter(Boolean).join('\n\n');
+  const q = new URLSearchParams({ action: 'TEMPLATE', text: title || url, dates, details });
+  return `https://calendar.google.com/calendar/render?${q}`;
 }
 
 export function priGroups(sorted, meta) {
@@ -753,6 +822,40 @@ export function priPicker(value, onPick) {
   return box;
 }
 
+export function duePicker(due) {
+  const [d = '', t = ''] = isDue(due) ? due.split('T') : [];
+  const date = h('input', { type: 'date', class: 'due-in due-date', value: d, 'aria-label': 'Due date' });
+  const time = h('input', { type: 'time', class: 'due-in due-time', value: t, 'aria-label': 'Due time (optional)' });
+  const cal = h('input', { type: 'checkbox', class: 'due-cal-box' });
+  const calLbl = h('label', { class: 'due-cal' }, cal, 'Also add to Google Calendar');
+  const value = () => (date.value ? (time.value ? `${date.value}T${time.value}` : date.value) : '');
+  const sync = () => {
+    cal.disabled = !date.value;
+    if (!date.value) cal.checked = false;
+    calLbl.classList.toggle('off', !date.value);
+    clear.hidden = !date.value && !time.value;
+  };
+  const clear = h(
+    'button',
+    {
+      type: 'button',
+      class: 'due-clr',
+      'aria-label': 'Clear due date',
+      onClick: () => {
+        date.value = '';
+        time.value = '';
+        sync();
+      },
+    },
+    '✕',
+  );
+  date.addEventListener('input', sync);
+  time.addEventListener('input', sync);
+  sync();
+  const el = h('div', { class: 'due-pick', role: 'group', 'aria-label': 'Due date' }, h('div', { class: 'due-row' }, date, time, clear), calLbl);
+  return { el, date, value, calendar: () => cal.checked && isDue(value()) };
+}
+
 export function svgIcon(name) {
   const paths = {
     note: '<path d="M4 4h16v12l-4 4H4z"/><path d="M16 20v-4h4"/>',
@@ -765,6 +868,7 @@ export function svgIcon(name) {
     plus: '<path d="M12 5v14M5 12h14"/>',
     chevron: '<path d="M9 6l6 6-6 6"/>',
     x: '<path d="M6 6l12 12M18 6L6 18"/>',
+    calendar: '<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/>',
     copy: '<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/>',
     external: '<path d="M14 4h6v6M20 4l-9 9M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"/>',
     save: '<path d="M5 3h11l3 3v15H5z"/><path d="M8 3v6h8V3M8 21v-7h8v7"/>',

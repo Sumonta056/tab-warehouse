@@ -107,6 +107,12 @@ Developers keep the same page open in many versions: live, test, staging and `lo
 - Drop a link on a priority header to give it that priority.
 - Notes stay on this computer. Backup › Export JSON includes them.
 
+### Due dates
+
+- Give a link a due date, with a time if you want one. Set it in the popup when you save, in the edit form, or from the row menu.
+- Overdue links show a red chip. The **Overdue** and **Has due date** filter buttons find them.
+- Turn on **Also add to Google Calendar** to open a filled-in Google Calendar event after you save. Google sends the reminder. The extension asks for no extra permission.
+
 ![Docs folder with High, Medium and Other groups, a colored stripe and a note under the URL](site/screenshots/notes.png)
 
 ### Tags

@@ -14,6 +14,8 @@ import {
   h,
   svgIcon,
   priPicker,
+  duePicker,
+  gcalUrl,
   NOTE_MAX,
   loadLinkMeta,
   setLinkMeta,
@@ -27,7 +29,7 @@ const list = $('#folders');
 const saveBtn = $('#save');
 $('#searchIcon').append(svgIcon('search'));
 
-let settings, root, tab, titleEl, targetEl, badgeEl, noteEl;
+let settings, root, tab, titleEl, targetEl, badgeEl, noteEl, dueEl;
 let pri = null;
 let folders = [],
   items = [],
@@ -148,9 +150,11 @@ function renderMeta() {
     placeholder: 'Add a note…',
     'aria-label': 'Note',
   });
+  dueEl = duePicker('');
   $('#meta').replaceChildren(
     priPicker(pri, (p) => (pri = p)),
     h('div', { class: 'opt-row' }, noteEl, h('div', { class: 'modes', id: 'modes', role: 'group', 'aria-label': 'Save' })),
+    dueEl.el,
   );
 }
 
@@ -351,9 +355,11 @@ async function save() {
   try {
     const parentId = x.create ? (await chrome.bookmarks.create({ parentId: root.id, title: x.create })).id : x.f.id;
     const bm = await chrome.bookmarks.create({ parentId, title: titleEl.value.trim() || url, url });
-    if (pri || noteEl.value.trim()) await setLinkMeta(bm.id, { pri, note: noteEl.value });
+    const due = dueEl.value();
+    if (pri || noteEl.value.trim() || due) await setLinkMeta(bm.id, { pri, note: noteEl.value, due });
     await saveSettings({ lastSaveFolder: parentId });
     status(`Saved to ${x.create || x.f.title}`);
+    if (dueEl.calendar()) await chrome.tabs.create({ url: gcalUrl({ title: bm.title, url, note: noteEl.value.trim(), due }), index: tab.index + 1 });
     setTimeout(() => window.close(), 900);
   } catch (e) {
     busy = false;
