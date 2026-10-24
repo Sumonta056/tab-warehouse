@@ -18,11 +18,14 @@ Exit code 0 = all green. The e2e part prints `pass N / fail M / total T` and one
 
 ```
 tests/unit/<layer>/<module>.test.mjs  one file per module under extension/<layer>/ (node --test)
-tests/unit/architecture.test.mjs      layer dependency rule
+tests/unit/architecture.test.mjs      layer dependency rule, and a test file for every domain/ and services/ module
+tests/unit/styles.test.mjs            every stylesheet linked in cascade order, px font-sizes scaled
+tests/unit/fake-chrome.mjs            in-memory chrome.* for services tests
+tools/coverage-gate.mjs               run by run.sh: domain/ files >= 90 % lines, services/ files >= 80 %
 tests/e2e/chrome-stub.js        fake chrome.bookmarks / storage / tabs / runtime (state lives in the runner page)
 tests/e2e/fixtures.js           base() tree: My Links > Sprint tasks (+Blocked), Shop API (4 envs), GITHUB - PIN, Empty, Loose; Other bookmarks > Home
 tests/e2e/runner.html|js        loads newtab.html / popup.html in an iframe per scenario, helpers on `t`
-tests/e2e/scenarios/*.js        newtab (folders), sections, categories, home, popup
+tests/e2e/scenarios/*.js        newtab (folders), sections, categories, home, popup, …; ui.js checks each ui/ piece alone
 tests/serve.py                  no-cache static server used by run.sh and for visual debugging
 tests/run.sh                    starts tests/serve.py, runs everything, parses E2E_RESULT
 ```
