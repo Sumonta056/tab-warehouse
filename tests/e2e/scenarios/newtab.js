@@ -734,6 +734,7 @@ export default [
     async run(t) {
       await t.folder('Sprint tasks');
       t.context(t.nav('Sprint tasks'));
+      await t.menuShown();
       t.menu('Open all (3)');
       t.eq(t.tabs.length, 3, 'three tabs');
       t.ok(
@@ -764,11 +765,13 @@ export default [
     async run(t) {
       t.confirm(false);
       t.context(t.nav('GITHUB - PIN'));
+      await t.menuShown();
       t.menu('Delete folder…');
       await t.settle();
       t.ok(t.node('40'), 'kept after cancel');
       t.confirm(true);
       t.context(t.nav('GITHUB - PIN'));
+      await t.menuShown();
       t.menu('Delete folder…');
       await t.settle();
       t.ok(!t.node('40'), 'deleted after confirm');

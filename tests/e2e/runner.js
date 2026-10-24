@@ -185,6 +185,7 @@ function makeT(scenario) {
       const r = el.getBoundingClientRect();
       el.dispatchEvent(new t.w.MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: r.left + 10, clientY: r.top + 5 }));
     },
+    menuShown: () => t.until(() => t.$('.menu'), 'the menu to open'),
     menuLabels() {
       return t.$$('.menu > button').map((b) => b.textContent.trim());
     },

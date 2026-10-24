@@ -18,30 +18,52 @@ import { paintIcons, renderBrand } from './views/sidebar/header.js';
 import { renderNav as drawNav, bindNavDrag, newFolder } from './views/sidebar/nav.js';
 import { newCategory } from './views/sidebar/categories.js';
 import { setSideWidth, bindResizer } from './views/sidebar/resizer.js';
-import { renderFolder } from './views/folder/page.js';
-import { renderBody } from './views/folder/body.js';
-import { renderRow } from './views/folder/row.js';
-import { folderMenu } from './views/folder/menus.js';
-import { deleteLink, removeLinks } from './views/folder/actions.js';
-import { renderSearch } from './views/search/search.js';
-import { renderSchedule } from './views/schedule/schedule.js';
 import { ensureHomeFolder } from './services/home-folder.js';
 import { loadHomeAssets, homeBgUrl } from './state/home-assets.js';
 import { renderHome } from './views/home/home.js';
-import { renderSettings, setSettingsTab } from './views/settings/index.js';
-import { openPalette } from './views/palette/palette.js';
-import { renderBoard } from './views/board/board.js';
 
 const $ = (s) => document.querySelector(s);
 const page = $('#page');
 const qInput = $('#q');
 
+const LOADERS = {
+  folder: () =>
+    Promise.all([
+      import('./views/folder/page.js'),
+      import('./views/folder/body.js'),
+      import('./views/folder/row.js'),
+      import('./views/folder/menus.js'),
+      import('./views/folder/actions.js'),
+    ]).then((mods) => Object.assign({}, ...mods)),
+  search: () => import('./views/search/search.js'),
+  schedule: () => import('./views/schedule/schedule.js'),
+  settings: () => import('./views/settings/index.js'),
+  palette: () => import('./views/palette/palette.js'),
+  board: () => import('./views/board/board.js'),
+};
+const views = {};
+const loading = {};
+
+function load(key) {
+  loading[key] ||= LOADERS[key]().then((mod) => (views[key] = mod));
+  return loading[key];
+}
+
+function viewsFor({ current, query }) {
+  if (query) return ['folder', 'search'];
+  if (current?.home) return [];
+  if (current?.settings) return ['settings'];
+  if (current?.board) return ['board'];
+  if (current?.schedule) return ['folder', 'schedule'];
+  return current ? ['folder'] : [];
+}
+
 const ctx = {
   select: (s) => select(s),
   renderNav: () => drawNav(ctx),
   renderPage: () => renderPage(),
-  folderMenu: (e, s) => folderMenu(ctx, e, s),
-  renderRow: (bm, s, p, opts) => renderRow(ctx, bm, s, p, opts),
+  folderMenu: (e, s) => load('folder').then((m) => m.folderMenu(ctx, e, s)),
+  renderRow: (bm, s, p, opts) => views.folder.renderRow(ctx, bm, s, p, opts),
   async setFolderPrefs(id, patch) {
     await saveFolderPrefs(id, patch);
     renderPage();
@@ -125,6 +147,8 @@ async function select(s) {
 }
 
 function renderPage() {
+  const missing = viewsFor(state).filter((key) => !views[key]);
+  if (missing.length) return Promise.all(missing.map(load)).then(renderPage);
   const { current, query } = state;
   closeMenu();
   if (state.navSearch !== !!query) renderNav();
@@ -133,16 +157,16 @@ function renderPage() {
   page.classList.toggle('settings-mode', !!current?.settings && !query);
   page.classList.toggle('board-mode', !!current?.board && !query);
   $('#homeFab').hidden = !!current?.home && !query;
-  if (query) return renderSearch(page, ctx);
+  if (query) return views.search.renderSearch(page, ctx);
   if (current?.home) return renderHome(page, { settings: state.settings, tree: state.tree, showMenu, toast, rerender: renderPage });
-  if (current?.settings) return renderSettings(page, settingsCtx);
-  if (current?.board) return renderBoard(page, boardCtx);
-  if (current?.schedule) return renderSchedule(page, ctx);
+  if (current?.settings) return views.settings.renderSettings(page, settingsCtx);
+  if (current?.board) return views.board.renderBoard(page, boardCtx);
+  if (current?.schedule) return views.schedule.renderSchedule(page, ctx);
   if (!current) {
     page.append(h('div', { class: 'empty' }, 'No folders under this root. Change the root folder in Settings.'));
     return;
   }
-  renderFolder(page, ctx);
+  views.folder.renderFolder(page, ctx);
 }
 
 function sideLook() {
@@ -165,7 +189,7 @@ const settingsCtx = {
   save: (patch) => queueSave(patch),
   toast,
   refresh,
-  removeLinks: (bms) => removeLinks(bms, bms.length === 1 ? 'Deleted 1 copy' : `Deleted ${bms.length} copies`),
+  removeLinks: async (bms) => (await load('folder')).removeLinks(bms, bms.length === 1 ? 'Deleted 1 copy' : `Deleted ${bms.length} copies`),
   async reload() {
     setState({ settings: await loadSettings() });
     applyTheme(state.settings.theme);
@@ -208,8 +232,8 @@ const paletteCtx = {
   select(s) {
     select(s);
   },
-  openSettings(key) {
-    setSettingsTab(key);
+  async openSettings(key) {
+    (await load('settings')).setSettingsTab(key);
     if (state.current?.settings && !state.query) renderPage();
     else openSettings();
   },
@@ -236,8 +260,8 @@ const boardCtx = {
   },
   folderPrefs: (id) => folderPrefs(id),
   select: (s) => select(s),
-  folderMenu: (e, s) => folderMenu(ctx, e, s),
-  deleteLink: (bm) => deleteLink(bm),
+  folderMenu: (e, s) => ctx.folderMenu(e, s),
+  deleteLink: async (bm) => (await load('folder')).deleteLink(bm),
   async moveFolder(id, targetId, after) {
     await moveFolder(id, targetId, after);
     renderNav();
@@ -252,13 +276,13 @@ const boardCtx = {
   toast,
 };
 
-function openSettings() {
+async function openSettings() {
   if (state.current?.settings && !state.query) return closeSettings();
   if (state.query) clearQuery(qInput);
   if (!state.current?.settings) setState({ beforeSettings: state.current });
   setState({ current: SETTINGS });
   renderNav();
-  renderPage();
+  await renderPage();
   page.querySelector('.set-top h2')?.focus({ preventScroll: true });
 }
 
@@ -269,7 +293,8 @@ function closeSettings() {
   $('#settingsBtn').focus({ preventScroll: true });
 }
 
-function showPalette() {
+async function showPalette() {
+  const { openPalette } = await load('palette');
   closeMenu();
   openPalette(paletteCtx);
 }
@@ -344,7 +369,7 @@ function bindGlobal() {
       const { current } = state;
       if (!state.editingId && !document.hidden) {
         if (state.query || current?.schedule) renderPage();
-        else if (current && !current.home && !current.settings && !current.board) renderBody(ctx);
+        else if (current && !current.home && !current.settings && !current.board && views.folder) views.folder.renderBody(ctx);
       }
     }
     if (document.hidden) stale = true;

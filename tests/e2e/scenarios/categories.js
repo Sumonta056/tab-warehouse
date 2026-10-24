@@ -87,11 +87,13 @@ export default [
     fixture: withCats,
     async run(t) {
       t.context(t.nav('Shop API'));
+      await t.menuShown();
       t.ok(!t.menuLabels().includes('Move to Daily working'), 'current category not offered');
       t.menu('Move to Tools');
       await t.settle();
       t.eq(t.settings().folderCat['30'], 'c2', 'moved to Tools');
       t.context(t.nav('Shop API'));
+      await t.menuShown();
       t.menu('Remove from category');
       await t.settle();
       t.ok(!t.settings().folderCat['30'], 'removed');

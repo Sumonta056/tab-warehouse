@@ -276,6 +276,7 @@ export default [
     async run(t) {
       await openBoard(t);
       t.click(col(t, '30').querySelector('.more'));
+      await t.menuShown();
       t.ok(t.menuLabels().includes('Open all (4)'), 'folder menu');
       t.click(col(t, '30').querySelector('.bcol-name'));
       await t.settle();
@@ -434,6 +435,7 @@ export default [
     async run(t) {
       await openBoard(t);
       t.context(col(t, '30').querySelector('.bcol-h'));
+      await t.menuShown();
       t.ok(t.menuLabels().includes('Open all (4)'), 'folder menu');
     },
   },
