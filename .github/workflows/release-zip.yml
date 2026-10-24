@@ -23,6 +23,16 @@ jobs:
         with:
           ref: ${{ env.TAG }}
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install the build tool
+        run: npm ci
+        env:
+          HUSKY: 0
+
       - name: Build the extension ZIP
         id: build
         run: echo "file=$(./tools/package.sh "$PWD/tab-warehouse-${TAG#v}.zip")" >> "$GITHUB_OUTPUT"
