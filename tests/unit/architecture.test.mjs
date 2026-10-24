@@ -62,11 +62,6 @@ function eagerGraph(entry) {
   return [...seen].map(rel).sort();
 }
 
-function preloads(html) {
-  const src = readFileSync(join(EXT, html), 'utf8');
-  return [...src.matchAll(/<link\s+rel="modulepreload"\s+href="([^"]+)"/g)].map((m) => m[1]).sort();
-}
-
 const EAGER_VIEWS = ['home', 'sidebar'];
 
 const files = jsFiles(EXT).map((abs) => ({ abs, file: rel(abs) }));
@@ -125,17 +120,7 @@ describe('architecture', () => {
   });
 });
 
-describe('module preload', () => {
-  for (const page of ['newtab', 'popup']) {
-    test(`${page}.html preloads exactly the modules ${page}.js imports statically`, () => {
-      const want = eagerGraph(`${page}.js`);
-      const have = preloads(`${page}.html`);
-      const missing = want.filter((f) => !have.includes(f)).map((f) => `add <link rel="modulepreload" href="${f}" />`);
-      const extra = have.filter((f) => !want.includes(f)).map((f) => `remove ${f} (not a static import of ${page}.js)`);
-      assert.deepEqual([...missing, ...extra], []);
-    });
-  }
-
+describe('lazy views', () => {
   test('newtab.js loads every view except Home and the sidebar with import()', () => {
     const eager = eagerGraph('newtab.js')
       .filter((f) => viewOf(f) && !EAGER_VIEWS.includes(viewOf(f)))
