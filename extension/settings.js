@@ -1,5 +1,5 @@
 import { h, svgIcon } from './ui/dom.js';
-import { applyTheme } from './ui/theme.js';
+import { applyTheme, applyHomeVars } from './ui/theme.js';
 import { folderList, flatten } from './domain/tree.js';
 import { clockText } from './domain/clock.js';
 import { hostOf, normalizeUrl } from './domain/url.js';
@@ -17,7 +17,10 @@ import { ENVS, ENV_NAMES, ENV_HINTS } from './constants/envs.js';
 import { SETTINGS_TABS } from './constants/pages.js';
 import { TAG_COLORS, EXAMPLE_RULES, EXAMPLE_MAP, TRY_SAMPLES } from './constants/tags.js';
 import { FONT_SCALE } from './constants/limits.js';
-import { homeBgUrl, homeIconMap, homeLinks, homeLinksList, setHomeBg, applyHomeVars, homeIconImg } from './home.js';
+import { homeLinks } from './domain/home.js';
+import { homeIconImg } from './ui/home-icon.js';
+import { homeBgUrl, homeIconMap, setHomeBg } from './state/home-assets.js';
+import { homeLinksList } from './views/settings/home-links.js';
 import { exportJson, exportHtml } from './ui/export.js';
 import { importFile } from './services/import.js';
 

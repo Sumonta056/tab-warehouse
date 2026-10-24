@@ -15,3 +15,15 @@ export function applyFontSize(s) {
   root.setProperty('--fs-page', String(clampFont(s.fontPage) / 100));
   root.setProperty('--fs-board', String(clampFont(s.fontBoard) / 100));
 }
+
+export function applyHomeVars(el, o) {
+  el.style.setProperty('--home-bg', o.color);
+  el.style.setProperty('--img-op', String(o.imgOpacity / 100));
+  el.style.setProperty('--dark', String(o.dark / 100));
+  el.style.setProperty('--blur', `${o.blur}px`);
+  el.style.setProperty('--clock', `${o.clockSize}px`);
+  el.style.setProperty('--tile', `${o.tileSize}px`);
+  el.style.setProperty('--per-row', String(o.perRow));
+  el.style.setProperty('--tiles-gap', `${o.tilesGap}px`);
+  el.classList.toggle('no-labels', !o.labels);
+}

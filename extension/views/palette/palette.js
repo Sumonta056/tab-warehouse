@@ -1,11 +1,11 @@
-import { h, svgIcon, highlight } from './ui/dom.js';
-import { iconEl } from './ui/icons.js';
-import { searchLinks } from './domain/search.js';
-import { detectEnv } from './domain/env.js';
-import { linkBadge } from './ui/badges.js';
-import { displayUrl } from './domain/url.js';
-import { SETTINGS_TABS } from './constants/pages.js';
-import { PALETTE_LINK_MAX } from './constants/limits.js';
+import { SETTINGS_TABS } from '../../constants/pages.js';
+import { PALETTE_LINK_MAX } from '../../constants/limits.js';
+import { detectEnv } from '../../domain/env.js';
+import { paletteResults } from '../../domain/palette.js';
+import { displayUrl } from '../../domain/url.js';
+import { linkBadge } from '../../ui/badges.js';
+import { h, svgIcon, highlight } from '../../ui/dom.js';
+import { iconEl } from '../../ui/icons.js';
 
 let open = null;
 
@@ -48,23 +48,22 @@ export function openPalette(ctx) {
   let sel = 0;
 
   const build = (q) => {
-    const terms = q.toLowerCase().split(/\s+/).filter(Boolean);
-    const ok = (s) => terms.every((t) => s.toLowerCase().includes(t));
-    const links = q
-      ? searchLinks(ctx.secs, q, ctx.linkMeta, ctx.settings.envRules)
-          .slice(0, PALETTE_LINK_MAX)
-          .map(({ bm, crumb }) => ({
-            kind: 'link',
-            bm,
-            title: bm.title || displayUrl(bm.url),
-            sub: `${crumb} · ${displayUrl(bm.url)}`,
-            run: (bg) => ctx.openUrl(bm.url, bg),
-          }))
-      : [];
-    const folders = ctx.secs
-      .filter((s) => ok(s.title))
-      .map((s) => ({ kind: 'folder', title: s.title, sub: `${s.all.length} link${s.all.length === 1 ? '' : 's'}`, icon: 'board', run: () => ctx.select(s) }));
-    return [...links, ...folders, ...actions.filter((a) => ok(a.title)).map((a) => ({ kind: 'action', ...a }))];
+    const r = paletteResults(q, ctx.secs, actions, ctx.linkMeta, ctx.settings.envRules, PALETTE_LINK_MAX);
+    const links = r.links.map(({ bm, crumb }) => ({
+      kind: 'link',
+      bm,
+      title: bm.title || displayUrl(bm.url),
+      sub: `${crumb} · ${displayUrl(bm.url)}`,
+      run: (bg) => ctx.openUrl(bm.url, bg),
+    }));
+    const folders = r.folders.map((s) => ({
+      kind: 'folder',
+      title: s.title,
+      sub: `${s.all.length} link${s.all.length === 1 ? '' : 's'}`,
+      icon: 'board',
+      run: () => ctx.select(s),
+    }));
+    return [...links, ...folders, ...r.places.map((a) => ({ kind: 'action', ...a }))];
   };
 
   const mark = () => {

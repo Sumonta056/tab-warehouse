@@ -34,3 +34,16 @@ export function saveLinkMeta(all) {
 export function onStorageChange(fn) {
   chrome.storage.onChanged.addListener(fn);
 }
+
+export async function loadHomeStore() {
+  const r = await chrome.storage.local.get(['homeIcons', 'homeBg']);
+  return { icons: r.homeIcons || {}, bg: r.homeBg || '' };
+}
+
+export function saveHomeIcons(icons) {
+  return chrome.storage.local.set({ homeIcons: icons });
+}
+
+export function saveHomeBg(bg) {
+  return bg ? chrome.storage.local.set({ homeBg: bg }) : chrome.storage.local.remove('homeBg');
+}

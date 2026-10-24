@@ -25,9 +25,11 @@ import { folderMenu } from './views/folder/menus.js';
 import { deleteLink, removeLinks } from './views/folder/actions.js';
 import { renderSearch } from './views/search/search.js';
 import { renderSchedule } from './views/schedule/schedule.js';
-import { renderHome, ensureHomeFolder, loadHomeAssets, homeBgUrl } from './home.js';
+import { ensureHomeFolder } from './services/home-folder.js';
+import { loadHomeAssets, homeBgUrl } from './state/home-assets.js';
+import { renderHome } from './views/home/home.js';
 import { renderSettings, setSettingsTab } from './settings.js';
-import { openPalette } from './palette.js';
+import { openPalette } from './views/palette/palette.js';
 import { renderBoard } from './views/board/board.js';
 
 const $ = (s) => document.querySelector(s);
