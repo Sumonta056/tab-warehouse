@@ -1,7 +1,6 @@
 import {
   h,
   svgIcon,
-  THEMES,
   applyTheme,
   folderList,
   clockText,
@@ -11,53 +10,23 @@ import {
   explainEnv,
   envText,
   parseEnvText,
-  ENVS,
-  ENV_NAMES,
-  TAG_COLORS,
   tagNameError,
   cleanTags,
   tagBadge,
   imageSaveError,
   clampFont,
-  FONT_SCALE,
   flatten,
   findDuplicates,
   commandLabel,
   shortcutKeys,
 } from './lib/core.js';
+import { THEMES } from './constants/themes.js';
+import { ENVS, ENV_NAMES, ENV_HINTS } from './constants/envs.js';
+import { SETTINGS_TABS } from './constants/pages.js';
+import { TAG_COLORS, EXAMPLE_RULES, EXAMPLE_MAP, TRY_SAMPLES } from './constants/tags.js';
+import { FONT_SCALE } from './constants/limits.js';
 import { homeBgUrl, homeIconMap, homeLinks, homeLinksList, setHomeBg, applyHomeVars, homeIconImg } from './home.js';
 import { exportJson, exportHtml, importFile } from './lib/transfer.js';
-
-export const TABS = [
-  ['appearance', 'Appearance'],
-  ['home', 'Home page'],
-  ['bookmarks', 'Bookmarks'],
-  ['dupes', 'Duplicates'],
-  ['env', 'Tags'],
-  ['backup', 'Backup'],
-  ['keys', 'Shortcuts'],
-];
-
-const ENV_HINTS = {
-  PROD: 'the real site',
-  TEST: 'a copy for checking changes',
-  STAGE: 'a copy for checking changes before release',
-  LOCAL: 'a copy that runs on your computer',
-};
-const EXAMPLE_RULES = [
-  { pattern: 'localhost', env: 'LOCAL' },
-  { pattern: 'staging.', env: 'STAGE' },
-  { pattern: 'test.', env: 'TEST' },
-  { pattern: 'shop.example.com', env: 'PROD' },
-];
-const EXAMPLE_MAP = [{ PROD: 'shop.example.com', TEST: 'test.shop.example.com', STAGE: 'staging.shop.example.com', LOCAL: 'localhost:3000' }];
-const TRY_SAMPLES = [
-  'https://shop.example.com/cart',
-  'https://test.shop.example.com/cart',
-  'https://staging.shop.example.com/cart',
-  'http://localhost:3000/cart',
-  'https://news.example.org',
-];
 
 let tab = 'appearance';
 let envTryUrl = TRY_SAMPLES[1];
@@ -88,7 +57,7 @@ const cleanHost = (v) => {
 };
 
 export function setSettingsTab(key) {
-  if (TABS.some(([k]) => k === key)) tab = key;
+  if (SETTINGS_TABS.some(([k]) => k === key)) tab = key;
 }
 
 export function renderSettings(page, ctx) {
@@ -111,7 +80,7 @@ export function renderSettings(page, ctx) {
     scroll[tab] = body.scrollTop;
     tab = k;
     tabs.replaceChildren(
-      ...TABS.map(([key, label]) =>
+      ...SETTINGS_TABS.map(([key, label]) =>
         h(
           'button',
           {
@@ -136,8 +105,8 @@ export function renderSettings(page, ctx) {
   tabs.addEventListener('keydown', (e) => {
     if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
     e.preventDefault();
-    const i = TABS.findIndex(([k]) => k === tab);
-    show(TABS[(i + (e.key === 'ArrowRight' ? 1 : TABS.length - 1)) % TABS.length][0], true);
+    const i = SETTINGS_TABS.findIndex(([k]) => k === tab);
+    show(SETTINGS_TABS[(i + (e.key === 'ArrowRight' ? 1 : SETTINGS_TABS.length - 1)) % SETTINGS_TABS.length][0], true);
   });
   body.addEventListener('scroll', () => {
     scroll[tab] = body.scrollTop;

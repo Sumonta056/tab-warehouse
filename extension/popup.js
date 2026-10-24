@@ -16,12 +16,12 @@ import {
   priPicker,
   duePicker,
   gcalUrl,
-  NOTE_MAX,
   loadLinkMeta,
   setLinkMeta,
   switchTargets,
   findSaved,
 } from './lib/core.js';
+import { NOTE_MAX } from './constants/limits.js';
 
 const $ = (s) => document.querySelector(s);
 const q = $('#q');

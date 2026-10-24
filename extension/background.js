@@ -8,9 +8,9 @@ import {
   omniboxTarget,
   quickSave,
   quickSaveBadge,
-  QUICK_BADGE_MS,
   paletteCommand,
 } from './lib/core.js';
+import { QUICK_BADGE_MS } from './constants/limits.js';
 
 chrome.omnibox.setDefaultSuggestion({ description: 'Search Tab Warehouse for <match>%s</match>' });
 

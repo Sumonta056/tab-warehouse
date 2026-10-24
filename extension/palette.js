@@ -1,7 +1,7 @@
 import { h, svgIcon, iconEl, highlight, searchLinks, detectEnv, linkBadge, displayUrl } from './lib/core.js';
-import { TABS } from './settings.js';
+import { SETTINGS_TABS } from './constants/pages.js';
+import { PALETTE_LINK_MAX } from './constants/limits.js';
 
-const LINK_MAX = 30;
 let open = null;
 
 export function openPalette(ctx) {
@@ -11,7 +11,7 @@ export function openPalette(ctx) {
     { title: 'Home', icon: 'home', run: () => ctx.go('home') },
     { title: 'Board', icon: 'board', run: () => ctx.go('board') },
     { title: 'Schedule', icon: 'calendar', run: () => ctx.go('schedule') },
-    ...TABS.map(([key, label]) => ({ title: `Settings › ${label}`, icon: 'gear', run: () => ctx.openSettings(key) })),
+    ...SETTINGS_TABS.map(([key, label]) => ({ title: `Settings › ${label}`, icon: 'gear', run: () => ctx.openSettings(key) })),
   ];
   const input = h('input', {
     type: 'text',
@@ -47,7 +47,7 @@ export function openPalette(ctx) {
     const ok = (s) => terms.every((t) => s.toLowerCase().includes(t));
     const links = q
       ? searchLinks(ctx.secs, q, ctx.linkMeta, ctx.settings.envRules)
-          .slice(0, LINK_MAX)
+          .slice(0, PALETTE_LINK_MAX)
           .map(({ bm, crumb }) => ({
             kind: 'link',
             bm,

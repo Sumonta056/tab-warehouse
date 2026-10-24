@@ -1,14 +1,15 @@
-// Shared helpers for newtab + popup. No framework, no build.
+import { ENVS, ENV_NAMES } from '../constants/envs.js';
+import { TAG_COLORS, TAG_RESERVED, TAG_PLAIN_MAX, SITES_HEAD } from '../constants/tags.js';
+import { THEMES } from '../constants/themes.js';
+import { DEFAULT_HOME, DEFAULT_SIDE_LOOK, DEFAULT_BOARD, DEFAULT_SETTINGS } from '../constants/defaults.js';
+import { SIDE_WIDTH, FONT_SCALE, NOTE_MAX, OMNI_MAX } from '../constants/limits.js';
+import { COMMAND_LABELS, PALETTE_MSG } from '../constants/commands.js';
+import { PRIS, PRI_NAMES } from '../constants/priority.js';
+import { DUE_SOON_DAYS, MONTHS, WEEKDAYS, DUE_GROUPS, DUE_QUICK } from '../constants/due.js';
+import { TRACKING, GSTATIC, GOOGLE_APPS, GOOGLE_DOCS, WEB_ICON } from '../constants/urls.js';
+import { ICON_PATHS } from '../constants/icons.js';
 
-export const ENVS = ['PROD', 'TEST', 'STAGE', 'LOCAL'];
 const ENV_WORDS = ENVS.map((e) => [e, new RegExp(`\\b${e}\\b`)]);
-export const SORTS = { manual: 'Manual', name: 'Name', url: 'URL', env: 'Tag', added: 'Date added', host: 'Host' };
-
-export const ENV_NAMES = { PROD: 'Live', TEST: 'Test', STAGE: 'Staging', LOCAL: 'Your computer' };
-
-export const TAG_COLORS = ['teal', 'pink', 'yellow', 'red', 'cyan', 'grey'];
-const TAG_RESERVED = [...ENVS, 'DEV', 'GH', 'NONE', ...TAG_COLORS.map((c) => c.toUpperCase())];
-const TAG_PLAIN_MAX = 40;
 
 export function tagNameError(name, taken = []) {
   if (!/^[A-Z0-9]{1,8}$/.test(name)) return 'Use 1 to 8 capital letters or digits.';
@@ -50,35 +51,6 @@ export function linkBadge(env, url, customTags = []) {
   return isGithub(url) ? h('span', { class: 'badge GH' }, 'GH') : null;
 }
 
-export const DEFAULT_HOME = {
-  folderId: null,
-  color: '#185a63',
-  imgOpacity: 100,
-  dark: 65,
-  blur: 2,
-  clockSize: 170,
-  h24: false,
-  seconds: true,
-  date: true,
-  labels: true,
-  newTab: false,
-  tileSize: 56,
-  perRow: 12,
-  tilesGap: 80,
-};
-
-export const SIDE_WIDTH = { min: 180, max: 440, initial: 264 };
-
-export const THEMES = {
-  blue: ['#8ab4f8', '#12304a', '#cfe1ff', '#0b1a33'],
-  teal: ['#5fd4c4', '#0f3b3a', '#c9f5ef', '#06231f'],
-  green: ['#6fd99a', '#143122', '#cdf5dc', '#06200f'],
-  purple: ['#c6a9ff', '#2e2246', '#e7dcff', '#1a0f33'],
-  pink: ['#f49ac1', '#45192e', '#ffd9ea', '#33061b'],
-  orange: ['#f6a85f', '#3d2410', '#ffe1c4', '#2e1500'],
-  red: ['#ff8a80', '#4a1a17', '#ffd6d2', '#330a07'],
-};
-
 export function themeVars(theme) {
   let t = THEMES[theme];
   if (!t && /^#[0-9a-f]{6}$/i.test(theme || '')) {
@@ -94,10 +66,6 @@ export function applyTheme(theme, el = document.documentElement) {
   for (const [k, v] of Object.entries(themeVars(theme))) el.style.setProperty(k, v);
 }
 
-export const DEFAULT_SIDE_LOOK = { mode: 'solid', color: '#1b1b1b', dark: 70, blur: 12 };
-
-export const DEFAULT_BOARD = { group: 'cat' };
-
 export function sideLookVars(look, image) {
   const img = look.mode === 'image' && !!image;
   return {
@@ -107,31 +75,6 @@ export function sideLookVars(look, image) {
     '--side-img': img ? `url("${image}")` : 'none',
   };
 }
-
-const DEFAULT_SETTINGS = {
-  rootId: null,
-  rootName: '',
-  userName: '',
-  fontSide: 100,
-  fontPage: 100,
-  fontBoard: 100,
-  order: [], // folder ids in sidebar order (unknown ids appended)
-  lastFolder: null,
-  lastSaveFolder: null,
-  categories: [],
-  folderCat: {},
-  partColors: {},
-  folders: {}, // folderId -> { sort, view: 'list'|'matrix', show: 'title'|'url', collapsedGroups: {} }
-  envRules: [], // ordered [{ pattern, env }]; first host-substring match wins
-  hostMap: [], // [{ PROD, TEST, STAGE, LOCAL }] hosts of one site; '' = none
-  customTags: [],
-  showFavicons: true,
-  theme: 'blue',
-  sideLook: DEFAULT_SIDE_LOOK,
-  home: DEFAULT_HOME,
-  board: DEFAULT_BOARD,
-  sideWidth: SIDE_WIDTH.initial,
-};
 
 export function brandName(settings) {
   const name = (settings?.userName || '').trim();
@@ -212,8 +155,6 @@ export function detectEnv(bm, rules) {
   return explainEnv(bm, rules).env;
 }
 
-const SITES_HEAD = /^#\s*Same site in each version:\s*([^(]*)/;
-
 export function envText(rules, hostMap, customTags = []) {
   const cols = [...ENVS, ...customTags.map((t) => t.name)];
   return [
@@ -282,16 +223,6 @@ export function deriveUrl(url, targetEnv, hostMap, tags = ENVS) {
   return null;
 }
 
-const GSTATIC = 'https://ssl.gstatic.com/images/branding/product/2x/';
-const GOOGLE_APPS = {
-  'mail.google.com': 'gmail',
-  'drive.google.com': 'drive',
-  'calendar.google.com': 'calendar',
-  'keep.google.com': 'keep',
-  'meet.google.com': 'meet',
-};
-const GOOGLE_DOCS = { document: 'docs', spreadsheets: 'sheets', presentation: 'slides', forms: 'forms' };
-
 export function switchTargets(url, hostMap, tags = ENVS) {
   const host = hostOf(url);
   const row = host && hostMap.find((r) => tags.some((e) => (r[e] || '').toLowerCase() === host));
@@ -325,19 +256,11 @@ export function normalizeUrl(input) {
   return /^[a-z][a-z0-9+.-]*:/i.test(v) ? v : `https://${v}`;
 }
 
-export const FONT_SCALE = { min: 80, max: 140, initial: 100 };
-
 export function clampFont(v) {
   const n = Number(v);
   if (!Number.isFinite(n)) return FONT_SCALE.initial;
   return Math.round(Math.max(FONT_SCALE.min, Math.min(FONT_SCALE.max, n)));
 }
-
-export const COMMAND_LABELS = {
-  _execute_action: 'Open the save popup',
-  'quick-save': 'Quick save (no popup)',
-  palette: 'Open the command palette (on Tab Warehouse)',
-};
 
 export function commandLabel(cmd) {
   return COMMAND_LABELS[cmd?.name] || cmd?.description || cmd?.name || '';
@@ -380,8 +303,6 @@ export function faviconUrl(pageUrl, size = 32) {
   u.searchParams.set('size', String(size));
   return u.toString();
 }
-
-export const WEB_ICON = 'https://www.google.com/s2/favicons';
 
 export function webIconUrls(pageUrl) {
   try {
@@ -516,10 +437,6 @@ export function sortLinks(links, sort, rules, tags = ENVS) {
   }
 }
 
-export const PRIS = ['high', 'med', 'low'];
-export const PRI_NAMES = { high: 'High', med: 'Medium', low: 'Low' };
-export const NOTE_MAX = 200;
-
 export function cleanMeta(m) {
   if (!m || typeof m !== 'object') return null;
   const out = {};
@@ -530,9 +447,6 @@ export function cleanMeta(m) {
   return Object.keys(out).length ? out : null;
 }
 
-export const DUE_SOON_DAYS = 7;
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const pad2 = (n) => String(n).padStart(2, '0');
 
 function parseDue(due) {
@@ -630,13 +544,6 @@ export function searchLinks(secs, query, meta = {}, rules = []) {
   return hits;
 }
 
-export const DUE_GROUPS = [
-  ['overdue', 'Overdue'],
-  ['today', 'Today'],
-  ['soon', 'Next 7 days'],
-  ['later', 'Later'],
-];
-
 export function scheduleGroups(secs, meta = {}, now = new Date()) {
   const dated = searchLinks(secs, '', meta)
     .map((hit) => ({ ...hit, p: parseDue(meta[hit.bm.id]?.due) }))
@@ -650,7 +557,6 @@ export function scheduleGroups(secs, meta = {}, now = new Date()) {
 }
 
 /* ---------- omnibox ---------- */
-export const OMNI_MAX = 5;
 
 export function xmlEscape(s) {
   return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;' })[c]);
@@ -687,7 +593,6 @@ export function omniboxTarget(text, newtabUrl) {
 }
 
 /* ---------- duplicates ---------- */
-const TRACKING = /^(utm_.+|gclid|fbclid|msclkid|mc_eid)$/i;
 
 export function dupKey(url, loose = false) {
   let u;
@@ -744,16 +649,12 @@ export function quickSave(settings, tree, tab) {
   return { kind: 'save', parentId, folder: folder.title || 'Bookmarks', title: tab.title || tab.url, url: tab.url };
 }
 
-export const QUICK_BADGE_MS = 2500;
-
 export function quickSaveBadge(r) {
   if (r.kind === 'save') return { text: '✓', color: '#1e8e3e', title: `Saved to ${r.folder}` };
   if (r.kind === 'dup') return { text: '!', color: '#e8710a', title: `Already in ${r.hits[0].path}` };
   if (r.kind === 'error') return { text: '–', color: '#5f6368', title: `Could not save: ${r.message}` };
   return { text: '–', color: '#5f6368', title: 'This page cannot be saved' };
 }
-
-export const PALETTE_MSG = 'open-palette';
 
 export function isPaletteRequest(msg, tabId) {
   return msg?.type === PALETTE_MSG && tabId != null && msg.tabId === tabId;
@@ -833,12 +734,6 @@ export function priPicker(value, onPick) {
   draw(value || null);
   return box;
 }
-
-export const DUE_QUICK = [
-  ['Today', 0],
-  ['Tomorrow', 1],
-  ['Next week', 7],
-];
 
 export function dueQuickDate(days, now = new Date()) {
   const t = new Date(now.getFullYear(), now.getMonth(), now.getDate() + days);
@@ -932,27 +827,6 @@ export function duePicker(due) {
 }
 
 export function svgIcon(name) {
-  const paths = {
-    note: '<path d="M4 4h16v12l-4 4H4z"/><path d="M16 20v-4h4"/>',
-    search: '<circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>',
-    grip: '<circle cx="9" cy="6" r="1.4"/><circle cx="15" cy="6" r="1.4"/><circle cx="9" cy="12" r="1.4"/><circle cx="15" cy="12" r="1.4"/><circle cx="9" cy="18" r="1.4"/><circle cx="15" cy="18" r="1.4"/>',
-    more: '<circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/>',
-    pencil: '<path d="M4 20h4l10-10-4-4L4 16z"/>',
-    trash: '<path d="M4 7h16M10 11v6M14 11v6"/><path d="M6 7l1 13h10l1-13M9 7V4h6v3"/>',
-    gear: '<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>',
-    plus: '<path d="M12 5v14M5 12h14"/>',
-    chevron: '<path d="M9 6l6 6-6 6"/>',
-    x: '<path d="M6 6l12 12M18 6L6 18"/>',
-    calendar: '<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/>',
-    copy: '<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/>',
-    external: '<path d="M14 4h6v6M20 4l-9 9M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"/>',
-    save: '<path d="M5 3h11l3 3v15H5z"/><path d="M8 3v6h8V3M8 21v-7h8v7"/>',
-    home: '<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/>',
-    github:
-      '<path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 3.5c-.3 1.15-.3 2.35 0 3.5A5.4 5.4 0 0 0 4 10.5c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/>',
-    board: '<rect x="3" y="4" width="5" height="16" rx="1"/><rect x="10" y="4" width="5" height="11" rx="1"/><rect x="17" y="4" width="4" height="7" rx="1"/>',
-    globe: '<circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/>',
-  };
   const filled = name === 'grip' || name === 'more';
   const el = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   el.setAttribute('viewBox', '0 0 24 24');
@@ -962,7 +836,7 @@ export function svgIcon(name) {
   el.setAttribute('stroke-linecap', 'round');
   el.setAttribute('stroke-linejoin', 'round');
   el.setAttribute('aria-hidden', 'true');
-  el.innerHTML = paths[name] || '';
+  el.innerHTML = ICON_PATHS[name] || '';
   return el;
 }
 

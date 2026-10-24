@@ -18,18 +18,13 @@ import {
   iconEl,
   highlight,
   tagNames,
-  SORTS,
   findById,
   clampSideWidth,
-  SIDE_WIDTH,
   applyTheme,
   sideLookVars,
   brandName,
   clampFont,
   flatten,
-  PRIS,
-  PRI_NAMES,
-  NOTE_MAX,
   priGroups,
   priFirst,
   matchLink,
@@ -44,6 +39,11 @@ import {
   scheduleGroups,
   isPaletteRequest,
 } from './lib/core.js';
+import { SORTS } from './constants/sorts.js';
+import { HOME, SETTINGS, BOARD, SCHEDULE, PAGES } from './constants/pages.js';
+import { MARK_COLORS } from './constants/themes.js';
+import { SIDE_WIDTH, NOTE_MAX } from './constants/limits.js';
+import { PRIS, PRI_NAMES } from './constants/priority.js';
 import { renderHome, ensureHomeFolder, loadHomeAssets, homeBgUrl } from './home.js';
 import { renderSettings, setSettingsTab } from './settings.js';
 import { openPalette } from './palette.js';
@@ -67,11 +67,6 @@ let linkMeta = {};
 let editingId = null;
 let openMenu = null;
 let drag = null; // { kind: 'link'|'folder', id, parentId }
-const HOME = { id: 'home', title: 'Home', home: true, links: [], parts: [], all: [] };
-const SETTINGS = { id: 'settings', title: 'Settings', settings: true, links: [], parts: [], all: [] };
-const BOARD = { id: 'board', title: 'Board', board: true, links: [], parts: [], all: [] };
-const SCHEDULE = { id: 'schedule', title: 'Schedule', schedule: true, links: [], parts: [], all: [] };
-const VIEWS = [HOME, BOARD, SCHEDULE];
 let beforeSettings = null;
 let saveQueue = Promise.resolve();
 
@@ -119,7 +114,7 @@ async function refresh() {
   secs = sections(root, settings.order, [settings.home.folderId]);
   await pruneLinkMeta();
   renderBrand();
-  current = current?.settings ? SETTINGS : VIEWS.find((v) => v.id === current?.id) || secs.find((s) => s.id === current?.id) || HOME;
+  current = current?.settings ? SETTINGS : PAGES.find((v) => v.id === current?.id) || secs.find((s) => s.id === current?.id) || HOME;
   renderNav();
   renderPage();
 }
@@ -164,8 +159,8 @@ function groups() {
 }
 
 function navOrder() {
-  if (!settings.categories.length) return [...VIEWS, ...secs];
-  return [...VIEWS, ...groups().flatMap((g) => (g.cat?.closed ? [] : g.items)), ...secs.filter((s) => s.virtual)];
+  if (!settings.categories.length) return [...PAGES, ...secs];
+  return [...PAGES, ...groups().flatMap((g) => (g.cat?.closed ? [] : g.items)), ...secs.filter((s) => s.virtual)];
 }
 
 function bindHomeButtons() {
@@ -203,7 +198,7 @@ function clearQuery() {
 function renderNav() {
   navSearch = !!query;
   const open = openView();
-  for (const v of VIEWS) {
+  for (const v of PAGES) {
     const btn = $(`#${v.id}Btn`);
     btn.classList.toggle('on', open === v);
     btn.setAttribute('aria-current', open === v ? 'page' : 'false');
@@ -252,8 +247,6 @@ function navItem(s) {
   bindNavDrag(el, s);
   return el;
 }
-
-const COLORS = ['red', 'orange', 'yellow', 'green', 'blue', 'purple'];
 
 function headerDrag(el, kind, id, onDrop) {
   el.addEventListener('dragstart', (e) => {
@@ -1434,7 +1427,7 @@ function showMenu(e, items) {
         h(
           'div',
           { class: 'swatches', role: 'group', 'aria-label': 'Color' },
-          ...[null, ...COLORS].map((c) =>
+          ...[null, ...MARK_COLORS].map((c) =>
             h('button', {
               class: `sw ${c ? '' : 'none'} ${it.value === c ? 'on' : ''}`,
               dataset: c ? { color: c } : null,
@@ -1678,7 +1671,7 @@ const paletteCtx = {
     } else chrome.tabs.update({ url });
   },
   go(where) {
-    select(VIEWS.find((v) => v.id === where) || HOME);
+    select(PAGES.find((v) => v.id === where) || HOME);
   },
   select(s) {
     select(s);
@@ -1741,7 +1734,7 @@ function openSettings() {
 }
 
 function closeSettings() {
-  current = VIEWS.find((v) => v.id === beforeSettings?.id) || secs.find((s) => s.id === beforeSettings?.id) || HOME;
+  current = PAGES.find((v) => v.id === beforeSettings?.id) || secs.find((s) => s.id === beforeSettings?.id) || HOME;
   beforeSettings = null;
   renderNav();
   renderPage();

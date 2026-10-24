@@ -2,11 +2,8 @@ import { test, describe, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   dueQuickDate,
-  ENVS,
   brandName,
   clampFont,
-  DEFAULT_HOME,
-  SIDE_WIDTH,
   explainEnv,
   envText,
   parseEnvText,
@@ -25,9 +22,6 @@ import {
   folderList,
   sections,
   sortLinks,
-  PRIS,
-  PRI_NAMES,
-  NOTE_MAX,
   cleanMeta,
   isDue,
   dueState,
@@ -52,17 +46,19 @@ import {
   letterIcon,
   loadSettings,
   saveSettings,
-  THEMES,
   themeVars,
-  DEFAULT_SIDE_LOOK,
-  DEFAULT_BOARD,
   sideLookVars,
-  TAG_COLORS,
   tagNameError,
   cleanTags,
   tagNames,
   tagPlain,
 } from '../../extension/lib/core.js';
+import { ENVS } from '../../extension/constants/envs.js';
+import { DEFAULT_HOME, DEFAULT_SIDE_LOOK, DEFAULT_BOARD } from '../../extension/constants/defaults.js';
+import { SIDE_WIDTH, NOTE_MAX } from '../../extension/constants/limits.js';
+import { PRIS, PRI_NAMES } from '../../extension/constants/priority.js';
+import { THEMES } from '../../extension/constants/themes.js';
+import { TAG_COLORS } from '../../extension/constants/tags.js';
 import { commandLabel, shortcutKeys } from '../../extension/lib/core.js';
 
 const SAMPLE_ENV_RULES = [
@@ -1049,7 +1045,8 @@ describe('shortcuts', () => {
 });
 
 describe('palette command', async () => {
-  const { isPaletteRequest, paletteCommand, PALETTE_MSG } = await import('../../extension/lib/core.js');
+  const { isPaletteRequest, paletteCommand } = await import('../../extension/lib/core.js');
+  const { PALETTE_MSG } = await import('../../extension/constants/commands.js');
   test('isPaletteRequest matches only the open-palette message for this tab', () => {
     assert.equal(PALETTE_MSG, 'open-palette');
     assert.equal(isPaletteRequest({ type: 'open-palette', tabId: 5 }, 5), true);

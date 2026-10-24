@@ -3,7 +3,6 @@ import {
   saveSettings,
   findById,
   tileIconSrcs,
-  WEB_ICON,
   faviconUrl,
   letterIcon,
   normalizeUrl,
@@ -13,6 +12,7 @@ import {
   h,
   svgIcon,
 } from './lib/core.js';
+import { WEB_ICON } from './constants/urls.js';
 
 let icons = null;
 let bg = null;

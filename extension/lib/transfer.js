@@ -1,5 +1,7 @@
 // Export / import. JSON carries bookmarks + warehouse preferences; HTML is the Netscape format Chrome itself imports/exports.
-import { saveSettings, ENVS, SORTS, cleanMeta, cleanTags, loadLinkMeta } from './core.js';
+import { saveSettings, cleanMeta, cleanTags, loadLinkMeta } from './core.js';
+import { ENVS } from '../constants/envs.js';
+import { SORTS } from '../constants/sorts.js';
 
 const stamp = () => new Date().toISOString().slice(0, 10);
 
