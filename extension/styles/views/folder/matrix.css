@@ -1,0 +1,130 @@
+.matrix {
+  overflow-x: auto;
+  border: 1px solid #2c2c2c;
+  border-radius: 12px;
+  background: #1f1f1f;
+}
+.matrix table {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+  font-size: calc(13px * var(--fs, 1));
+}
+.matrix th {
+  text-align: left;
+  font-size: calc(11px * var(--fs, 1));
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
+  background: #1b1b1b;
+  white-space: nowrap;
+}
+.matrix th.env {
+  text-align: center;
+}
+.matrix th .dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 6px;
+}
+.matrix td {
+  padding: 0;
+  border-bottom: 1px solid #2a2a2a;
+  vertical-align: middle;
+}
+.matrix tr:hover td {
+  background: #232323;
+}
+.matrix .res {
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 240px;
+}
+.matrix .res b {
+  font-weight: 500;
+  font-family: var(--mono);
+  font-size: calc(12px * var(--fs, 1));
+  word-break: break-all;
+}
+.matrix .cell {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 6px 8px;
+}
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 30px;
+  padding: 0 10px;
+  border-radius: 6px;
+  font-size: calc(12px * var(--fs, 1));
+  font-weight: 500;
+  font-family: var(--mono);
+  border: 1px solid transparent;
+  max-width: 220px;
+}
+.pill span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pill.PROD {
+  background: var(--prod-bg);
+  color: var(--prod-fg);
+  border-color: #5a361a;
+}
+.pill.TEST {
+  background: var(--test-bg);
+  color: var(--test-fg);
+  border-color: #1e4a70;
+}
+.pill.STAGE {
+  background: var(--stage-bg);
+  color: var(--stage-fg);
+  border-color: #45336a;
+}
+.pill.LOCAL {
+  background: var(--local-bg);
+  color: var(--local-fg);
+  border-color: #1f4a33;
+}
+.pill.tag {
+  background: var(--tag-bg);
+  color: var(--tag-fg);
+  border-color: color-mix(in srgb, var(--tag-fg) 35%, transparent);
+}
+.matrix th .dot[data-tag] {
+  background: var(--tag-fg);
+}
+.pill.derive {
+  color: #6f6f6f;
+  border: 1px dashed #3d3d3d;
+  background: transparent;
+}
+.pill.derive:hover {
+  color: var(--text);
+  border-color: var(--line-2);
+}
+.pill.none {
+  color: #4a4a4a;
+  border: 0;
+}
+.matrix-note {
+  font-size: calc(12px * var(--fs, 1));
+  color: var(--muted);
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}

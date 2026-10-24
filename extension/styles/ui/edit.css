@@ -1,0 +1,68 @@
+.edit {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.edit label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: calc(10px * var(--fs, 1));
+  color: var(--muted);
+}
+.edit input {
+  background: var(--bg);
+  border: 1px solid #3d3d3d;
+  border-radius: 6px;
+  padding: 5px 8px;
+  width: 100%;
+  font-size: calc(13px * var(--fs, 1));
+}
+.edit input.url-in {
+  font-family: var(--mono);
+  font-size: calc(11px * var(--fs, 1));
+  color: var(--text-2);
+}
+.edit .actions {
+  display: flex;
+  gap: 6px;
+}
+.edit-pri {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: calc(10px * var(--fs, 1));
+  color: var(--muted);
+}
+.edit-pri .pri-pick {
+  max-width: 360px;
+}
+.edit-due {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: calc(10px * var(--fs, 1));
+  color: var(--muted);
+}
+.edit-due .due-pick {
+  max-width: 360px;
+}
+.edit .due-cal {
+  flex-direction: row;
+  gap: 8px;
+  font-size: calc(12px * var(--fs, 1));
+  color: var(--text-2);
+}
+.edit .due-cal.off {
+  color: var(--muted-2);
+}
+.edit .due-cal input {
+  width: 16px;
+  padding: 0;
+}
+.edit .due-in {
+  min-height: 30px;
+  padding: 0 8px;
+}

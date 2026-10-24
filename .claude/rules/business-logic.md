@@ -119,7 +119,7 @@ Every rule here has at least one test. If you change a rule, change its test in 
 ## Text size
 
 - `settings.fontSide`, `settings.fontPage` and `settings.fontBoard` are percents (80–140, default 100; `clampFont()`; bad values → 100).
-- Every px `font-size` in `newtab.css` and `styles/shared.css` is `calc(Npx * var(--fs, 1))`. `.side` sets `--fs` from `--fs-side`, `.page` from `--fs-page`, and the Board (`.page.board-mode`) from `--fs-board` (all set on `:root` by `applyFontSize()`). The Board ignores the Page size; every other view ignores the Board size. Only text scales; row heights, icons and click areas stay. The Home clock and tile letters keep their own sizes.
+- Every px `font-size` in `styles/` (except `styles/views/popup.css`: the popup has no text size) is `calc(Npx * var(--fs, 1))`. `.side` sets `--fs` from `--fs-side`, `.page` from `--fs-page`, and the Board (`.page.board-mode`) from `--fs-board` (all set on `:root` by `applyFontSize()`). The Board ignores the Page size; every other view ignores the Board size. Only text scales; row heights, icons and click areas stay. The Home clock and tile letters keep their own sizes.
 - Edited in Settings › Appearance › Text size: Sidebar, Page and Board sliders, steps of 5. Text sizes are not part of Backup export/import. Changes apply at once and save after 300 ms.
 
 ## Theme

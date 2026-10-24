@@ -16,7 +16,7 @@ extension/             Everything that ships; the Load unpacked folder. Paths be
   ui/                  Reusable DOM pieces, no page state (dom.js h/svgIcon/highlight, toast, menu, dnd, seg, badges, icons, home-icon, pickers, theme, image, export)
   state/               Shared mutable page state: page-state.js (state + setState), folders.js / links.js (save actions), home-assets.js, popup-state.js
   views/               One folder per screen: sidebar/ folder/ search/ schedule/ board/ home/ palette/ settings/ (one file per tab) popup/
-  styles/              tokens.css (design tokens) + shared.css (shared components: .row, .badge, .btn, .menu, .toast)
+  styles/              tokens.css (design tokens), base.css, ui/ (one file per ui piece: row, badge, button, menu, toast …), views/ (one file per screen, mirrors views/)
   icons/               16/48/128 PNG
 tools/                 make-icons.py (build extension/icons/ from any logo), package.sh (release ZIP), set-shortcuts.js (console script that sets the keys)
 docs/                  Notes and requirements

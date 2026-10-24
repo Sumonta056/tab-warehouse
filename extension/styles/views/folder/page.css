@@ -1,0 +1,61 @@
+.page {
+  --fs: var(--fs-page, 1);
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 16px 28px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.head h2 {
+  margin: 0;
+  font-size: calc(18px * var(--fs, 1));
+  font-weight: 600;
+  cursor: text;
+}
+.head h2 input {
+  background: var(--bg);
+  border: 1px solid #3d3d3d;
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-weight: 600;
+  font-size: calc(16px * var(--fs, 1));
+}
+.head .cnt {
+  font-size: calc(12px * var(--fs, 1));
+}
+.head .btn.add {
+  margin-left: auto;
+  min-height: 36px;
+  border-radius: 8px;
+  font-size: calc(12px * var(--fs, 1));
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.toolbar .search {
+  flex: 1 1 260px;
+  max-width: 420px;
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: 8px;
+}
+.toolbar .search input {
+  font-size: calc(12px * var(--fs, 1));
+}
+.toolbar .note {
+  font-size: calc(11px * var(--fs, 1));
+  color: var(--muted);
+  width: 100%;
+  margin-top: -4px;
+}

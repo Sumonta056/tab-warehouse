@@ -5,13 +5,13 @@ paths:
   - 'extension/popup.*'
   - 'extension/views/**'
   - 'extension/ui/**'
-  - 'extension/styles/*.css'
+  - 'extension/styles/**/*.css'
 ---
 
 # UI rules
 
 - Build DOM with `h()` from `ui/dom.js`. Text goes in as text nodes (never `innerHTML`) because titles and URLs are user content.
-- Reuse `.row`, `.badge`, `.btn`, `.chip`, `.seg`, `.sel`, `.menu`, `.toast`, `.edit` before inventing a class. New shared classes go in `styles/shared.css`; page-only classes in `newtab.css`.
+- Reuse `.row`, `.badge`, `.btn`, `.chip`, `.seg`, `.sel`, `.menu`, `.toast`, `.edit` before inventing a class. A reusable piece gets its own file in `styles/ui/`; classes of one screen go in `styles/views/<screen>.css`. Link a new file in `newtab.html` (and `popup.html` if the popup uses it) in cascade order: tokens, base, ui, views.
 - Colors only via `var(--…)` tokens. Env mapping is fixed: PROD orange · TEST blue · STAGE purple · LOCAL green · GH grey.
 - Long URLs must wrap (`word-break: break-all`) and the row must grow with them — never truncate in the folder page. Truncation is allowed only in the popup and the command palette (the full URL is the tooltip).
 - In URL mode, show the title under the URL **only if it differs** (`sameAsUrl()`), otherwise it prints twice.

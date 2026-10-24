@@ -1,0 +1,84 @@
+.menu {
+  position: fixed;
+  z-index: 50;
+  min-width: 180px;
+  background: var(--surface);
+  border: 1px solid var(--line-2);
+  border-radius: 10px;
+  padding: 6px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+}
+.menu button {
+  min-height: 36px;
+  padding: 0 10px;
+  border: 0;
+  background: transparent;
+  border-radius: 6px;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-2);
+}
+.menu button:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+.menu button.danger {
+  color: #ff9a8a;
+}
+.menu button svg {
+  width: 14px;
+  height: 14px;
+}
+.menu hr {
+  border: 0;
+  border-top: 1px solid var(--line);
+  margin: 4px 0;
+}
+.menu .swatches {
+  display: flex;
+  gap: 4px;
+  padding: 4px 6px;
+}
+.menu .sw {
+  min-height: 28px;
+  width: 28px;
+  padding: 0;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  background: var(--c, transparent);
+  justify-content: center;
+}
+.menu .sw.none {
+  border-color: var(--line-2);
+  background: transparent;
+}
+.menu .sw:hover {
+  background: var(--c, var(--surface-2));
+  filter: brightness(1.1);
+}
+.menu .sw.on {
+  border-color: var(--text);
+}
+
+[data-color='red'] {
+  --c: var(--red-fg);
+}
+[data-color='orange'] {
+  --c: var(--prod-fg);
+}
+[data-color='yellow'] {
+  --c: var(--yellow-fg);
+}
+[data-color='green'] {
+  --c: var(--local-fg);
+}
+[data-color='blue'] {
+  --c: var(--test-fg);
+}
+[data-color='purple'] {
+  --c: var(--stage-fg);
+}

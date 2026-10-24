@@ -1,0 +1,12 @@
+.grp.dueg {
+  color: var(--muted);
+}
+.grp.dueg.overdue {
+  color: var(--tag-red-fg);
+}
+.grp.dueg.today {
+  color: var(--tag-yellow-fg);
+}
+.grp.dueg.soon {
+  color: var(--accent);
+}

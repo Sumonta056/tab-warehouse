@@ -1,0 +1,58 @@
+.badge {
+  flex: 0 0 auto;
+  font-family: var(--mono);
+  font-size: calc(10px * var(--fs, 1));
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-top: 3px;
+}
+.badge.PROD {
+  background: var(--prod-bg);
+  color: var(--prod-fg);
+}
+.badge.TEST {
+  background: var(--test-bg);
+  color: var(--test-fg);
+}
+.badge.STAGE {
+  background: var(--stage-bg);
+  color: var(--stage-fg);
+}
+.badge.LOCAL {
+  background: var(--local-bg);
+  color: var(--local-fg);
+}
+.badge.GH {
+  background: var(--gh-bg);
+  color: var(--gh-fg);
+}
+[data-tag='teal'] {
+  --tag-bg: var(--tag-teal-bg);
+  --tag-fg: var(--tag-teal-fg);
+}
+[data-tag='pink'] {
+  --tag-bg: var(--tag-pink-bg);
+  --tag-fg: var(--tag-pink-fg);
+}
+[data-tag='yellow'] {
+  --tag-bg: var(--tag-yellow-bg);
+  --tag-fg: var(--tag-yellow-fg);
+}
+[data-tag='red'] {
+  --tag-bg: var(--tag-red-bg);
+  --tag-fg: var(--tag-red-fg);
+}
+[data-tag='cyan'] {
+  --tag-bg: var(--tag-cyan-bg);
+  --tag-fg: var(--tag-cyan-fg);
+}
+[data-tag='grey'] {
+  --tag-bg: var(--tag-grey-bg);
+  --tag-fg: var(--tag-grey-fg);
+}
+.badge.tag {
+  background: var(--tag-bg);
+  color: var(--tag-fg);
+}
