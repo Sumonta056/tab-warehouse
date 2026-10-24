@@ -117,6 +117,8 @@ Developers keep the same page open in many versions: live, test, staging and `lo
 
 ![Learning pending folder with a red Overdue chip, a highlighted chip for a date in 2 days and a plain chip for a later date](site/screenshots/due.png)
 
+![Schedule view: links from several folders in Overdue, Today, Next 7 days and Later groups, each with its folder name and a due chip on the right](site/screenshots/schedule.png)
+
 ![Docs folder with High, Medium and Other groups, a colored stripe and a note under the URL](site/screenshots/notes.png)
 
 ### Tags

@@ -123,6 +123,10 @@
     [ids['The Rust book']]: { note: 'Finish chapter 4 on ownership', due: dayFromNow(-3) },
     [ids['web.dev: Learn performance']]: { due: `${dayFromNow(2)}T10:00` },
     [ids['Refactoring UI']]: { due: dayFromNow(40) },
+    [ids['Release checklist']]: { pri: 'high', due: `${dayFromNow(0)}T16:00` },
+    [ids['Standup notes']]: { due: dayFromNow(0) },
+    [ids['Waiting on design review']]: { note: 'Ping the designer', due: dayFromNow(-1) },
+    [ids['Team metrics']]: { due: dayFromNow(5) },
   });
 
   const fresh = () => {
