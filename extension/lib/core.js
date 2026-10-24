@@ -630,6 +630,25 @@ export function searchLinks(secs, query, meta = {}, rules = []) {
   return hits;
 }
 
+export const DUE_GROUPS = [
+  ['overdue', 'Overdue'],
+  ['today', 'Today'],
+  ['soon', 'Next 7 days'],
+  ['later', 'Later'],
+];
+
+export function scheduleGroups(secs, meta = {}, now = new Date()) {
+  const dated = searchLinks(secs, '', meta)
+    .map((hit) => ({ ...hit, p: parseDue(meta[hit.bm.id]?.due) }))
+    .filter((x) => x.p)
+    .sort((a, b) => +(a.p.at || a.p.day) - +(b.p.at || b.p.day) || !!a.p.at - !!b.p.at);
+  return DUE_GROUPS.map(([state, name]) => ({
+    state,
+    name,
+    items: dated.filter((x) => dueState(meta[x.bm.id].due, now) === state).map(({ bm, s, crumb }) => ({ bm, s, crumb })),
+  })).filter((g) => g.items.length);
+}
+
 /* ---------- omnibox ---------- */
 export const OMNI_MAX = 5;
 

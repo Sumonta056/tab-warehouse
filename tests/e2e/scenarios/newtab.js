@@ -7,7 +7,7 @@ const area = 'folders';
 export default [
   {
     area,
-    name: 'boots on Home; Home and Board are labeled view tabs under a full-width search; Home folder is not a sidebar section',
+    name: 'boots on Home; Home, Board and Schedule are labeled view tabs under a full-width search; Home folder is not a sidebar section',
     page: 'newtab',
     fixture: () => base(),
     async run(t) {
@@ -27,14 +27,23 @@ export default [
         'tabs box matches the search box',
       );
       t.eq(cs(btn).fontSize, cs(t.$('#q')).fontSize, 'tab labels match the search text size');
-      t.eq(cs(btn).columnGap, cs(search).columnGap, 'same icon-to-text gap');
       t.ok(Math.abs(search.getBoundingClientRect().width - tabs.getBoundingClientRect().width) <= 1, 'search is as wide as the tabs');
       t.ok(btn.getBoundingClientRect().height >= 28, 'Home tab is at least 28 px tall');
       t.ok(t.$('.side .view-tabs').getBoundingClientRect().height <= 36, 'view tabs take at most 36 px');
-      t.ok(Math.abs(btn.getBoundingClientRect().width - t.$('#boardBtn').getBoundingClientRect().width) <= 1, 'tabs share the width equally');
-      t.eq(btn.textContent.trim(), 'Home', 'labeled');
-      t.eq(t.$('#boardBtn').textContent.trim(), 'Board', 'labeled');
-      t.ok(btn.querySelector('svg') && t.$('#boardBtn').querySelector('svg'), 'icons kept');
+      const all = [btn, t.$('#boardBtn'), t.$('#scheduleBtn')];
+      t.ok(
+        all.every((b) => Math.abs(b.getBoundingClientRect().width - btn.getBoundingClientRect().width) <= 1),
+        'tabs share the width equally',
+      );
+      t.eq(
+        all.map((b) => b.textContent.trim()),
+        ['Home', 'Board', 'Schedule'],
+        'labeled',
+      );
+      t.ok(
+        all.every((b) => b.querySelector('svg')),
+        'icons in the markup',
+      );
       t.eq(btn.getAttribute('aria-label'), 'Home', 'accessible name');
       t.ok(btn.classList.contains('on'), 'Home is selected');
       t.ok(t.$('#home'), 'Home page is rendered');
@@ -45,27 +54,33 @@ export default [
   },
   {
     area,
-    name: 'view tabs: a middle line splits Home and Board while neither is open',
+    name: 'view tabs: two lines split the three tabs while none is open',
     page: 'newtab',
     fixture: () => base(),
     async run(t) {
       const tabs = t.$('.side .view-tabs');
-      const line = () => t.w.getComputedStyle(tabs, '::after');
+      const lines = () => ['::before', '::after'].map((x) => t.w.getComputedStyle(tabs, x));
       t.click(t.$('.nav[data-id="30"]'));
       await t.settle();
-      t.ok(line().content !== 'none' && line().opacity === '1', 'line shows on a folder page');
       const r = tabs.getBoundingClientRect();
-      t.eq(line().width, '1px', '1 px wide');
-      t.ok(Math.abs(parseFloat(line().left) + 0.5 - r.width / 2) <= 2, 'in the middle');
-      t.ok(parseFloat(line().height) < r.height - 8, 'shorter than the box');
+      lines().forEach((line, i) => {
+        t.ok(line.content !== 'none' && line.opacity === '1', `line ${i + 1} shows on a folder page`);
+        t.eq(line.width, '1px', '1 px wide');
+        t.ok(Math.abs(parseFloat(line.left) + 0.5 - (r.width * (i + 1)) / 3) <= 2, `at ${i + 1}/3`);
+        t.ok(parseFloat(line.height) < r.height - 8, 'shorter than the box');
+      });
       t.click(t.$('#homeBtn'));
       await t.settle();
-      t.eq(line().opacity, '0', 'hidden while a tab is marked on');
+      t.eq(
+        lines().map((l) => l.opacity),
+        ['0', '0'],
+        'hidden while a tab is marked on',
+      );
     },
   },
   {
     area,
-    name: 'view tabs: at the narrowest sidebar the search box keeps its placeholder and the tabs fit',
+    name: 'view tabs: labels at the default width, icons and labels when wide, icons only at the narrowest; nothing overflows',
     page: 'newtab',
     fixture: () => base({ settings: { sideWidth: 180 } }),
     async run(t) {
@@ -73,9 +88,23 @@ export default [
       t.ok(Math.round(side.width) <= 181, 'sidebar is 180 px');
       const q = t.$('#q');
       t.ok(q.getBoundingClientRect().width >= 70, 'search input keeps room for its placeholder');
-      for (const b of [t.$('#homeBtn'), t.$('#boardBtn')]) {
-        t.ok(b.scrollWidth <= b.clientWidth + 1, `${b.id} label fits`);
-        t.ok(b.getBoundingClientRect().right <= side.right, `${b.id} inside the sidebar`);
+      const shown = (b) => [...b.children].filter((k) => k.getClientRects().length).map((k) => (k.classList.contains('lbl') ? 'lbl' : 'icon'));
+      const fits = (b) =>
+        [...b.children]
+          .filter((k) => k.getClientRects().length)
+          .every((k) => k.getBoundingClientRect().left >= b.getBoundingClientRect().left && k.getBoundingClientRect().right <= b.getBoundingClientRect().right);
+      for (const [w, want] of [
+        [180, ['icon']],
+        [264, ['lbl']],
+        [320, ['icon', 'lbl']],
+      ]) {
+        t.d.documentElement.style.setProperty('--side-w', `${w}px`);
+        await t.settle();
+        for (const b of t.$$('.side .view-tab')) {
+          t.eq(shown(b), want, `${w} px: ${b.id} shows ${want.join(' and ')}`);
+          t.ok(fits(b), `${w} px: ${b.id} content fits`);
+          t.ok(b.getAttribute('aria-label') && b.title, `${b.id} keeps its name and tooltip`);
+        }
       }
     },
   },
@@ -762,7 +791,7 @@ export default [
   },
   {
     area,
-    name: 'j / k move through Home, Board and folders in sidebar order',
+    name: 'j / k move through Home, Board, Schedule and folders in sidebar order',
     page: 'newtab',
     fixture: () => base(),
     async run(t) {
@@ -773,7 +802,15 @@ export default [
       t.d.activeElement?.blur();
       t.key(t.d, 'j');
       await t.settle();
-      t.eq(t.$('.head h2')?.textContent, 'Sprint tasks', 'j from the Board goes to first folder');
+      t.eq(t.$('.head h2')?.textContent, 'Schedule', 'j from the Board goes to the Schedule');
+      t.d.activeElement?.blur();
+      t.key(t.d, 'j');
+      await t.settle();
+      t.eq(t.$('.head h2')?.textContent, 'Sprint tasks', 'j from the Schedule goes to first folder');
+      t.d.activeElement?.blur();
+      t.key(t.d, 'k');
+      await t.settle();
+      t.eq(t.$('.head h2')?.textContent, 'Schedule', 'k goes back to the Schedule');
       t.d.activeElement?.blur();
       t.key(t.d, 'k');
       await t.settle();

@@ -15,6 +15,7 @@ import tags from './scenarios/tags.js';
 import palettecmd from './scenarios/palettecmd.js';
 import quicksave from './scenarios/quicksave.js';
 import shortcuts from './scenarios/shortcuts.js';
+import schedule from './scenarios/schedule.js';
 
 const ALL = [
   ...newtab,
@@ -34,6 +35,7 @@ const ALL = [
   ...palettecmd,
   ...quicksave,
   ...shortcuts,
+  ...schedule,
 ];
 const frame = document.getElementById('frame');
 const out = document.getElementById('results');

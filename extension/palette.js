@@ -10,6 +10,7 @@ export function openPalette(ctx) {
   const actions = [
     { title: 'Home', icon: 'home', run: () => ctx.go('home') },
     { title: 'Board', icon: 'board', run: () => ctx.go('board') },
+    { title: 'Schedule', icon: 'calendar', run: () => ctx.go('schedule') },
     ...TABS.map(([key, label]) => ({ title: `Settings › ${label}`, icon: 'gear', run: () => ctx.openSettings(key) })),
   ];
   const input = h('input', {

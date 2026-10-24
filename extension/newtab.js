@@ -41,6 +41,7 @@ import {
   loadLinkMeta,
   setLinkMeta,
   searchLinks,
+  scheduleGroups,
   isPaletteRequest,
 } from './lib/core.js';
 import { renderHome, ensureHomeFolder, loadHomeAssets, homeBgUrl } from './home.js';
@@ -69,6 +70,8 @@ let drag = null; // { kind: 'link'|'folder', id, parentId }
 const HOME = { id: 'home', title: 'Home', home: true, links: [], parts: [], all: [] };
 const SETTINGS = { id: 'settings', title: 'Settings', settings: true, links: [], parts: [], all: [] };
 const BOARD = { id: 'board', title: 'Board', board: true, links: [], parts: [], all: [] };
+const SCHEDULE = { id: 'schedule', title: 'Schedule', schedule: true, links: [], parts: [], all: [] };
+const VIEWS = [HOME, BOARD, SCHEDULE];
 let beforeSettings = null;
 let saveQueue = Promise.resolve();
 
@@ -78,6 +81,7 @@ $('#plusIcon').append(svgIcon('plus'));
 $('#catIcon').append(svgIcon('plus'));
 $('#homeIcon').append(svgIcon('home'));
 $('#boardIcon').append(svgIcon('board'));
+$('#scheduleIcon').append(svgIcon('calendar'));
 $('#ghIcon').append(svgIcon('github'));
 $('#webIcon').append(svgIcon('globe'));
 $('#fabIcon').append(svgIcon('home'));
@@ -115,7 +119,7 @@ async function refresh() {
   secs = sections(root, settings.order, [settings.home.folderId]);
   await pruneLinkMeta();
   renderBrand();
-  current = current?.home ? HOME : current?.settings ? SETTINGS : current?.board ? BOARD : secs.find((s) => s.id === current?.id) || HOME;
+  current = current?.settings ? SETTINGS : VIEWS.find((v) => v.id === current?.id) || secs.find((s) => s.id === current?.id) || HOME;
   renderNav();
   renderPage();
 }
@@ -160,8 +164,8 @@ function groups() {
 }
 
 function navOrder() {
-  if (!settings.categories.length) return [HOME, BOARD, ...secs];
-  return [HOME, BOARD, ...groups().flatMap((g) => (g.cat?.closed ? [] : g.items)), ...secs.filter((s) => s.virtual)];
+  if (!settings.categories.length) return [...VIEWS, ...secs];
+  return [...VIEWS, ...groups().flatMap((g) => (g.cat?.closed ? [] : g.items)), ...secs.filter((s) => s.virtual)];
 }
 
 function bindHomeButtons() {
@@ -178,6 +182,9 @@ function bindHomeButtons() {
   });
   $('#boardBtn').addEventListener('click', () => {
     select(BOARD);
+  });
+  $('#scheduleBtn').addEventListener('click', () => {
+    select(SCHEDULE);
   });
   $('#homeFab').addEventListener('click', () => {
     select(HOME);
@@ -196,12 +203,11 @@ function clearQuery() {
 function renderNav() {
   navSearch = !!query;
   const open = openView();
-  const on = !!open?.home;
-  $('#homeBtn').classList.toggle('on', on);
-  $('#homeBtn').setAttribute('aria-current', on ? 'page' : 'false');
-  const onBoard = !!open?.board;
-  $('#boardBtn').classList.toggle('on', onBoard);
-  $('#boardBtn').setAttribute('aria-current', onBoard ? 'page' : 'false');
+  for (const v of VIEWS) {
+    const btn = $(`#${v.id}Btn`);
+    btn.classList.toggle('on', open === v);
+    btn.setAttribute('aria-current', open === v ? 'page' : 'false');
+  }
   $('#settingsBtn').classList.toggle('on', !!open?.settings);
   $('#settingsBtn').setAttribute('aria-pressed', String(!!open?.settings));
   nav.replaceChildren();
@@ -531,6 +537,7 @@ function renderPage() {
   if (current?.home) return renderHome(page, { settings, tree, showMenu, toast, rerender: renderPage });
   if (current?.settings) return renderSettings(page, settingsCtx);
   if (current?.board) return renderBoard(page, boardCtx);
+  if (current?.schedule) return renderSchedule();
   if (!current) {
     page.append(h('div', { class: 'empty' }, 'No folders under this root. Change the root folder in Settings.'));
     return;
@@ -943,12 +950,12 @@ function renderRow(bm, s, p, { crumb = null, q = filterQ } = {}) {
     highlight(note, meta.note, q);
     txt.append(h('span', { class: 'note' }, svgIcon('note'), note));
   }
-  const due = dueState(meta?.due);
-  if (due) txt.append(h('span', { class: `due-chip ${due}`, title: meta.due }, svgIcon('calendar'), dueLabel(meta.due)));
   if (crumb) txt.append(h('span', { class: 'crumb' }, crumb));
   row.append(txt);
   const badge = linkBadge(env, bm.url, settings.customTags);
   if (badge) row.append(badge);
+  const due = dueState(meta?.due);
+  if (due) row.append(h('span', { class: 'due-col' }, h('span', { class: `due-chip ${due}`, title: meta.due }, svgIcon('calendar'), dueLabel(meta.due))));
   row.append(
     h(
       'span',
@@ -1185,6 +1192,39 @@ function renderSearch() {
   }
   const list = h('div', { class: 'list' });
   for (const { bm, s, crumb } of hits.slice(0, 300)) list.append(renderRow(bm, s, { ...folderPrefs(s.id), sort: 'manual' }, { crumb, q: query }));
+  page.append(list);
+}
+
+/* ---------- schedule ---------- */
+function renderSchedule() {
+  const groups = scheduleGroups(secs, linkMeta);
+  const n = groups.reduce((sum, g) => sum + g.items.length, 0);
+  page.append(h('div', { class: 'head' }, h('h2', {}, 'Schedule'), h('span', { class: 'cnt mono muted' }, `${n} link${n === 1 ? '' : 's'}`)));
+  if (!n) {
+    page.append(h('div', { class: 'empty' }, 'No links with a due date. Set one in the ⋯ menu of a link, or with Due in the save popup.'));
+    return;
+  }
+  const p = folderPrefs(SCHEDULE.id);
+  const list = h('div', { class: 'list schedule' });
+  for (const g of groups) {
+    const closed = !!p.closed[g.state];
+    const hdr = h(
+      'button',
+      {
+        class: `grp dueg ${g.state} ${closed ? 'closed' : ''}`,
+        'aria-expanded': closed ? 'false' : 'true',
+        dataset: { due: g.state },
+        onClick: () => setFolderPrefs(SCHEDULE.id, { closed: { ...p.closed, [g.state]: !closed } }),
+      },
+      svgIcon('chevron'),
+      g.name,
+      h('span', { class: 'line' }),
+      String(g.items.length),
+    );
+    hdr.querySelector('svg').classList.add('chev');
+    list.append(hdr);
+    if (!closed) for (const { bm, s, crumb } of g.items) list.append(renderRow(bm, s, { ...folderPrefs(s.id), sort: 'due' }, { crumb, q: '' }));
+  }
   page.append(list);
 }
 
@@ -1638,7 +1678,7 @@ const paletteCtx = {
     } else chrome.tabs.update({ url });
   },
   go(where) {
-    select(where === 'board' ? BOARD : HOME);
+    select(VIEWS.find((v) => v.id === where) || HOME);
   },
   select(s) {
     select(s);
@@ -1701,7 +1741,7 @@ function openSettings() {
 }
 
 function closeSettings() {
-  current = (beforeSettings?.home ? HOME : beforeSettings?.board ? BOARD : secs.find((s) => s.id === beforeSettings?.id)) || HOME;
+  current = VIEWS.find((v) => v.id === beforeSettings?.id) || secs.find((s) => s.id === beforeSettings?.id) || HOME;
   beforeSettings = null;
   renderNav();
   renderPage();
@@ -1798,7 +1838,7 @@ function bindGlobal() {
     if (ch.linkMeta) {
       linkMeta = ch.linkMeta.newValue || {};
       if (!editingId && !document.hidden) {
-        if (query) renderPage();
+        if (query || current?.schedule) renderPage();
         else if (current && !current.home && !current.settings && !current.board) renderBody();
       }
     }

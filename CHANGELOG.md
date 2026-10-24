@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Schedule**: a third view tab under the search box lists every link with a due date from all folders. Groups: Overdue, Today, Next 7 days and Later; the oldest overdue link comes first. Each row shows its folder and section. Open it also with `j`/`k` or from the command palette.
+
+### Changed
+
+- The due chip sits on the right of each row, so the dates of all rows line up. In a narrow window it moves under the link.
+- The view tabs show only their names at the default sidebar width, icons and names in a wide sidebar, and only icons in a narrow sidebar.
+
 ## [2.5.0] - 2026-10-24
 
 Tab Warehouse 2.5.0 helps you save faster and not forget what you saved. It adds due dates on links, quick save without the popup, a warning when a page is already saved, and a Shortcuts tab in Settings.

@@ -21,10 +21,10 @@ Every rule here has at least one test. If you change a rule, change its test in 
 
 - Header: the extension icon (`#logo`, `icons/icon48.png`) and `brandName(settings)` (`#brandTitle`): `"<userName>'s Warehouse"`, or `Tab Warehouse` when the name is empty. The root folder name is not shown. The browser tab title (`document.title`) is the same text.
 - Footer (`#sideFoot`), last in the sidebar: "Made by Sumonta", a GitHub link (`https://github.com/sumonta056`) and a portfolio link (`https://sumonta056.vercel.app/`). Icon links, ≥ 28 px, `target=_blank rel=noopener`, with `aria-label`; the icon is centred in its hover box.
-- The search box has the full sidebar width. Under it, the view tabs (`.view-tabs`, `role="group"`, `aria-label="View"`) hold two equal, labeled buttons with icons: Home (`#homeBtn`) and Board (`#boardBtn`), each ≥ 28 px tall (compact, like dense-list rows); the whole group is at most 36 px tall. At the narrowest sidebar (180 px) the labels and the search placeholder still fit. A 1 px middle line splits the two tabs while neither is marked `on`; it hides when one is.
+- The search box has the full sidebar width. Under it, the view tabs (`.view-tabs`, `role="group"`, `aria-label="View"`) hold three equal buttons: Home (`#homeBtn`), Board (`#boardBtn`) and Schedule (`#scheduleBtn`), each ≥ 28 px tall (compact, like dense-list rows); the whole group is at most 36 px tall. What a tab shows depends on the sidebar width (container query on `.side`): the label only at the default width, icon and label when the sidebar is wide (about 296 px and more), the icon only when it is narrow (below about 228 px). Every tab keeps its `aria-label` and tooltip, and nothing overflows at any width; the search placeholder still fits at 180 px. Two 1 px lines split the three tabs while none is marked `on`; they hide when one is.
 - Home (`#homeBtn`, `aria-label="Home"`) is always present and marked `on` while Home is open. It is not an item in `#nav`. Clicking it from search results clears the search and opens Home.
 - While global search results show, nothing in the sidebar is marked open: no `on` on Home, Board, Settings or a folder, no `has-on` on a category, no `aria-current`. The page under the search stays `current`, so Escape or **Clear** marks it again. The sidebar re-renders only when the search starts or ends, not on each keystroke.
-- Opening any page clears the global search first (`select()`): a sidebar folder, Home, Board, the floating Home button, j/k, the palette, a Board column name and _Rename folder_.
+- Opening any page clears the global search first (`select()`): a sidebar folder, Home, Board, Schedule, the floating Home button, j/k, the palette, a Board column name and _Rename folder_.
 - Order of `#nav`: (categories, or a flat list) → Unsorted.
 - There is no hint text under the sidebar buttons.
 - Sections of the sidebar = child folders of the root folder (`resolveRoot`: `rootId`, else folder named `rootName` (empty by default; older installs keep their saved name), else first top-level folder), **excluding the Home folder**.
@@ -33,10 +33,10 @@ Every rule here has at least one test. If you change a rule, change its test in 
 - Folder order is `settings.order`; ids not in it are appended in Chrome order. Reordering never moves bookmarks in Chrome.
 - Alt+↑/↓ moves a folder one step **within its own category** (or within "No category").
 - Dropping a link on a sidebar folder moves the bookmark there; dropping a link on the Home button moves it into the Home folder.
-- `j` / `k` (when nothing is focused) walk the visible order: Home, Board, then folders, skipping collapsed categories.
+- `j` / `k` (when nothing is focused) walk the visible order: Home, Board, Schedule, then folders, skipping collapsed categories.
 - Width: drag the handle, ←/→ on the focused handle (16 px steps), double-click resets to 264. Clamped to 180–440 (`clampSideWidth`). Saved on release / after 300 ms of key presses, never per pointer move.
 
-- Floating Home button (`#homeFab`, `position: fixed`, bottom-right, `aria-label="Go to Home"`): visible on every view except Home — folder pages, the Board, Unsorted and search results. Click clears search and opens Home.
+- Floating Home button (`#homeFab`, `position: fixed`, bottom-right, `aria-label="Go to Home"`): visible on every view except Home — folder pages, the Board, the Schedule, Unsorted and search results. Click clears search and opens Home.
 
 ## Settings
 
@@ -57,7 +57,7 @@ Every rule here has at least one test. If you change a rule, change its test in 
 - `background.js` takes the command's tab id (else the active tab's id) and calls `paletteCommand(tabId, send)`: it sends `{ type: 'open-palette', tabId }` with `chrome.runtime.sendMessage`. It never looks at `tab.url` (an overridden new tab reports `chrome://newtab/`, and the URL needs `activeTab`).
 - Each Tab Warehouse page reads its own tab id once (`chrome.tabs.getCurrent()`) and listens with `chrome.runtime.onMessage`. Only the page whose id matches (`isPaletteRequest()`) opens the palette (`showPalette()`: close any open menu, then `openPalette()`) and answers `true`; every other page does not answer.
 - An answer of `true` → `'palette'`. No answer, a rejected `sendMessage` or no tab id → `'none'`: on any other site the key does nothing (no popup, no badge).
-- Empty box: every sidebar folder (sidebar order), then the places: Home, Board and one `Settings › <tab>` item per Settings tab. Typing: links first (`searchLinks()`: title, URL, folder crumb, note and env label; every term must match; at most 30), then matching folders, then matching places. Matches are highlighted with `<mark>` via `highlight()`.
+- Empty box: every sidebar folder (sidebar order), then the places: Home, Board, Schedule and one `Settings › <tab>` item per Settings tab. Typing: links first (`searchLinks()`: title, URL, folder crumb, note and env label; every term must match; at most 30), then matching folders, then matching places. Matches are highlighted with `<mark>` via `highlight()`.
 - A link item shows its favicon/letter icon, the title (or the address), `Crumb · address` on one line (cut with …; the full URL is the tooltip) and its env or GH badge. A folder item says `n links` and "Folder"; a place says "Go to".
 - ↑/↓ move the active item (`aria-activedescendant`); the first item is active after each keystroke; the mouse also selects. Tab stays in the box.
 - Enter (or click) on a link opens it in this tab (`chrome.tabs.update`). ⌘/Ctrl/Shift+Enter (or ⌘-click) opens it in a background tab (`chrome.tabs.create({ active: false })`) with the toast "Opened in a background tab". On a folder it opens the folder page; on a place it opens Home, the Board or that Settings tab. Opening anything clears a global search first.
@@ -204,9 +204,18 @@ Every rule here has at least one test. If you change a rule, change its test in 
   - `focus()` focuses the date box when the boxes show, else the **Today** chip.
 - With the check box on, Save stores the link and its date, then opens `gcalUrl()` with `chrome.tabs.create` (popup: right after the current tab). With it off, nothing opens.
 - `gcalUrl({ title, url, note, due })` = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=<title, else url>&dates=…&details=<note>\n\n<url>`. All day → `YYYYMMDD/<next day>`. With a time → a 30-minute event, local time without `Z`, so Google reads it in the user's calendar time zone. The event is created once; later changes to the date do not update it.
-- Row: a due chip (`.due-chip.<state>`, calendar icon + `dueLabel()`, the stored value as tooltip) under the note. Overdue uses the red tag tokens, today the yellow tag tokens, soon the accent; later is plain.
+- Row (folder page, global search, Schedule): the due chip (`.due-chip.<state>`, calendar icon + `dueLabel()`, the stored value as tooltip) sits on the right of the row in `.due-col` (at least 200 px, chip at its right edge), after the env/GH badge and before the actions, so the chips of all rows line up. At ≤ 760 px the row wraps and the column moves to its own line under the link, lined up with the text; the actions stay on the first line. Overdue uses the red tag tokens, today the yellow tag tokens, soon the accent; later is plain.
 - Row ⋯ menu: _Set due date_ / _Change due date_ (opens the edit form with the picker focused: the date box when the link has a date, else **Today**); with a date also _Add to Google Calendar_ and _Clear due date_ (keeps the note and priority).
 - Filter buttons **Overdue** and **Has due date** come after Has note. A link with only a due date also makes the filter buttons show. They combine with the folder filter like the others.
+
+## Schedule
+
+- `#scheduleBtn` (third view tab, `aria-label="Schedule"`) opens the Schedule in the right pane (the sidebar stays). It is marked `on` with `aria-current="page"` while open, clears a global search first, and Settings opened from it return to it on Done/Escape. `#homeFab` shows. The palette has a **Schedule** place.
+- Lists every link under the root folder, in any depth, that has a valid `linkMeta[id].due` (not the Home folder). `scheduleGroups(secs, meta, now)` sorts by the due moment (all-day = the start of that day), earliest first; on the same moment an all-day link comes first. Then it groups by `dueState()`: **Overdue**, **Today**, **Next 7 days**, **Later** (`DUE_GROUPS`), empty groups left out. So the oldest overdue link is at the top.
+- Head: "Schedule" and `n link(s)`. Group header (`.grp.dueg.<state>`, `data-due`): name, a line, the count; Overdue red, Today yellow, Next 7 days accent, Later muted. Click collapses it; saved in `folders.schedule.closed[<state>]`.
+- Rows are the folder-page rows (title/URL mode of their own folder, note, priority stripe, badge, due chip, Edit, Delete, ⋯) with the crumb `Folder › Section` (`Unsorted` for loose links). No reorder by drag (the date sets the order); a drop on a sidebar folder or the Home button still moves the link. Delete is the row trash with the 8 s Undo (the link comes back with its note, priority and due date).
+- A due date set or cleared anywhere (row menu, edit form, popup) re-renders the Schedule at once.
+- No dated link → "No links with a due date. Set one in the ⋯ menu of a link, or with Due in the save popup.".
 
 ## Sections (subfolders inside a folder)
 

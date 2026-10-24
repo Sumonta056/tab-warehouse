@@ -27,8 +27,15 @@
         </label>
       </div>
       <div class="view-tabs" role="group" aria-label="View">
-        <button class="view-tab" id="homeBtn" aria-label="Home" title="Home · drop a link here to add it to Home"><span id="homeIcon"></span>Home</button>
-        <button class="view-tab" id="boardBtn" aria-label="Board" title="Board · all folders as columns"><span id="boardIcon"></span>Board</button>
+        <button class="view-tab" id="homeBtn" aria-label="Home" title="Home · drop a link here to add it to Home">
+          <span id="homeIcon"></span><span class="lbl">Home</span>
+        </button>
+        <button class="view-tab" id="boardBtn" aria-label="Board" title="Board · all folders as columns">
+          <span id="boardIcon"></span><span class="lbl">Board</span>
+        </button>
+        <button class="view-tab" id="scheduleBtn" aria-label="Schedule" title="Schedule · every link with a due date">
+          <span id="scheduleIcon"></span><span class="lbl">Schedule</span>
+        </button>
       </div>
       <nav id="nav" aria-label="Folders"></nav>
       <button class="btn ghost sm newFolder" id="newFolderBtn"><span id="plusIcon"></span>New folder</button>

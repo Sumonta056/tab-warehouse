@@ -28,6 +28,7 @@ body {
 }
 .side {
   --fs: var(--fs-side, 1);
+  container: side / inline-size;
   z-index: 1;
   flex: 0 0 var(--side-w, 264px);
   width: var(--side-w, 264px);
@@ -330,7 +331,7 @@ body {
 .view-tabs {
   position: relative;
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 2px;
   padding: 2px;
   margin-bottom: 10px;
@@ -338,16 +339,21 @@ body {
   border-radius: 8px;
   background: var(--surface);
 }
+.view-tabs::before,
 .view-tabs::after {
   content: '';
   position: absolute;
   top: 9px;
   bottom: 9px;
-  left: calc(50% - 0.5px);
+  left: calc(100% / 3 - 0.5px);
   width: 1px;
   background: var(--line-2);
   pointer-events: none;
 }
+.view-tabs::after {
+  left: calc(200% / 3 - 0.5px);
+}
+.view-tabs:has(.on)::before,
 .view-tabs:has(.on)::after {
   opacity: 0;
 }
@@ -358,7 +364,7 @@ body {
   align-items: center;
   justify-content: center;
   gap: 10px;
-  padding: 0 8px;
+  padding: 0 4px;
   border: 0;
   border-radius: 6px;
   background: transparent;
@@ -376,6 +382,22 @@ body {
   height: 14px;
   display: block;
   flex: 0 0 auto;
+}
+@container side (width < 268px) {
+  .view-tab {
+    gap: 0;
+  }
+  .view-tab > span:not(.lbl) {
+    display: none;
+  }
+}
+@container side (width < 202px) {
+  .view-tab > span:not(.lbl) {
+    display: block;
+  }
+  .view-tab .lbl {
+    display: none;
+  }
 }
 .view-tab.on {
   background: var(--accent-bg);
@@ -929,6 +951,18 @@ img.wait {
   background: var(--accent-bg);
   color: var(--accent-text);
 }
+.grp.dueg {
+  color: var(--muted);
+}
+.grp.dueg.overdue {
+  color: var(--tag-red-fg);
+}
+.grp.dueg.today {
+  color: var(--tag-yellow-fg);
+}
+.grp.dueg.soon {
+  color: var(--accent);
+}
 .grp.prig {
   color: var(--pc, var(--muted));
   border-radius: 6px;
@@ -954,12 +988,19 @@ img.wait {
   border-radius: 2px;
   background: var(--pc);
 }
+.row .due-col {
+  flex: 0 0 auto;
+  min-width: 200px;
+  display: flex;
+  justify-content: flex-end;
+}
 .row .due-chip {
   align-self: flex-start;
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  margin-top: 3px;
+  margin-top: 1px;
+  white-space: nowrap;
   padding: 1px 8px;
   border-radius: 999px;
   border: 1px solid var(--line-2);
@@ -1319,6 +1360,19 @@ img.wait {
   }
   .page {
     padding: 14px;
+  }
+  .row {
+    flex-wrap: wrap;
+  }
+  .row .txt {
+    flex-basis: 0;
+  }
+  .row .due-col {
+    order: 1;
+    flex-basis: 100%;
+    min-width: 0;
+    justify-content: flex-start;
+    padding-left: 52px;
   }
 }
 
