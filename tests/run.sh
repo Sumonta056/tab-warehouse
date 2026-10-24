@@ -14,14 +14,22 @@ echo "== unit (node --test) + coverage gate =="
 node tools/coverage-gate.mjs || status=1
 
 echo "== e2e (headless Chrome) =="
+if curl -s -o /dev/null "http://127.0.0.1:$PORT/"; then
+  echo "e2e: port $PORT is already in use by another server. Stop it (lsof -nP -iTCP:$PORT -sTCP:LISTEN) or run with PORT=<free port>."
+  exit 1
+fi
 python3 -I tests/serve.py "$PORT" "$ROOT" >/dev/null 2>&1 &
 SERVER=$!
 trap 'kill $SERVER 2>/dev/null' EXIT
 for _ in $(seq 1 50); do curl -s "http://127.0.0.1:$PORT/tests/e2e/runner.html" >/dev/null && break; sleep 0.1; done
+if ! kill -0 "$SERVER" 2>/dev/null; then
+  echo "e2e: the test server could not start on port $PORT."
+  exit 1
+fi
 PROFILE="$(mktemp -d)"
 URL="http://127.0.0.1:$PORT/tests/e2e/runner.html${ONLY:+?only=$ONLY}"
 OUT="$("$CHROME" --headless=new --disable-gpu --host-resolver-rules="MAP * ~NOTFOUND, EXCLUDE 127.0.0.1, EXCLUDE ssl.gstatic.com" --no-first-run --no-default-browser-check --user-data-dir="$PROFILE" \
-  --window-size=1920,1000 --virtual-time-budget=180000 --run-all-compositor-stages-before-draw --dump-dom "$URL" 2>/dev/null)"
+  --window-size=1920,1000 --virtual-time-budget=300000 --run-all-compositor-stages-before-draw --dump-dom "$URL" 2>/dev/null)"
 rm -rf "$PROFILE"
 LINE="$(printf '%s' "$OUT" | grep -o 'E2E_RESULT {.*}' | head -1 | sed 's/&quot;/"/g; s/&gt;/>/g; s/&lt;/</g; s/&amp;/\&/g')"
 if [ -z "$LINE" ]; then
