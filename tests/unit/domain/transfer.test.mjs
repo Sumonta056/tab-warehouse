@@ -1,9 +1,7 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { cleanImport } from '../../extension/domain/transfer.js';
-import { imageSaveError } from '../../extension/domain/errors.js';
-import { sortLinks } from '../../extension/domain/sort.js';
-import { detectEnv } from '../../extension/domain/env.js';
+import { detectEnv } from '../../../extension/domain/env.js';
+import { cleanImport } from '../../../extension/domain/transfer.js';
 
 describe('cleanImport', () => {
   test('drops bad env rules, host rows and folder prefs that would break rendering', () => {
@@ -26,7 +24,6 @@ describe('cleanImport', () => {
     assert.equal('showFavicons' in r.preferences, false);
     assert.doesNotThrow(() => detectEnv({ title: 't', url: 'https://prod.example/x' }, r.preferences.envRules));
   });
-
   test('keeps board.group only when it is cat or flat', () => {
     const pick = (board) => cleanImport({ sections: [], preferences: { board } }).preferences.board;
     assert.deepEqual(pick({ group: 'flat', evil: 1 }), { group: 'flat' });
@@ -36,7 +33,6 @@ describe('cleanImport', () => {
     assert.equal(pick('flat'), undefined);
     assert.equal(pick(undefined), undefined);
   });
-
   test('keeps only sections and links with string titles and URLs', () => {
     const r = cleanImport({
       sections: [
@@ -68,41 +64,6 @@ describe('cleanImport', () => {
   });
 });
 
-describe('imageSaveError', () => {
-  test('names a full storage', () => {
-    assert.match(imageSaveError(new Error('Resource::kQuotaBytes quota exceeded')), /^Not enough storage space/);
-  });
-  test('falls back to the unreadable image message', () => {
-    assert.equal(imageSaveError(new Error('The source image could not be decoded.')), 'That file is not an image the browser can read.');
-    assert.equal(imageSaveError(undefined), 'That file is not an image the browser can read.');
-  });
-});
-
-describe('sortLinks keeps input order for equal keys', () => {
-  const links = [
-    { id: 'a', index: 0, title: 'Same', url: 'https://x.com/p' },
-    { id: 'b', index: 1, title: 'same', url: 'https://y.com/p' },
-    { id: 'c', index: 2, title: 'Same', url: 'https://z.com/p' },
-  ];
-  for (const sort of ['name', 'env']) {
-    test(sort, () =>
-      assert.deepEqual(
-        sortLinks(links, sort, []).map((l) => l.id),
-        ['a', 'b', 'c'],
-      ),
-    );
-  }
-  test('does not change the input array', () => {
-    const copy = [...links].reverse();
-    const before = copy.map((l) => l.id);
-    sortLinks(copy, 'name', []);
-    assert.deepEqual(
-      copy.map((l) => l.id),
-      before,
-    );
-  });
-});
-
 describe('cleanImport: custom tags', () => {
   const prefs = (p) => cleanImport({ sections: [], preferences: p }).preferences;
 
@@ -115,7 +76,6 @@ describe('cleanImport: custom tags', () => {
       { name: 'UAT', plain: '', color: 'teal' },
     ]);
   });
-
   test('accepts labels and site columns for imported tags, drops unknown tags', () => {
     const p = prefs({
       customTags: [{ name: 'QA', plain: '', color: 'pink' }],
@@ -132,7 +92,6 @@ describe('cleanImport: custom tags', () => {
     ]);
     assert.deepEqual(p.hostMap, [{ PROD: 'shop.example.com', QA: 'qa.example.com' }]);
   });
-
   test('an old backup without customTags imports as before', () => {
     const p = prefs({
       envRules: [
@@ -167,7 +126,6 @@ describe('cleanImport: link notes and priority', () => {
     ]);
     assert.deepEqual(r.sections[0].parts[0].links, [{ title: 'z', url: 'https://z.com/', pri: 'low' }]);
   });
-
   test('keeps a valid due date on each link, drops a bad one', () => {
     const r = cleanImport({
       sections: [
