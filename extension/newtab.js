@@ -3,7 +3,7 @@ import { getTree, onBookmarksChanged } from './services/bookmarks.js';
 import { openTab, updateTab, currentTabId } from './services/tabs.js';
 import { onMessage } from './services/runtime.js';
 import { resolveRoot, sections, findById } from './domain/tree.js';
-import { folderGroups, navOrder, stepNav, findView } from './domain/folders.js';
+import { navOrder, stepNav, findView } from './domain/folders.js';
 import { isPaletteRequest } from './domain/palette.js';
 import { HOME, SETTINGS, BOARD, SCHEDULE, PAGES } from './constants/pages.js';
 import { h } from './ui/dom.js';
@@ -28,7 +28,7 @@ import { renderSchedule } from './views/schedule/schedule.js';
 import { renderHome, ensureHomeFolder, loadHomeAssets, homeBgUrl } from './home.js';
 import { renderSettings, setSettingsTab } from './settings.js';
 import { openPalette } from './palette.js';
-import { renderBoard } from './board.js';
+import { renderBoard } from './views/board/board.js';
 
 const $ = (s) => document.querySelector(s);
 const page = $('#page');
@@ -232,7 +232,6 @@ const boardCtx = {
   set filter(v) {
     state.filterQ = v;
   },
-  groups: () => folderGroups(state.settings, state.secs),
   folderPrefs: (id) => folderPrefs(id),
   select: (s) => select(s),
   folderMenu: (e, s) => folderMenu(ctx, e, s),

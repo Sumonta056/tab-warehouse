@@ -1,7 +1,7 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { omniboxSuggestions } from '../../../extension/domain/omnibox.js';
-import { matchLink, searchLinks } from '../../../extension/domain/search.js';
+import { matchLink, searchLinks, matchTitleUrl } from '../../../extension/domain/search.js';
 import { sections } from '../../../extension/domain/tree.js';
 import { L, F } from '../fixtures.mjs';
 
@@ -47,5 +47,16 @@ describe('searchLinks', () => {
       omniboxSuggestions(secs, 'qa', {}, rules).map((s) => s.content),
       ['https://old.example.com/cart'],
     );
+  });
+});
+
+describe('matchTitleUrl', () => {
+  const bm = { title: 'Grafana Prod', url: 'https://grafana.example.com/d/abc' };
+  test('every term must be in the title or URL; the note does not count', () => {
+    assert.equal(matchTitleUrl(bm, ''), true);
+    assert.equal(matchTitleUrl(bm, 'grafana'), true);
+    assert.equal(matchTitleUrl(bm, 'prod d/abc'), true);
+    assert.equal(matchTitleUrl(bm, 'prod  missing'), false);
+    assert.equal(matchTitleUrl({ ...bm, note: 'deploy' }, 'deploy'), false);
   });
 });

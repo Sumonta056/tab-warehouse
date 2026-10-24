@@ -11,7 +11,7 @@ const PURE = ['constants', 'domain'];
 const CHROME_OK = ['services', 'entry'];
 const usesWord = (src, word) => new RegExp(`(^|[^\\w.$])${word.replace('.', '\\.')}`).test(src);
 
-const LEGACY = ['home.js', 'board.js', 'palette.js', 'settings.js'];
+const LEGACY = ['home.js', 'palette.js', 'settings.js'];
 
 function jsFiles(dir) {
   return readdirSync(dir, { withFileTypes: true }).flatMap((d) => {

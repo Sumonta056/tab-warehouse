@@ -18,3 +18,10 @@ export function searchLinks(secs, query, meta = {}, rules = []) {
     }
   return hits;
 }
+
+export function matchTitleUrl(bm, q) {
+  return q
+    .split(/\s+/)
+    .filter(Boolean)
+    .every((t) => `${bm.title} ${bm.url}`.toLowerCase().includes(t));
+}

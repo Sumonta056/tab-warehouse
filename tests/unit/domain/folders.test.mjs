@@ -14,6 +14,7 @@ import {
   reorderCategories,
   sectionTargets,
   findView,
+  boardLanes,
 } from '../../../extension/domain/folders.js';
 
 const S = (id, extra = {}) => ({ id, title: id, all: [], parts: [], links: [], node: { id }, ...extra });
@@ -166,5 +167,31 @@ describe('findView', () => {
     assert.equal(findView('c', PAGES, secs), c);
     assert.equal(findView('gone', PAGES, secs), null);
     assert.equal(findView(undefined, PAGES, secs), null);
+  });
+});
+
+describe('boardLanes', () => {
+  test('no categories or One row: a single lane with every folder', () => {
+    assert.deepEqual(
+      boardLanes({ categories: [], folderCat: {}, board: { group: 'cat' } }, secs).map((l) => [l.name, l.items.map((s) => s.id)]),
+      [[null, ['a', 'b', 'c', 'd', 'unsorted:r']]],
+    );
+    assert.deepEqual(
+      boardLanes({ ...cats(), board: { group: 'flat' } }, secs).map((l) => l.name),
+      [null],
+    );
+  });
+  test('by category: a lane per category, then No category with Unsorted last; empty lanes skipped', () => {
+    const s = { ...cats(), board: { group: 'cat' } };
+    s.categories.push({ id: 'c3', name: 'Empty', closed: false, color: 'red' });
+    s.categories[0].color = 'blue';
+    assert.deepEqual(
+      boardLanes(s, secs).map((l) => [l.name, l.color, l.items.map((x) => x.id)]),
+      [
+        ['Work', 'blue', ['a', 'c']],
+        ['Play', undefined, ['b']],
+        ['No category', undefined, ['d', 'unsorted:r']],
+      ],
+    );
   });
 });

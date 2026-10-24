@@ -1,15 +1,15 @@
-import { h, svgIcon, highlight } from './ui/dom.js';
-import { iconEl } from './ui/icons.js';
-import { detectEnv } from './domain/env.js';
-import { linkBadge } from './ui/badges.js';
-import { tagNames } from './domain/tags.js';
-import { sameAsUrl, displayUrl, hostOf, normalizeUrl } from './domain/url.js';
-import { sortLinks } from './domain/sort.js';
+import { detectEnv } from '../../domain/env.js';
+import { boardLanes } from '../../domain/folders.js';
+import { matchTitleUrl } from '../../domain/search.js';
+import { sortLinks } from '../../domain/sort.js';
+import { tagNames } from '../../domain/tags.js';
+import { sameAsUrl, displayUrl, hostOf, normalizeUrl } from '../../domain/url.js';
+import { createBookmark, moveBookmark } from '../../services/bookmarks.js';
+import { linkBadge } from '../../ui/badges.js';
+import { h, svgIcon, highlight } from '../../ui/dom.js';
+import { iconEl } from '../../ui/icons.js';
 
 let adding = null;
-
-const terms = (q) => q.split(/\s+/).filter(Boolean);
-const matcher = (q) => (bm) => terms(q).every((t) => `${bm.title} ${bm.url}`.toLowerCase().includes(t));
 
 export function renderBoard(page, ctx) {
   const { settings, secs } = ctx;
@@ -66,19 +66,6 @@ export function renderBoard(page, ctx) {
   renderColumns(ctx);
 }
 
-function lanes(ctx) {
-  const { settings, secs } = ctx;
-  const unsorted = secs.filter((s) => s.virtual);
-  if (!settings.categories.length || settings.board.group === 'flat') return [{ name: null, items: secs }];
-  const out = ctx
-    .groups()
-    .filter((g) => g.cat)
-    .map((g) => ({ name: g.cat.name, color: g.cat.color, items: g.items }));
-  const rest = ctx.groups().find((g) => !g.cat);
-  out.push({ name: 'No category', items: [...rest.items, ...unsorted] });
-  return out.filter((l) => l.items.length);
-}
-
 function renderColumns(ctx) {
   const box = document.getElementById('boardCols');
   if (!box) return;
@@ -87,7 +74,7 @@ function renderColumns(ctx) {
     box.append(h('div', { class: 'empty' }, 'No folders under this root. Add a folder with New folder in the sidebar.'));
     return;
   }
-  for (const lane of lanes(ctx)) {
+  for (const lane of boardLanes(ctx.settings, ctx.secs)) {
     if (lane.name)
       box.append(
         h(
@@ -104,7 +91,7 @@ function renderColumns(ctx) {
 function column(s, ctx) {
   const { settings } = ctx;
   const p = ctx.folderPrefs(s.id);
-  const match = matcher(ctx.filter);
+  const match = (bm) => matchTitleUrl(bm, ctx.filter);
   const sort = (list) => sortLinks(list.filter(match), p.sort, settings.envRules, tagNames(settings));
   const cards = h('div', { class: 'bcards' });
   let hits = 0;
@@ -191,7 +178,7 @@ function column(s, ctx) {
       await ctx.moveFolder(d.id, s.id, after);
       ctx.toast('Folder order saved');
     } else if (d.kind === 'link' && d.parentId !== s.node.id) {
-      await chrome.bookmarks.move(d.id, { parentId: s.node.id });
+      await moveBookmark(d.id, { parentId: s.node.id });
       ctx.toast(`Moved to ${s.title}`);
     }
   });
@@ -228,7 +215,7 @@ function sectionHeader(g, count, ctx) {
     e.stopPropagation();
     ctx.clearMarks();
     ctx.drag = null;
-    await chrome.bookmarks.move(d.id, { parentId: g.node.id });
+    await moveBookmark(d.id, { parentId: g.node.id });
     ctx.toast(`Moved to ${g.title}`);
   });
   return el;
@@ -292,7 +279,7 @@ function card(bm, p, ctx) {
     const after = el.classList.contains('drop-after');
     ctx.clearMarks();
     ctx.drag = null;
-    await chrome.bookmarks.move(d.id, { parentId: bm.parentId, index: bm.index + (after ? 1 : 0) });
+    await moveBookmark(d.id, { parentId: bm.parentId, index: bm.index + (after ? 1 : 0) });
   });
   return el;
 }
@@ -341,7 +328,7 @@ function addForm(s, ctx) {
     }
     const title = nameIn.value.trim() || hostOf(url).replace(/^www\./, '') || displayUrl(url);
     try {
-      await chrome.bookmarks.create({ parentId: s.node.id, title, url });
+      await createBookmark({ parentId: s.node.id, title, url });
       adding = null;
       ctx.toast('Added');
     } catch (err) {

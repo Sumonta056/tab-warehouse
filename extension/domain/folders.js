@@ -79,3 +79,13 @@ export function sectionTargets(folder, bm) {
 export function findView(id, pages, secs) {
   return pages.find((v) => v.id === id) || secs.find((s) => s.id === id) || null;
 }
+
+export function boardLanes(settings, secs) {
+  const unsorted = secs.filter((s) => s.virtual);
+  if (!settings.categories.length || settings.board.group === 'flat') return [{ name: null, items: secs }];
+  const groups = folderGroups(settings, secs);
+  const out = groups.filter((g) => g.cat).map((g) => ({ name: g.cat.name, color: g.cat.color, items: g.items }));
+  const rest = groups.find((g) => !g.cat);
+  out.push({ name: 'No category', items: [...rest.items, ...unsorted] });
+  return out.filter((l) => l.items.length);
+}
