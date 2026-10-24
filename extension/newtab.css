@@ -180,12 +180,15 @@ body {
   color: var(--muted);
   font-size: calc(12px * var(--fs, 1));
 }
-.side-foot span {
+.side-foot > span {
   flex: 1 1 auto;
 }
 .side-foot .btn {
   min-height: 28px;
   min-width: 28px;
+}
+.side-foot .btn > span {
+  display: flex;
 }
 .cat {
   position: relative;

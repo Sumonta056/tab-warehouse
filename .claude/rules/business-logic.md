@@ -20,7 +20,7 @@ Every rule here has at least one test. If you change a rule, change its test in 
 ## Sidebar
 
 - Header: the extension icon (`#logo`, `icons/icon48.png`) and `brandName(settings)` (`#brandTitle`): `"<userName>'s Warehouse"`, or `Tab Warehouse` when the name is empty. The root folder name is not shown. The browser tab title (`document.title`) is the same text.
-- Footer (`#sideFoot`), last in the sidebar: "Made by Sumonta", a GitHub link (`https://github.com/sumonta056`) and a portfolio link (`https://sumonta056.vercel.app/`). Icon links, ≥ 28 px, `target=_blank rel=noopener`, with `aria-label`.
+- Footer (`#sideFoot`), last in the sidebar: "Made by Sumonta", a GitHub link (`https://github.com/sumonta056`) and a portfolio link (`https://sumonta056.vercel.app/`). Icon links, ≥ 28 px, `target=_blank rel=noopener`, with `aria-label`; the icon is centred in its hover box.
 - The search box has the full sidebar width. Under it, the view tabs (`.view-tabs`, `role="group"`, `aria-label="View"`) hold two equal, labeled buttons with icons: Home (`#homeBtn`) and Board (`#boardBtn`), each ≥ 28 px tall (compact, like dense-list rows); the whole group is at most 36 px tall. At the narrowest sidebar (180 px) the labels and the search placeholder still fit. A 1 px middle line splits the two tabs while neither is marked `on`; it hides when one is.
 - Home (`#homeBtn`, `aria-label="Home"`) is always present and marked `on` while Home is open. It is not an item in `#nav`. Clicking it from search results clears the search and opens Home.
 - While global search results show, nothing in the sidebar is marked open: no `on` on Home, Board, Settings or a folder, no `has-on` on a category, no `aria-current`. The page under the search stays `current`, so Escape or **Clear** marks it again. The sidebar re-renders only when the search starts or ends, not on each keystroke.
@@ -128,6 +128,7 @@ Every rule here has at least one test. If you change a rule, change its test in 
 - `applyTheme()` sets `--accent`, `--accent-bg`, `--accent-text`, `--accent-ink` on `:root` in the new-tab page and the popup. A custom color derives the other three (`color-mix`; ink is dark on light colors, white on dark).
 - Picked in Settings › Appearance (7 swatches + custom color). It applies and saves at once.
 - Env colors never change with the theme.
+- The open list of every `<select>` uses the dark tokens (`option`: `--surface` background, `--text` color), so options stay readable where the browser draws a white list (Windows).
 
 ## Sidebar look
 

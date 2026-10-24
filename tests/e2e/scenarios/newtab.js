@@ -480,6 +480,8 @@ export default [
     fixture: () => base(),
     async run(t) {
       await t.folder('Shop API');
+      const opt = t.w.getComputedStyle(t.$('select[aria-label="Sort"] option'));
+      t.eq([opt.backgroundColor, opt.color], ['rgb(36, 36, 36)', 'rgb(232, 232, 232)'], 'options use the dark surface and text colors');
       t.type(t.$('select[aria-label="Sort"]'), 'name');
       await t.settle();
       t.eq(t.settings().folders['30'].sort, 'name', 'sort saved');
@@ -877,6 +879,10 @@ export default [
         t.eq(a.getAttribute('rel'), 'noopener', `${label} rel`);
         t.eq(a.getAttribute('aria-label'), label, `${label} name`);
         t.ok(a.getBoundingClientRect().height >= 28, `${label} is at least 28 px tall`);
+        const box = a.getBoundingClientRect(),
+          ic = a.querySelector('svg').getBoundingClientRect();
+        t.ok(Math.abs(box.left + box.width / 2 - (ic.left + ic.width / 2)) <= 1, `${label} icon is centred in its hover box`);
+        t.ok(Math.abs(box.top + box.height / 2 - (ic.top + ic.height / 2)) <= 1, `${label} icon is centred vertically`);
       }
     },
   },
