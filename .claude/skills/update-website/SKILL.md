@@ -5,7 +5,7 @@ description: Update the GitHub Pages website (site/), its live demo, its screens
 
 # Update the website and README
 
-The website lives in `site/` and deploys to `https://sumonta056.github.io/tab-warehouse/` through `.github/workflows/pages.yml` after CI passes on `main`. The live demo runs the real extension files from the **last commit** (`site/build.sh` uses `git archive HEAD`) with a fake `chrome.*` API in `site/demo/demo-chrome.js`.
+The website lives in `site/` and deploys to `https://sumonta056.github.io/tab-warehouse/` through `.github/workflows/pages.yml` after CI passes on `main`. The live demo runs the release build of the **last commit** (`site/build.sh` exports `HEAD` with `git archive`, builds it with `tools/build.mjs` and copies its `dist/` into `demo/`) with a fake `chrome.*` API in `site/demo/demo-chrome.js`. It needs `npm install` (esbuild); the Pages workflow runs `npm ci` first.
 
 **Before you start:** the feature must be committed. Uncommitted extension code does not appear in the demo or in the screenshots. Plan the edits and get approval before you change files. Never commit without being asked.
 

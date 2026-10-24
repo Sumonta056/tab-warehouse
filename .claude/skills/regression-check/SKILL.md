@@ -5,14 +5,14 @@ description: Prove a change did not break existing behaviour — run the unit + 
 
 # Regression check
 
-The suite is dependency-free: `node --test` for pure logic, headless Chrome for the real pages with a fake `chrome.*` API. One command runs everything:
+The suite needs no test library: `node --test` for pure logic, headless Chrome for the real pages with a fake `chrome.*` API. One command runs everything, and the e2e scenarios run twice: on the source in `extension/`, then on the release build in `dist/` (built by `tools/build.mjs` in between):
 
 ```
-./tests/run.sh               # syntax + unit + all e2e scenarios
+./tests/run.sh               # syntax + unit + e2e on extension/ + build + e2e on dist/
 ./tests/run.sh "sections"    # only e2e scenarios whose name contains the text
 ```
 
-Exit code 0 = all green. The e2e part prints `pass N / fail M / total T` and one block per failure.
+Exit code 0 = all green. Each e2e pass prints `== e2e on <root>/ ==` and `pass N / fail M / total T` with one block per failure. A scenario that passes on `extension/` and fails on `dist/` points at the build (a file Chrome loads by path missing from `COPY` in `tools/build.mjs`, or a module that relies on its own URL).
 
 ## Layout
 
@@ -20,11 +20,12 @@ Exit code 0 = all green. The e2e part prints `pass N / fail M / total T` and one
 tests/unit/<layer>/<module>.test.mjs  one file per module under extension/<layer>/ (node --test)
 tests/unit/architecture.test.mjs      layer dependency rule, and a test file for every domain/ and services/ module
 tests/unit/styles.test.mjs            every stylesheet linked in cascade order, px font-sizes scaled
+tests/unit/build.test.mjs             release build: manifest paths exist, one script + one stylesheet per page, CSS unchanged and in order, no import() in the worker, readable, deterministic
 tests/unit/fake-chrome.mjs            in-memory chrome.* for services tests
 tools/coverage-gate.mjs               run by run.sh: domain/ files >= 90 % lines, services/ files >= 80 %
 tests/e2e/chrome-stub.js        fake chrome.bookmarks / storage / tabs / runtime (state lives in the runner page)
 tests/e2e/fixtures.js           base() tree: My Links > Sprint tasks (+Blocked), Shop API (4 envs), GITHUB - PIN, Empty, Loose; Other bookmarks > Home
-tests/e2e/runner.html|js        loads newtab.html / popup.html in an iframe per scenario, helpers on `t`
+tests/e2e/runner.html|js        loads newtab.html / popup.html from ?root=<folder> (default extension) in an iframe per scenario, helpers on `t` (`t.background()` imports that root's background.js)
 tests/e2e/scenarios/*.js        newtab (folders), sections, categories, home, popup, …; ui.js checks each ui/ piece alone
 tests/serve.py                  no-cache, keep-alive (HTTP/1.1) static server used by run.sh and for visual debugging
 tests/run.sh                    starts tests/serve.py on PORT (default 8799; stops if the port is taken), runs everything, parses E2E_RESULT
@@ -34,7 +35,7 @@ tests/run.sh                    starts tests/serve.py on PORT (default 8799; sto
 
 1. Read the failure line: it names the scenario and the expected vs actual value.
 2. Decide which side is wrong. Check `.claude/rules/business-logic.md`. If the rule says the old behaviour is correct, the code regressed — fix the code. If the rule changed on purpose, update the rule **and** the test in the same change. Never weaken an assertion just to get green.
-3. Debug visually: `python3 -I tests/serve.py 8799` from the repo root (sends `Cache-Control: no-store`, so edited CSS/JS is never stale), open `http://127.0.0.1:8799/tests/e2e/runner.html?only=<name>` in Chrome (or with the Chrome DevTools MCP: `new_page`, `take_screenshot`, `list_console_messages`). The iframe shows the app; `window.__harness` holds the fake tree and storage.
+3. Debug visually: `python3 -I tests/serve.py 8799` from the repo root (sends `Cache-Control: no-store`, so edited CSS/JS is never stale), open `http://127.0.0.1:8799/tests/e2e/runner.html?only=<name>` (add `&root=dist` after `npm run build` to debug the build) in Chrome (or with the Chrome DevTools MCP: `new_page`, `take_screenshot`, `list_console_messages`). The iframe shows the app; `window.__harness` holds the fake tree and storage.
 4. Page JS errors are collected automatically and fail the scenario (`page error: …`).
 5. `e2e: port N is already in use` → another server (often a stale `tests/serve.py`) holds the port. Stop it or use `PORT=<free port> ./tests/run.sh`. Never point the run at a server you did not start: it may serve another checkout.
 6. Many scenarios in a row fail with `newtab did not become ready` → the pages stopped loading, not the scenarios. The server must keep connections alive (`protocol_version = 'HTTP/1.1'` in `tests/serve.py`); with one connection per file, each scenario loads about 90 files and macOS runs out of local ports (TIME_WAIT) after about 190 scenarios.

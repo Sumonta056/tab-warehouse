@@ -8,11 +8,11 @@ description: Publish or update Tab Warehouse on the Chrome Web Store — build t
 The listing text and the dashboard answers are in [listing.md](listing.md). Keep that file true to the shipped version; it is the only copy.
 
 1. Release first with `/release`. The store needs a `version` in `extension/manifest.json` that is higher than the version in the store.
-2. Build the upload from the committed `extension/` folder:
+2. Build the upload from the committed tree (`tools/package.sh` exports `HEAD`, bundles it with `tools/build.mjs` into `dist/` and zips that):
    ```
    ./tools/package.sh --store
    ```
-   It writes `tab-warehouse-<version>-store.zip` with `manifest.json` at the ZIP root (the store rejects a nested folder).
+   It writes `tab-warehouse-<version>-store.zip` with `manifest.json` at the ZIP root (the store rejects a nested folder). The code is bundled but not minified or renamed, so it meets the store's readability rule; never add `minify` to `tools/build.mjs`. If a reviewer asks for the source, point to the public repository: `extension/` is the source and `npm run build` makes the same files.
 3. Make `listing.md` match the release:
    - Read the new `CHANGELOG.md` entry. Add each user-visible feature to the **Description**, under its section. Remove features that no longer exist.
    - Update the version in the first paragraph of `listing.md`.

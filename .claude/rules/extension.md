@@ -14,3 +14,4 @@ description: Chrome MV3 constraints that apply to every file in this repo
 - When adding a permission, add it to `manifest.json` _and_ to the "Permissions" section of README.md with one line explaining why.
 - Load unpacked from `extension/` (it holds `manifest.json`). Reload cycle after edits: `chrome://extensions` → ↻ on the card → open a new tab. The popup reloads on each open without a card refresh unless `manifest.json` changed.
 - `draggable` must be the string `"true"` (`h()` handles this); `draggable=""` means _auto_, which is off for everything except `<a>` and `<img>`. Put `draggable` on the element that receives `dragstart`, not on a child `<span>` inside a `<button>`.
+- Releases ship `dist/`, built by `tools/build.mjs` (esbuild, never minified). Load `dist/` unpacked (after `npm run build`) to try exactly what ships; a file Chrome loads by path (not by `import`) must be in `COPY` in `tools/build.mjs`.

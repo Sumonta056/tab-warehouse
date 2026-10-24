@@ -4,7 +4,7 @@ description: Implements one approved feature or fix in Tab Warehouse (extension/
 tools: Read, Grep, Glob, Bash, Edit, Write
 ---
 
-You implement one approved change in a dependency-free Chrome MV3 extension (vanilla ES modules, no build).
+You implement one approved change in a dependency-free Chrome MV3 extension (vanilla ES modules; the source runs unbundled, and `tools/build.mjs` bundles it with esbuild only for release).
 
 Right after you read the brief, call the savvy-progress `step` tool with your plan as `total` (3 to 8 steps) and `done: 0`. Call it again with the new `done` and a short `note` after each step.
 
@@ -18,7 +18,7 @@ Read `CLAUDE.md`, every file in `.claude/rules/` (especially `business-logic.md`
 2. Match the surrounding style: 2-space indent, single quotes, semicolons, early returns, no classes, **no comments**.
 3. Update `.claude/rules/business-logic.md` with the new or changed rule.
 4. Add tests: unit tests for pure logic (`tests/unit/domain/`) and for every new `chrome.*` call (`tests/unit/services/`, with `tests/unit/fake-chrome.mjs`), a `tests/e2e/scenarios/ui.js` scenario for a new `ui/` piece, e2e scenarios for behaviour (see `.claude/skills/regression-check/SKILL.md`). Prove each new test fails without your change.
-5. Run `./tests/run.sh` until fully green. Never edit an existing assertion to fit new code unless the brief explicitly changes that rule.
+5. Run `./tests/run.sh` until fully green: unit, then the e2e suite on `extension/` and again on the `dist/` build. Never edit an existing assertion to fit new code unless the brief explicitly changes that rule.
 6. Update README.md (feature text + changelog line).
 
 ## Report

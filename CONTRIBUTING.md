@@ -10,7 +10,7 @@ Thank you for your interest in this project. This guide shows how to set up the 
 
 ## Set up
 
-There is no build step. The extension runs straight from the source folder.
+You develop without a build step: the extension runs straight from the source folder. Only the release ZIP is built (see [Release build](#release-build)).
 
 1. Fork the repository and clone your fork:
    ```sh
@@ -46,7 +46,8 @@ extension/             Everything Chrome loads (choose this folder in Load unpac
   views/               One folder per screen: sidebar, folder, search, schedule, board, home, palette, settings, popup
   styles/              tokens.css, base.css, ui/ (one file per ui piece), views/ (one file per screen)
   icons/               Extension icons
-tools/                 make-icons.py · package.sh (release ZIP) · coverage-gate.mjs (unit coverage gate)
+dist/                  The release build (git-ignored), made by tools/build.mjs
+tools/                 build.mjs (release build) · make-icons.py · package.sh (release ZIP) · coverage-gate.mjs (unit coverage gate)
 docs/                  Notes and requirements
 tests/                 run.sh · unit/ · e2e/ · perf/
 .claude/rules/         Conventions and the behaviour spec (business-logic.md)
@@ -60,12 +61,12 @@ Read these 2 files before you change behaviour:
 ## Core rules
 
 1. **Chrome's bookmarks are the source of truth.** Never store bookmark titles or URLs in `chrome.storage`. Change bookmarks with the `chrome.bookmarks` API and let `refresh()` re-render.
-2. **No runtime dependencies.** Do not add a bundler, a framework, TypeScript or any package that ships with the extension. npm is only for dev tools (`devDependencies`).
+2. **No runtime dependencies.** Do not add a framework, TypeScript, another build tool or any package that ships with the extension. npm is only for dev tools (`devDependencies`). esbuild is the only build tool: it bundles the release, never minifies or obfuscates it (the Chrome Web Store requires readable code), and the source must keep working without it.
 3. **No remote code.** No CDN scripts, no inline `<script>` and no inline event handlers (the extension CSP blocks them).
 4. **No `innerHTML` with user data.** Build DOM with the `h()` helper. Titles and URLs are user content.
 5. **No new permissions** without a reason in the pull request and a line in the README's permissions table.
 6. **Layers.** `constants ← domain ← services ← ui ← state ← views ← entry points`: a file imports only from its own layer or the layers to its left, and a view never imports another view (the entry point passes it a `ctx` of functions). `domain/` and `constants/` never touch `document`, `window` or `chrome`. **Only `services/` calls `chrome.*`.** `tests/unit/architecture.test.mjs` checks all of this.
-7. **Lazy views, preloaded modules.** Only Home and the sidebar load with the new tab. A new view is lazy-loaded with `import()` in `newtab.js` (add it to `LOADERS` and `viewsFor()`), never imported statically. Every module that `newtab.js` or `popup.js` imports statically must have a `<link rel="modulepreload">` in its HTML; `tests/unit/architecture.test.mjs` enforces both and prints the lines to add or remove.
+7. **Lazy views.** Only Home and the sidebar load with the new tab. A new view is lazy-loaded with `import()` in `newtab.js` (add it to `LOADERS` and `viewsFor()`), never imported statically; `tests/unit/architecture.test.mjs` enforces it. The release build keeps each lazy view in its own chunk.
 
 ## Where new code goes
 
@@ -95,7 +96,7 @@ Read these 2 files before you change behaviour:
 Run the full check before you open a pull request. It takes about a minute.
 
 ```sh
-./tests/run.sh               # syntax + unit + coverage gate + end-to-end
+./tests/run.sh               # syntax + unit + coverage gate + e2e on extension/, then build + e2e on dist/
 ./tests/run.sh "sections"    # only e2e scenarios whose name contains "sections"
 ```
 
@@ -108,7 +109,17 @@ Run the full check before you open a pull request. It takes about a minute.
   python3 -I tests/serve.py 8799
   # open http://127.0.0.1:8799/tests/e2e/runner.html?only=<name>
   ```
+- The e2e suite runs twice: on the source in `extension/`, then on the release build in `dist/` (`runner.html?root=dist`). Both runs must pass. A few scenarios import single source modules as test helpers (`ui/*.js`, `ui/export.js`, `services/import.js`); they keep importing them from `extension/` in both runs.
 - If you change rendering, listeners, timers or storage, also run `node tests/perf/memprobe.mjs`.
+
+## Release build
+
+```sh
+npm run build                # writes dist/ (node tools/build.mjs [out])
+./tools/package.sh           # builds a clean export of HEAD and zips dist/ + LICENSE
+```
+
+`tools/build.mjs` uses esbuild to write one readable script and one stylesheet per page, the lazy views as chunks in `dist/chunks/`, and `background.js` as a single file. The stylesheets are the `<link rel="stylesheet">` files of the source HTML in the same order. `tests/unit/build.test.mjs` checks the output. Load `dist/` unpacked to try exactly what ships.
 
 **Every behaviour change updates `business-logic.md` and adds or updates a test in the same pull request.** Never weaken a test to make it pass.
 

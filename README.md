@@ -12,7 +12,7 @@
 <p align="center">
   <img alt="Manifest V3" src="https://img.shields.io/badge/Chrome-Manifest%20V3-4285F4?logo=googlechrome&logoColor=white">
   <img alt="No dependencies" src="https://img.shields.io/badge/dependencies-0-brightgreen">
-  <img alt="No build step" src="https://img.shields.io/badge/build-none-lightgrey">
+  <img alt="No build step for development" src="https://img.shields.io/badge/dev%20build-none-lightgrey">
   <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-blue"></a>
   <a href="https://github.com/Sumonta056/tab-warehouse/issues"><img alt="Issues" src="https://img.shields.io/github/issues/Sumonta056/tab-warehouse"></a>
 </p>
@@ -193,7 +193,9 @@ The website and the demo live in [`site/`](site/). The demo loads the extension'
 git clone https://github.com/Sumonta056/tab-warehouse.git
 ```
 
-Load the `extension` folder of the clone with **Load unpacked**. After a `git pull`, click ↻ on the extension card.
+Load the `extension` folder of the clone with **Load unpacked**. It runs as it is, with no build. After a `git pull`, click ↻ on the extension card.
+
+The release ZIP is built: `npm install`, then `./tools/package.sh` (or `npm run build` for an unzipped `dist/` folder you can load the same way).
 
 ### Chrome Web Store
 
@@ -250,7 +252,7 @@ The extension has a background service worker (`background.js`) only for the add
 
 ## How it works
 
-Tab Warehouse is plain JavaScript with ES modules. There is no framework, no bundler, no runtime dependency and no build step. npm is used only for dev tools (Husky, Prettier, commitlint).
+Tab Warehouse is plain JavaScript with ES modules. There is no framework and no runtime dependency, and the source runs without a build step. For a release, esbuild bundles each page into one readable (not minified) script and one stylesheet in `dist/`. npm is used only for dev tools (esbuild, Husky, Prettier, commitlint).
 
 - **Chrome's bookmarks are the source of truth.** The extension never caches titles or URLs. Every change calls `chrome.bookmarks`, and the page re-renders from `chrome.bookmarks.getTree()` when Chrome reports a change.
 - **Extension-only data** (sidebar order, categories, env rules, Home look) lives in `chrome.storage.local`.
@@ -270,7 +272,8 @@ extension/             Everything Chrome loads (choose this folder in Load unpac
   styles/              tokens.css, base.css, ui/ (one file per ui piece), views/ (one file per screen)
   icons/               Extension icons (source: icons/logo.svg)
 tools/make-icons.py    Build the icon sizes from any logo
-tools/package.sh       Build the release ZIP from extension/ (--store: Web Store ZIP)
+tools/build.mjs        Release build: bundle extension/ into dist/ with esbuild (npm run build)
+tools/package.sh       Build dist/ from a clean export and zip it (--store: Web Store ZIP)
 tests/                 Unit, end-to-end and performance tests
 site/                  Website, live demo and screenshots (deployed to GitHub Pages)
 docs/                  Notes and requirements
@@ -289,15 +292,15 @@ Contributions are welcome — bug reports, ideas and pull requests.
 
 ## Tests
 
-No dependencies: Node's built-in test runner and headless Chrome.
+No test dependencies: Node's built-in test runner and headless Chrome.
 
 ```sh
-./tests/run.sh             # syntax check + unit tests + coverage gate + end-to-end scenarios
+./tests/run.sh             # syntax + unit + coverage gate + e2e on extension/, then build + e2e on dist/
 ./tests/run.sh popup       # only e2e scenarios whose name contains "popup"
 node tests/perf/memprobe.mjs   # RAM, leak and render-speed check on the real extension
 ```
 
-The e2e runner loads the real `extension/newtab.html` and `extension/popup.html` with a fake `chrome.*` API, so tests never touch your bookmarks. To watch a scenario run:
+The e2e runner loads the real `extension/newtab.html` and `extension/popup.html` with a fake `chrome.*` API, so tests never touch your bookmarks. `./tests/run.sh` then runs the same scenarios on the release build (`runner.html?root=dist`). To watch a scenario run:
 
 ```sh
 python3 -I tests/serve.py 8799
