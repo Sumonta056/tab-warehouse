@@ -11,8 +11,6 @@ const PURE = ['constants', 'domain'];
 const CHROME_OK = ['services', 'entry'];
 const usesWord = (src, word) => new RegExp(`(^|[^\\w.$])${word.replace('.', '\\.')}`).test(src);
 
-const LEGACY = ['settings.js'];
-
 function jsFiles(dir) {
   return readdirSync(dir, { withFileTypes: true }).flatMap((d) => {
     const p = join(dir, d.name);
@@ -41,15 +39,10 @@ function importsOf(abs) {
 }
 
 const files = jsFiles(EXT).map((abs) => ({ abs, file: rel(abs) }));
-const legacy = (f) => LEGACY.includes(f);
 
 describe('architecture', () => {
-  test('every LEGACY entry still exists', () => {
-    for (const f of LEGACY) assert.ok(existsSync(join(EXT, f)), `${f} is gone: remove it from LEGACY`);
-  });
-
-  test('every file is in a known layer or LEGACY', () => {
-    const unknown = files.filter(({ file }) => !legacy(file) && !layerOf(file)).map(({ file }) => file);
+  test('every file is in a known layer', () => {
+    const unknown = files.filter(({ file }) => !layerOf(file)).map(({ file }) => file);
     assert.deepEqual(unknown, []);
   });
 
@@ -62,7 +55,6 @@ describe('architecture', () => {
           bad.push(`${file} -> ${spec} (missing)`);
           continue;
         }
-        if (legacy(file) || legacy(target)) continue;
         const from = LAYERS.indexOf(layerOf(file));
         const to = LAYERS.indexOf(layerOf(target));
         if (to > from) bad.push(`${file} (${layerOf(file)}) -> ${target} (${layerOf(target)})`);
@@ -77,7 +69,7 @@ describe('architecture', () => {
   test('constants and domain do not touch document, window or chrome', () => {
     const bad = [];
     for (const { abs, file } of files) {
-      if (legacy(file) || !PURE.includes(layerOf(file))) continue;
+      if (!PURE.includes(layerOf(file))) continue;
       const src = readFileSync(abs, 'utf8');
       for (const word of ['document.', 'window.', 'chrome.']) if (usesWord(src, word)) bad.push(`${file} uses ${word}`);
     }
@@ -86,7 +78,7 @@ describe('architecture', () => {
 
   test('only services and entry points call chrome.*', () => {
     const bad = files
-      .filter(({ file }) => !legacy(file) && !CHROME_OK.includes(layerOf(file)))
+      .filter(({ file }) => !CHROME_OK.includes(layerOf(file)))
       .filter(({ abs }) => usesWord(readFileSync(abs, 'utf8'), 'chrome.'))
       .map(({ file }) => file);
     assert.deepEqual(bad, []);

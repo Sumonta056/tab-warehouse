@@ -1,6 +1,6 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { displayUrl, hostOf, isGithub, normalizeUrl, pathKey, sameAsUrl, withScheme } from '../../../extension/domain/url.js';
+import { displayUrl, hostOf, isGithub, normalizeUrl, pathKey, sameAsUrl, withScheme, cleanHost } from '../../../extension/domain/url.js';
 
 describe('URL helpers', () => {
   test('hostOf lowercases host and keeps port; bad URL gives empty string', () => {
@@ -45,5 +45,15 @@ describe('withScheme', () => {
     assert.equal(withScheme('chrome://extensions'), 'chrome://extensions');
     assert.equal(withScheme('localhost:3000'), 'localhost:3000');
     assert.equal(withScheme(''), '');
+  });
+});
+
+describe('cleanHost', () => {
+  test('a full address is cut to its host; text is trimmed and lower-cased', () => {
+    assert.equal(cleanHost('https://Shop.Example.com/a/b?x=1'), 'shop.example.com');
+    assert.equal(cleanHost('  Test.Example.com/path '), 'test.example.com');
+    assert.equal(cleanHost('localhost:3000'), 'localhost:3000');
+    assert.equal(cleanHost(''), '');
+    assert.equal(cleanHost(undefined), '');
   });
 });

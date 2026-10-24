@@ -40,3 +40,8 @@ export function normalizeUrl(input) {
 export function withScheme(url) {
   return url && !/^[a-z]+:/i.test(url) ? 'https://' + url : url;
 }
+
+export function cleanHost(v) {
+  v = (v || '').trim().toLowerCase();
+  return /^[a-z][a-z0-9+.-]*:\/\//.test(v) ? hostOf(v) : v.replace(/\/.*$/, '');
+}

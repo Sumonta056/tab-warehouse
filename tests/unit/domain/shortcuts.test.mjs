@@ -1,6 +1,6 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { commandLabel, shortcutKeys } from '../../../extension/domain/shortcuts.js';
+import { commandLabel, shortcutKeys, isMac } from '../../../extension/domain/shortcuts.js';
 
 describe('shortcuts', () => {
   test('shortcutKeys splits Windows and Linux keys on +', () => {
@@ -22,5 +22,15 @@ describe('shortcuts', () => {
     assert.equal(commandLabel({ name: 'palette', description: 'x' }), 'Open the command palette (on Tab Warehouse)');
     assert.equal(commandLabel({ name: 'other', description: 'Do a thing' }), 'Do a thing');
     assert.equal(commandLabel({ name: 'other' }), 'other');
+  });
+});
+
+describe('isMac', () => {
+  test('reads the platform string', () => {
+    assert.equal(isMac('MacIntel'), true);
+    assert.equal(isMac('macOS'), true);
+    assert.equal(isMac('Win32'), false);
+    assert.equal(isMac(''), false);
+    assert.equal(isMac(undefined), false);
   });
 });

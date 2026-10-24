@@ -20,9 +20,13 @@ export function deriveUrl(url, targetEnv, hostMap, tags = ENVS) {
   return null;
 }
 
+export function findSiteRow(hostMap, host, tags = ENVS) {
+  return host && hostMap.find((r) => tags.some((e) => (r[e] || '').toLowerCase() === host));
+}
+
 export function switchTargets(url, hostMap, tags = ENVS) {
   const host = hostOf(url);
-  const row = host && hostMap.find((r) => tags.some((e) => (r[e] || '').toLowerCase() === host));
+  const row = findSiteRow(hostMap, host, tags);
   if (!row) return null;
   const from = tags.find((e) => (row[e] || '').toLowerCase() === host);
   return {

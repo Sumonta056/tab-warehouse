@@ -1,6 +1,7 @@
 import { ENVS } from '../constants/envs.js';
 import { SITES_HEAD, TAG_COLORS, TAG_PLAIN_MAX } from '../constants/tags.js';
 import { tagNameError } from './tags.js';
+import { plural } from './text.js';
 
 export function envText(rules, hostMap, customTags = []) {
   const cols = [...ENVS, ...customTags.map((t) => t.name)];
@@ -48,4 +49,10 @@ export function parseEnvText(text, known = []) {
     else skipped++;
   }
   return { rules, hostMap, tags, skipped };
+}
+
+export function importSummary(parsed, rules, map) {
+  const tags = parsed.tags.length ? `${plural(parsed.tags.length, 'tag')}, ` : '';
+  const skipped = parsed.skipped ? `. Skipped ${plural(parsed.skipped, 'line')} that could not be read` : '';
+  return `Imported ${tags}${plural(rules.length, 'rule')} and ${plural(map.length, 'site')}${skipped}`;
 }

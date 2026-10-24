@@ -16,3 +16,7 @@ export function shortcutKeys(shortcut) {
   const rest = s.slice(mods.length);
   return [...mods, ...(rest ? [rest] : [])];
 }
+
+export function isMac(platform) {
+  return /mac/i.test(platform || '');
+}

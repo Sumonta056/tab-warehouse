@@ -30,3 +30,43 @@ export function tagNames(settings) {
 export function tagPlain(settings, name) {
   return ENV_NAMES[name] || (settings?.customTags || []).find((t) => t.name === name)?.plain || name;
 }
+
+export function renameTag(rules, map, old, name) {
+  return {
+    rules: rules.map((r) => (r.env === old ? { ...r, env: name } : r)),
+    map: map.map((r) => {
+      if (!(old in r)) return r;
+      const { [old]: host, ...rest } = r;
+      return { ...rest, [name]: host };
+    }),
+  };
+}
+
+export function removeTag(rules, map, name) {
+  return {
+    rules: rules.filter((r) => r.env !== name),
+    map: map
+      .map((r) => {
+        const { [name]: _, ...rest } = r;
+        return rest;
+      })
+      .filter((r) => Object.values(r).some(Boolean)),
+  };
+}
+
+export function firstFreeColor(tags, colors) {
+  return colors.find((col) => !tags.some((t) => t.color === col)) || colors[0];
+}
+
+export function moveItem(list, from, to) {
+  if (to < 0 || to >= list.length || from === to) return null;
+  const next = [...list];
+  const [x] = next.splice(from, 1);
+  next.splice(to, 0, x);
+  return next;
+}
+
+export function dropIndex(from, target, after) {
+  const to = target + (after ? 1 : 0);
+  return from < to ? to - 1 : to;
+}

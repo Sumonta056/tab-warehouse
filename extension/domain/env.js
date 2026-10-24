@@ -22,3 +22,8 @@ export function envGroups(links, rules, tags) {
   for (const bm of links) (by[detectEnv(bm, rules) || 'NONE'] ||= []).push(bm);
   return [...tags, 'NONE'].filter((e) => by[e]).map((env) => ({ env, links: by[env] }));
 }
+
+export function explainWhy(x, rules) {
+  if (x.rule >= 0) return `Rule ${x.rule + 1} matched: the address contains “${rules[x.rule].pattern}”.`;
+  return rules.length ? 'No rule matches this address.' : 'There are no rules yet.';
+}

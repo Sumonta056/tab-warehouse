@@ -28,7 +28,7 @@ import { renderSchedule } from './views/schedule/schedule.js';
 import { ensureHomeFolder } from './services/home-folder.js';
 import { loadHomeAssets, homeBgUrl } from './state/home-assets.js';
 import { renderHome } from './views/home/home.js';
-import { renderSettings, setSettingsTab } from './settings.js';
+import { renderSettings, setSettingsTab } from './views/settings/index.js';
 import { openPalette } from './views/palette/palette.js';
 import { renderBoard } from './views/board/board.js';
 
