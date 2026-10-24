@@ -6,6 +6,7 @@
   "license": "MIT",
   "scripts": {
     "prepare": "husky",
+    "build": "node tools/build.mjs",
     "test": "./tests/run.sh",
     "test:fast": "for f in $(find extension -name '*.js'); do node --check $f || exit 1; done && node --test tests/unit/",
     "coverage": "node --test --experimental-test-coverage tests/unit/ 2>&1 | grep -E '^# (start|end) of coverage|^# file|^# -+$|^# extension/|^# (tests|pass|fail) '",
@@ -16,6 +17,7 @@
   "devDependencies": {
     "@commitlint/cli": "^20.5.3",
     "@commitlint/config-conventional": "^20.5.3",
+    "esbuild": "0.28.2",
     "husky": "^9.1.7",
     "lint-staged": "^16.4.0",
     "prettier": "^3.9.10"

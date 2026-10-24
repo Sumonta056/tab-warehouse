@@ -5,3 +5,4 @@ extension/icons/
 *.zip
 docs/requirements.md
 _site/
+dist/
