@@ -3,3 +3,5 @@
 *.zip
 node_modules/
 _site/
+.claude/skills/web-store/listing.md
+docs/requirements.md
