@@ -1,26 +1,17 @@
-import {
-  loadSettings,
-  saveSettings,
-  applyTheme,
-  getTree,
-  resolveRoot,
-  detectEnv,
-  linkBadge,
-  tagBadge,
-  tagNames,
-  tagPlain,
-  hostOf,
-  iconEl,
-  h,
-  svgIcon,
-  priPicker,
-  duePicker,
-  gcalUrl,
-  loadLinkMeta,
-  setLinkMeta,
-  switchTargets,
-  findSaved,
-} from './lib/core.js';
+import { loadSettings, saveSettings, loadLinkMeta, setLinkMeta } from './services/storage.js';
+import { applyTheme } from './ui/theme.js';
+import { getTree } from './services/bookmarks.js';
+import { resolveRoot } from './domain/tree.js';
+import { detectEnv } from './domain/env.js';
+import { linkBadge, tagBadge } from './ui/badges.js';
+import { tagNames, tagPlain } from './domain/tags.js';
+import { hostOf } from './domain/url.js';
+import { iconEl } from './ui/icons.js';
+import { h, svgIcon } from './ui/dom.js';
+import { priPicker, duePicker } from './ui/pickers.js';
+import { gcalUrl } from './domain/due.js';
+import { switchTargets } from './domain/derive.js';
+import { findSaved } from './domain/duplicates.js';
 import { NOTE_MAX } from './constants/limits.js';
 
 const $ = (s) => document.querySelector(s);

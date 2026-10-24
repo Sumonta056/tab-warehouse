@@ -1,4 +1,9 @@
-import { h, svgIcon, iconEl, highlight, searchLinks, detectEnv, linkBadge, displayUrl } from './lib/core.js';
+import { h, svgIcon, highlight } from './ui/dom.js';
+import { iconEl } from './ui/icons.js';
+import { searchLinks } from './domain/search.js';
+import { detectEnv } from './domain/env.js';
+import { linkBadge } from './ui/badges.js';
+import { displayUrl } from './domain/url.js';
 import { SETTINGS_TABS } from './constants/pages.js';
 import { PALETTE_LINK_MAX } from './constants/limits.js';
 

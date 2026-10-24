@@ -1,44 +1,25 @@
-import {
-  loadSettings,
-  saveSettings,
-  getTree,
-  resolveRoot,
-  sections,
-  sortLinks,
-  buildMatrix,
-  detectEnv,
-  deriveUrl,
-  linkBadge,
-  sameAsUrl,
-  displayUrl,
-  pathKey,
-  hostOf,
-  h,
-  svgIcon,
-  iconEl,
-  highlight,
-  tagNames,
-  findById,
-  clampSideWidth,
-  applyTheme,
-  sideLookVars,
-  brandName,
-  clampFont,
-  flatten,
-  priGroups,
-  priFirst,
-  matchLink,
-  priPicker,
-  duePicker,
-  dueState,
-  dueLabel,
-  gcalUrl,
-  loadLinkMeta,
-  setLinkMeta,
-  searchLinks,
-  scheduleGroups,
-  isPaletteRequest,
-} from './lib/core.js';
+import { loadSettings, saveSettings, loadLinkMeta, setLinkMeta } from './services/storage.js';
+import { getTree } from './services/bookmarks.js';
+import { resolveRoot, sections, findById, flatten } from './domain/tree.js';
+import { sortLinks } from './domain/sort.js';
+import { buildMatrix } from './domain/matrix.js';
+import { detectEnv } from './domain/env.js';
+import { deriveUrl } from './domain/derive.js';
+import { linkBadge } from './ui/badges.js';
+import { sameAsUrl, displayUrl, pathKey, hostOf } from './domain/url.js';
+import { h, svgIcon, highlight } from './ui/dom.js';
+import { iconEl } from './ui/icons.js';
+import { tagNames } from './domain/tags.js';
+import { clampSideWidth, clampFont } from './domain/sizes.js';
+import { applyTheme } from './ui/theme.js';
+import { sideLookVars } from './domain/theme.js';
+import { brandName } from './domain/settings.js';
+import { priGroups, priFirst } from './domain/meta.js';
+import { matchLink, searchLinks } from './domain/search.js';
+import { priPicker, duePicker } from './ui/pickers.js';
+import { dueState, dueLabel, gcalUrl } from './domain/due.js';
+import { scheduleGroups } from './domain/schedule.js';
+import { isPaletteRequest } from './domain/palette.js';
 import { SORTS } from './constants/sorts.js';
 import { HOME, SETTINGS, BOARD, SCHEDULE, PAGES } from './constants/pages.js';
 import { MARK_COLORS } from './constants/themes.js';

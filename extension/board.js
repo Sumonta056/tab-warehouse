@@ -1,4 +1,10 @@
-import { h, svgIcon, iconEl, highlight, detectEnv, linkBadge, tagNames, sameAsUrl, displayUrl, sortLinks, hostOf, normalizeUrl } from './lib/core.js';
+import { h, svgIcon, highlight } from './ui/dom.js';
+import { iconEl } from './ui/icons.js';
+import { detectEnv } from './domain/env.js';
+import { linkBadge } from './ui/badges.js';
+import { tagNames } from './domain/tags.js';
+import { sameAsUrl, displayUrl, hostOf, normalizeUrl } from './domain/url.js';
+import { sortLinks } from './domain/sort.js';
 
 let adding = null;
 

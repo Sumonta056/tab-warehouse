@@ -295,7 +295,7 @@ export default [
     page: 'newtab',
     fixture: () => withMeta({ 31: { note: 'mine' } }),
     async run(t) {
-      const { importFile } = await t.w.eval("import('/extension/lib/transfer.js')");
+      const { importFile } = await t.w.eval("import('/extension/services/import.js')");
       const data = {
         format: 'sumonta-warehouse',
         version: 1,

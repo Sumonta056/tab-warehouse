@@ -1,65 +1,32 @@
 import { test, describe, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
-import {
-  dueQuickDate,
-  brandName,
-  clampFont,
-  explainEnv,
-  envText,
-  parseEnvText,
-  hostOf,
-  pathKey,
-  displayUrl,
-  isGithub,
-  sameAsUrl,
-  detectEnv,
-  deriveUrl,
-  switchTargets,
-  findById,
-  findFolderByTitle,
-  resolveRoot,
-  flatten,
-  folderList,
-  sections,
-  sortLinks,
-  cleanMeta,
-  isDue,
-  dueState,
-  dueLabel,
-  gcalUrl,
-  priGroups,
-  priFirst,
-  matchLink,
-  dupKey,
-  searchLinks,
-  scheduleGroups,
-  xmlEscape,
-  omniboxSuggestions,
-  omniboxTarget,
-  findDuplicates,
-  buildMatrix,
-  googleIcon,
-  normalizeUrl,
-  clampSideWidth,
-  clockText,
-  msToNextTick,
-  letterIcon,
-  loadSettings,
-  saveSettings,
-  themeVars,
-  sideLookVars,
-  tagNameError,
-  cleanTags,
-  tagNames,
-  tagPlain,
-} from '../../extension/lib/core.js';
+import { dueQuickDate, isDue, dueState, dueLabel, gcalUrl } from '../../extension/domain/due.js';
+import { brandName } from '../../extension/domain/settings.js';
+import { clampFont, clampSideWidth } from '../../extension/domain/sizes.js';
+import { explainEnv, detectEnv } from '../../extension/domain/env.js';
+import { envText, parseEnvText } from '../../extension/domain/env-text.js';
+import { hostOf, pathKey, displayUrl, isGithub, sameAsUrl, normalizeUrl } from '../../extension/domain/url.js';
+import { deriveUrl, switchTargets } from '../../extension/domain/derive.js';
+import { findById, findFolderByTitle, resolveRoot, flatten, folderList, sections } from '../../extension/domain/tree.js';
+import { sortLinks } from '../../extension/domain/sort.js';
+import { cleanMeta, priGroups, priFirst } from '../../extension/domain/meta.js';
+import { matchLink, searchLinks } from '../../extension/domain/search.js';
+import { dupKey, findDuplicates } from '../../extension/domain/duplicates.js';
+import { scheduleGroups } from '../../extension/domain/schedule.js';
+import { xmlEscape, omniboxSuggestions, omniboxTarget } from '../../extension/domain/omnibox.js';
+import { buildMatrix } from '../../extension/domain/matrix.js';
+import { googleIcon, letterIcon } from '../../extension/domain/icons.js';
+import { clockText, msToNextTick } from '../../extension/domain/clock.js';
+import { loadSettings, saveSettings } from '../../extension/services/storage.js';
+import { themeVars, sideLookVars } from '../../extension/domain/theme.js';
+import { tagNameError, cleanTags, tagNames, tagPlain } from '../../extension/domain/tags.js';
 import { ENVS } from '../../extension/constants/envs.js';
 import { DEFAULT_HOME, DEFAULT_SIDE_LOOK, DEFAULT_BOARD } from '../../extension/constants/defaults.js';
 import { SIDE_WIDTH, NOTE_MAX } from '../../extension/constants/limits.js';
 import { PRIS, PRI_NAMES } from '../../extension/constants/priority.js';
 import { THEMES } from '../../extension/constants/themes.js';
 import { TAG_COLORS } from '../../extension/constants/tags.js';
-import { commandLabel, shortcutKeys } from '../../extension/lib/core.js';
+import { commandLabel, shortcutKeys } from '../../extension/domain/shortcuts.js';
 
 const SAMPLE_ENV_RULES = [
   { pattern: 'localhost', env: 'LOCAL' },
@@ -981,7 +948,7 @@ describe('tileIconSrcs', () => {
   const fav = (u) => `chrome-extension://x/_favicon/?pageUrl=${encodeURIComponent(u)}&size=64`;
   const web = (host) => `https://www.google.com/s2/favicons?domain=${host}&sz=64`;
   test('page favicon, then the site root favicon, then the web icon', async () => {
-    const { tileIconSrcs } = await import('../../extension/lib/core.js');
+    const { tileIconSrcs } = await import('../../extension/services/favicon.js');
     assert.deepEqual(tileIconSrcs({ id: '1', url: 'https://www.chess.com/home' }, {}), [
       fav('https://www.chess.com/home'),
       fav('https://www.chess.com/'),
@@ -990,11 +957,11 @@ describe('tileIconSrcs', () => {
     ]);
   });
   test('no duplicate when the link is the site root', async () => {
-    const { tileIconSrcs } = await import('../../extension/lib/core.js');
+    const { tileIconSrcs } = await import('../../extension/services/favicon.js');
     assert.deepEqual(tileIconSrcs({ id: '1', url: 'https://github.com/' }, {}), [fav('https://github.com/'), web('github.com')]);
   });
   test('local, IP and non-web links never go to the web icon service', async () => {
-    const { webIconUrls } = await import('../../extension/lib/core.js');
+    const { webIconUrls } = await import('../../extension/domain/icons.js');
     assert.deepEqual(webIconUrls('http://localhost:3000/'), []);
     assert.deepEqual(webIconUrls('http://192.168.1.4/x'), []);
     assert.deepEqual(webIconUrls('chrome://extensions'), []);
@@ -1002,7 +969,7 @@ describe('tileIconSrcs', () => {
     assert.deepEqual(webIconUrls('https://daily.dev/'), [web('daily.dev')]);
   });
   test('custom and Google icons come first', async () => {
-    const { tileIconSrcs } = await import('../../extension/lib/core.js');
+    const { tileIconSrcs } = await import('../../extension/services/favicon.js');
     assert.equal(tileIconSrcs({ id: '1', url: 'https://x.com/' }, { 1: 'data:a' })[0], 'data:a');
     assert.match(tileIconSrcs({ id: '2', url: 'https://mail.google.com/' }, {})[0], /gmail/);
   });
@@ -1045,7 +1012,7 @@ describe('shortcuts', () => {
 });
 
 describe('palette command', async () => {
-  const { isPaletteRequest, paletteCommand } = await import('../../extension/lib/core.js');
+  const { isPaletteRequest, paletteCommand } = await import('../../extension/domain/palette.js');
   const { PALETTE_MSG } = await import('../../extension/constants/commands.js');
   test('isPaletteRequest matches only the open-palette message for this tab', () => {
     assert.equal(PALETTE_MSG, 'open-palette');
@@ -1080,7 +1047,8 @@ describe('palette command', async () => {
 });
 
 describe('quick save', async () => {
-  const { findSaved, quickSaveTarget, quickSave, quickSaveBadge } = await import('../../extension/lib/core.js');
+  const { findSaved } = await import('../../extension/domain/duplicates.js');
+  const { quickSaveTarget, quickSave, quickSaveBadge } = await import('../../extension/domain/quick-save.js');
   const tree = () => ({
     id: '0',
     title: '',

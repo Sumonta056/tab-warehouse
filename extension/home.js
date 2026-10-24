@@ -1,17 +1,11 @@
-import {
-  imageSaveError,
-  saveSettings,
-  findById,
-  tileIconSrcs,
-  faviconUrl,
-  letterIcon,
-  normalizeUrl,
-  hostOf,
-  clockText,
-  msToNextTick,
-  h,
-  svgIcon,
-} from './lib/core.js';
+import { imageSaveError } from './domain/errors.js';
+import { saveSettings } from './services/storage.js';
+import { findById } from './domain/tree.js';
+import { tileIconSrcs, faviconUrl } from './services/favicon.js';
+import { letterIcon } from './domain/icons.js';
+import { normalizeUrl, hostOf } from './domain/url.js';
+import { clockText, msToNextTick } from './domain/clock.js';
+import { h, svgIcon } from './ui/dom.js';
 import { WEB_ICON } from './constants/urls.js';
 
 let icons = null;

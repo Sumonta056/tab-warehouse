@@ -9,7 +9,7 @@ const EXT = resolve(dirname(fileURLToPath(import.meta.url)), '../../extension');
 const LAYERS = ['constants', 'domain', 'services', 'ui', 'state', 'views', 'entry'];
 const PURE = ['constants', 'domain'];
 
-const LEGACY = ['lib/core.js', 'lib/transfer.js', 'home.js', 'board.js', 'palette.js', 'settings.js'];
+const LEGACY = ['home.js', 'board.js', 'palette.js', 'settings.js'];
 
 function jsFiles(dir) {
   return readdirSync(dir, { withFileTypes: true }).flatMap((d) => {

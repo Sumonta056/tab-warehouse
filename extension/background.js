@@ -1,15 +1,9 @@
-import {
-  loadSettings,
-  getTree,
-  resolveRoot,
-  sections,
-  loadLinkMeta,
-  omniboxSuggestions,
-  omniboxTarget,
-  quickSave,
-  quickSaveBadge,
-  paletteCommand,
-} from './lib/core.js';
+import { loadSettings, loadLinkMeta } from './services/storage.js';
+import { getTree } from './services/bookmarks.js';
+import { resolveRoot, sections } from './domain/tree.js';
+import { omniboxSuggestions, omniboxTarget } from './domain/omnibox.js';
+import { quickSave, quickSaveBadge } from './domain/quick-save.js';
+import { paletteCommand } from './domain/palette.js';
 import { QUICK_BADGE_MS } from './constants/limits.js';
 
 chrome.omnibox.setDefaultSuggestion({ description: 'Search Tab Warehouse for <match>%s</match>' });

@@ -353,7 +353,8 @@ export default [
     page: 'newtab',
     fixture: () => withQa({ hostMap: [QA_SITE] }),
     async run(t) {
-      const { exportJson, importFile } = await t.w.eval("import('/extension/lib/transfer.js')");
+      const { exportJson } = await t.w.eval("import('/extension/ui/export.js')");
+      const { importFile } = await t.w.eval("import('/extension/services/import.js')");
       const full = () => ({ order: [], folders: {}, categories: [], folderCat: {}, board: {}, ...t.settings() });
       let blob;
       const keep = t.w.URL.createObjectURL;

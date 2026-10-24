@@ -1,32 +1,25 @@
-import {
-  h,
-  svgIcon,
-  applyTheme,
-  folderList,
-  clockText,
-  hostOf,
-  normalizeUrl,
-  deriveUrl,
-  explainEnv,
-  envText,
-  parseEnvText,
-  tagNameError,
-  cleanTags,
-  tagBadge,
-  imageSaveError,
-  clampFont,
-  flatten,
-  findDuplicates,
-  commandLabel,
-  shortcutKeys,
-} from './lib/core.js';
+import { h, svgIcon } from './ui/dom.js';
+import { applyTheme } from './ui/theme.js';
+import { folderList, flatten } from './domain/tree.js';
+import { clockText } from './domain/clock.js';
+import { hostOf, normalizeUrl } from './domain/url.js';
+import { deriveUrl } from './domain/derive.js';
+import { explainEnv } from './domain/env.js';
+import { envText, parseEnvText } from './domain/env-text.js';
+import { tagNameError, cleanTags } from './domain/tags.js';
+import { tagBadge } from './ui/badges.js';
+import { imageSaveError } from './domain/errors.js';
+import { clampFont } from './domain/sizes.js';
+import { findDuplicates } from './domain/duplicates.js';
+import { commandLabel, shortcutKeys } from './domain/shortcuts.js';
 import { THEMES } from './constants/themes.js';
 import { ENVS, ENV_NAMES, ENV_HINTS } from './constants/envs.js';
 import { SETTINGS_TABS } from './constants/pages.js';
 import { TAG_COLORS, EXAMPLE_RULES, EXAMPLE_MAP, TRY_SAMPLES } from './constants/tags.js';
 import { FONT_SCALE } from './constants/limits.js';
 import { homeBgUrl, homeIconMap, homeLinks, homeLinksList, setHomeBg, applyHomeVars, homeIconImg } from './home.js';
-import { exportJson, exportHtml, importFile } from './lib/transfer.js';
+import { exportJson, exportHtml } from './ui/export.js';
+import { importFile } from './services/import.js';
 
 let tab = 'appearance';
 let envTryUrl = TRY_SAMPLES[1];
