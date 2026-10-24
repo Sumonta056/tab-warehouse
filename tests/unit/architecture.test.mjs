@@ -35,11 +35,39 @@ function viewOf(file) {
   return parts[0] === 'views' && parts.length > 2 ? parts[1] : null;
 }
 
-function importsOf(abs) {
+function staticImportsOf(abs) {
   const src = readFileSync(abs, 'utf8');
   const re = /^\s*(?:import|export)\s[^;]*?\sfrom\s+['"]([^'"]+)['"]|^\s*import\s+['"]([^'"]+)['"]/gm;
   return [...src.matchAll(re)].map((m) => m[1] || m[2]).filter((s) => s.startsWith('.'));
 }
+
+function dynamicImportsOf(abs) {
+  const src = readFileSync(abs, 'utf8');
+  return [...src.matchAll(/\bimport\(\s*['"]([^'"]+)['"]\s*\)/g)].map((m) => m[1]).filter((s) => s.startsWith('.'));
+}
+
+const importsOf = (abs) => [...staticImportsOf(abs), ...dynamicImportsOf(abs)];
+
+function eagerGraph(entry) {
+  const seen = new Set();
+  const walk = (abs) => {
+    for (const spec of staticImportsOf(abs)) {
+      const next = resolve(dirname(abs), spec);
+      if (seen.has(next)) continue;
+      seen.add(next);
+      walk(next);
+    }
+  };
+  walk(join(EXT, entry));
+  return [...seen].map(rel).sort();
+}
+
+function preloads(html) {
+  const src = readFileSync(join(EXT, html), 'utf8');
+  return [...src.matchAll(/<link\s+rel="modulepreload"\s+href="([^"]+)"/g)].map((m) => m[1]).sort();
+}
+
+const EAGER_VIEWS = ['home', 'sidebar'];
 
 const files = jsFiles(EXT).map((abs) => ({ abs, file: rel(abs) }));
 
@@ -94,5 +122,24 @@ describe('architecture', () => {
       .filter((f) => !UNTESTED[f] && !existsSync(join(UNIT, `${f}.test.mjs`)))
       .map((f) => `tests/unit/${f}.test.mjs`);
     assert.deepEqual(missing, []);
+  });
+});
+
+describe('module preload', () => {
+  for (const page of ['newtab', 'popup']) {
+    test(`${page}.html preloads exactly the modules ${page}.js imports statically`, () => {
+      const want = eagerGraph(`${page}.js`);
+      const have = preloads(`${page}.html`);
+      const missing = want.filter((f) => !have.includes(f)).map((f) => `add <link rel="modulepreload" href="${f}" />`);
+      const extra = have.filter((f) => !want.includes(f)).map((f) => `remove ${f} (not a static import of ${page}.js)`);
+      assert.deepEqual([...missing, ...extra], []);
+    });
+  }
+
+  test('newtab.js loads every view except Home and the sidebar with import()', () => {
+    const eager = eagerGraph('newtab.js')
+      .filter((f) => viewOf(f) && !EAGER_VIEWS.includes(viewOf(f)))
+      .map((f) => `${f} is imported statically; load its view with import() in newtab.js`);
+    assert.deepEqual(eager, []);
   });
 });
