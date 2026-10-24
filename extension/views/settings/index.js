@@ -5,7 +5,7 @@ import { appearance } from './appearance.js';
 import { home } from './home-page.js';
 import { bookmarks } from './bookmarks.js';
 import { dupes } from './duplicates.js';
-import { env } from './tags.js';
+import { env } from './tags/index.js';
 import { backup } from './backup.js';
 import { keys } from './shortcuts.js';
 
