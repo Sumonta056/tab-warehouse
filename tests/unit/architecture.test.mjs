@@ -4,7 +4,10 @@ import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { join, relative, dirname, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const EXT = resolve(dirname(fileURLToPath(import.meta.url)), '../../extension');
+const UNIT = dirname(fileURLToPath(import.meta.url));
+const EXT = resolve(UNIT, '../../extension');
+const TESTED = ['domain', 'services'];
+const UNTESTED = {};
 
 const LAYERS = ['constants', 'domain', 'services', 'ui', 'state', 'views', 'entry'];
 const PURE = ['constants', 'domain'];
@@ -82,5 +85,14 @@ describe('architecture', () => {
       .filter(({ abs }) => usesWord(readFileSync(abs, 'utf8'), 'chrome.'))
       .map(({ file }) => file);
     assert.deepEqual(bad, []);
+  });
+
+  test('every domain and services file has its own unit test file', () => {
+    const missing = files
+      .filter(({ file }) => TESTED.includes(layerOf(file)))
+      .map(({ file }) => file.replace(/\.js$/, ''))
+      .filter((f) => !UNTESTED[f] && !existsSync(join(UNIT, `${f}.test.mjs`)))
+      .map((f) => `tests/unit/${f}.test.mjs`);
+    assert.deepEqual(missing, []);
   });
 });

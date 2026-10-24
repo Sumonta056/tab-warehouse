@@ -39,5 +39,5 @@ jobs:
       - name: Allow the Chrome sandbox on Ubuntu 24.04
         run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
 
-      - name: Run syntax, unit and e2e tests
+      - name: Run syntax, unit (with the coverage gate) and e2e tests
         run: CHROME="$(command -v google-chrome)" ./tests/run.sh

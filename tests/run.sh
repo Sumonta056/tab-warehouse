@@ -10,9 +10,8 @@ status=0
 echo "== syntax =="
 for f in $(find extension -name '*.js'); do node --check "$f" || status=1; done
 
-echo "== unit (node --test) =="
-node --test tests/unit/ 2>&1 | grep -E '^# (tests|pass|fail)|^not ok|^\s+not ok' || true
-node --test tests/unit/ >/dev/null 2>&1 || status=1
+echo "== unit (node --test) + coverage gate =="
+node tools/coverage-gate.mjs || status=1
 
 echo "== e2e (headless Chrome) =="
 python3 -I tests/serve.py "$PORT" "$ROOT" >/dev/null 2>&1 &

@@ -18,7 +18,7 @@ extension/             Everything that ships; the Load unpacked folder. Paths be
   views/               One folder per screen: sidebar/ folder/ search/ schedule/ board/ home/ palette/ settings/ (one file per tab) popup/
   styles/              tokens.css (design tokens), base.css, ui/ (one file per ui piece: row, badge, button, menu, toast …), views/ (one file per screen, mirrors views/)
   icons/               16/48/128 PNG
-tools/                 make-icons.py (build extension/icons/ from any logo), package.sh (release ZIP), set-shortcuts.js (console script that sets the keys)
+tools/                 make-icons.py (build extension/icons/ from any logo), package.sh (release ZIP), set-shortcuts.js (console script that sets the keys), coverage-gate.mjs (unit coverage gate)
 docs/                  Notes and requirements
 tests/                 run.sh · unit/ (node --test) · e2e/ (headless Chrome + fake chrome.* API)
 site/                  GitHub Pages website + live demo (site/build.sh, deployed by .github/workflows/pages.yml)
@@ -46,7 +46,8 @@ There is no build. Load unpacked at `chrome://extensions` (choose `extension/`),
 
 - First time: `npm install`. It installs the dev tools and the git hooks: pre-commit runs Prettier on staged files and `npm run test:fast`; commit-msg enforces Conventional Commits (`feat:`, `fix:`, `docs:` …); pre-push runs `./tests/run.sh`.
 - Format: `npm run format` (Prettier, config in `.prettierrc.json`).
-- Full check (syntax + unit + e2e, ~10 s): `./tests/run.sh` — must be green before any change is called done. Filter e2e: `./tests/run.sh "sections"`.
+- Full check (syntax + unit + coverage gate + e2e): `./tests/run.sh` — must be green before any change is called done. Filter e2e: `./tests/run.sh "sections"`.
+- Coverage: `npm run coverage` prints the per-file table; `npm run coverage:gate` (`tools/coverage-gate.mjs`, also run by `tests/run.sh` and CI) fails when a `domain/` file is under 90 % line coverage or a `services/` file under 80 %. Every `domain/` and `services/` file needs its own `tests/unit/<layer>/<name>.test.mjs` (checked by `tests/unit/architecture.test.mjs`); services tests use the in-memory fake in `tests/unit/fake-chrome.mjs`.
 - RAM / leak / render-speed check on the real extension (~1 min, needs Chrome for Testing): `node tests/perf/memprobe.mjs`. See the `/perf-check` skill.
 - Debug a scenario visually: `python3 -I tests/serve.py 8799` (no-cache server), open `http://127.0.0.1:8799/tests/e2e/runner.html?only=<name>`.
 - Package: `./tools/package.sh` zips `extension/` + LICENSE; see the `/release` skill.
