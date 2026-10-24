@@ -43,6 +43,7 @@ const frame = document.getElementById('frame');
 const out = document.getElementById('results');
 const summary = document.getElementById('summary');
 const pages = {};
+const ROOT = `/${new URLSearchParams(location.search).get('root') || 'extension'}/`;
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const clone = (x) => JSON.parse(JSON.stringify(x));
@@ -61,9 +62,9 @@ const NO_MOTION = '<style>*, *::before, *::after { transition: none !important; 
 async function pageHtml(name, motion = false) {
   const key = `${name}:${motion}`;
   if (!pages[key]) {
-    const html = await (await fetch(`/extension/${name}.html`, { cache: 'no-store' })).text();
+    const html = await (await fetch(`${ROOT}${name}.html`, { cache: 'no-store' })).text();
     pages[key] = html
-      .replace('<head>', `<head><base href="/extension/">${motion ? '' : NO_MOTION}`)
+      .replace('<head>', `<head><base href="${ROOT}">${motion ? '' : NO_MOTION}`)
       .replace('<script type="module"', '<script src="/tests/e2e/chrome-stub.js"></script>\n<script type="module"');
   }
   return pages[key];
@@ -104,6 +105,7 @@ function makeT(scenario) {
     get w() {
       return frame.contentWindow;
     },
+    background: () => t.w.eval(`import('${ROOT}background.js')`),
     get d() {
       return frame.contentWindow.document;
     },
@@ -231,7 +233,7 @@ function makeT(scenario) {
       return t.$$('#nav .nav').map((n) => n.querySelector('.t').textContent);
     },
     async palette() {
-      await t.w.eval("import('/extension/background.js')");
+      await t.background();
       await t.w.__command('palette', { id: t.H.currentTabId });
       await t.settle();
     },

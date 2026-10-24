@@ -5,7 +5,7 @@ const fresh = { id: 7, title: 'Fresh page', url: 'https://fresh.example.com/a' }
 const loose = { id: 7, title: 'Shop PROD', url: 'https://shop.example.com/api/x/?utm_source=mail#top' };
 
 async function command(t, name = 'quick-save') {
-  await t.w.eval("import('/extension/background.js')");
+  await t.background();
   await t.w.__command(name);
   await t.settle();
 }

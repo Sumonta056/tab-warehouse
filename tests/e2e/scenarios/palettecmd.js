@@ -4,7 +4,7 @@ const area = 'palette command';
 const own = () => ({ ...base(), currentTabId: 5 });
 
 async function command(t, tab) {
-  await t.w.eval("import('/extension/background.js')");
+  await t.background();
   await t.w.__command('palette', tab);
   await t.settle();
 }
