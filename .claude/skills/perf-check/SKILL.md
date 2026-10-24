@@ -13,11 +13,12 @@ Two parts: a measured run on the real extension (`tests/perf/memprobe.mjs`) and 
 node tests/perf/memprobe.mjs                    # 1000 links, 300 cycles (~1 min)
 LINKS=5000 node tests/perf/memprobe.mjs         # large profile (~2 min)
 CYCLES=600 node tests/perf/memprobe.mjs         # longer leak run
+npm run build && node tests/perf/memprobe.mjs dist   # the release build (what ships)
 ```
 
 What it does:
 
-1. Starts headless **Chrome for Testing** with the extension loaded unpacked (branded Google Chrome ignores `--load-extension` since v137). It looks in `~/Library/Caches/ms-playwright/chromium-*`; else set `CHROME=/path`. Install with `npx playwright install chromium`.
+1. Starts headless **Chrome for Testing** with the extension loaded unpacked (`extension/`, or the folder named by the first argument relative to the repo, e.g. `dist`) (branded Google Chrome ignores `--load-extension` since v137). It looks in `~/Library/Caches/ms-playwright/chromium-*`; else set `CHROME=/path`. Install with `npx playwright install chromium`.
 2. Talks to Chrome over `--remote-debugging-pipe` (no npm, no websocket library).
 3. Opens the new tab (`chrome-extension://…/newtab.html`), seeds `My Links` with 20 folders, each with one section, using the **real** `chrome.bookmarks`.
 4. Runs N cycles: switch folder, open a link menu, change sort, Home → Settings → back every 10th cycle, create + remove a bookmark (one debounced `refresh()` each).

@@ -4,7 +4,8 @@ import { tmpdir, homedir, platform } from 'node:os';
 import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const EXT = resolve(dirname(fileURLToPath(import.meta.url)), '../../extension');
+const EXT = resolve(dirname(fileURLToPath(import.meta.url)), '../..', process.argv[2] || 'extension');
+if (!existsSync(join(EXT, 'manifest.json'))) throw new Error(`No manifest.json in ${EXT}. Run npm run build for dist/.`);
 const LINKS = Number(process.env.LINKS || 1000);
 const CYCLES = Number(process.env.CYCLES || 300);
 const LIMITS = { heapGrowthMB: 0.3, renderMs: 50 };
