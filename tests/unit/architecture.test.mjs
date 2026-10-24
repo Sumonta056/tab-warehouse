@@ -8,7 +8,7 @@ const EXT = resolve(dirname(fileURLToPath(import.meta.url)), '../../extension');
 
 const LAYERS = ['constants', 'domain', 'services', 'ui', 'state', 'views', 'entry'];
 const PURE = ['constants', 'domain'];
-const CHROME_OK = ['services', 'entry'];
+const CHROME_OK = ['services'];
 const usesWord = (src, word) => new RegExp(`(^|[^\\w.$])${word.replace('.', '\\.')}`).test(src);
 
 function jsFiles(dir) {
@@ -76,7 +76,7 @@ describe('architecture', () => {
     assert.deepEqual(bad, []);
   });
 
-  test('only services and entry points call chrome.*', () => {
+  test('only services call chrome.*', () => {
     const bad = files
       .filter(({ file }) => !CHROME_OK.includes(layerOf(file)))
       .filter(({ abs }) => usesWord(readFileSync(abs, 'utf8'), 'chrome.'))

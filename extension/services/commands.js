@@ -5,3 +5,7 @@ export async function getCommands() {
 export function omniboxKeyword() {
   return chrome.runtime.getManifest?.()?.omnibox?.keyword;
 }
+
+export function onCommand(fn) {
+  chrome.commands.onCommand.addListener(fn);
+}
