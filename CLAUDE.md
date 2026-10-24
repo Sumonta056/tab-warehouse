@@ -7,16 +7,15 @@ Bookmarks as a warehouse: a Home page (clock + link tiles), a resizable folder s
 ```
 extension/             Everything that ships; the Load unpacked folder. Paths below are relative to it.
   manifest.json        MV3: newtab override + action popup + omnibox + ⌘⇧B / ⌘K / ⌘⇧K commands
-  newtab.html/.css/.js The warehouse page (sidebar + folder page)
-  home.js              Home view: clock, tiles, links list, default links
-  board.js             Board view: one column of cards per folder
-  settings.js          Settings view (right pane, 7 tabs); opened by the sidebar gear
-  popup.html/.js       Toolbar popup: save the current tab into any folder, warns on duplicates
-  background.js        Service worker: `tw` omnibox, quick save (⌘K), palette command (⌘⇧K)
+  newtab.html/.css/.js The warehouse page. newtab.js is the entry point: boot, refresh, select, page dispatch, global keys, ctx objects
+  popup.html/.js       Toolbar popup entry point: save the current tab into any folder, warns on duplicates
+  background.js        Service worker entry point: `tw` omnibox, quick save (⌘K), palette command (⌘⇧K)
   constants/           Fixed values only (envs, tags, sorts, themes, limits, defaults incl. DEFAULT_SETTINGS, pages, icons)
-  domain/              Pure functions: no DOM, no chrome.* (env, tags, url, tree, sort, matrix, due, search, transfer …)
-  services/            The only modules that call chrome.* (storage, bookmarks, favicon, import)
-  ui/                  Reusable DOM pieces (dom.js h/svgIcon/highlight, badges, icons, pickers, theme, export)
+  domain/              Pure functions: no DOM, no chrome.* (env, tags, url, tree, folders, filter, sort, matrix, due, search, popup, transfer …)
+  services/            The only modules that call chrome.* (storage, bookmarks, tabs, runtime, commands, omnibox, action, favicon, home-folder, import)
+  ui/                  Reusable DOM pieces, no page state (dom.js h/svgIcon/highlight, toast, menu, dnd, seg, badges, icons, home-icon, pickers, theme, image, export)
+  state/               Shared mutable page state: page-state.js (state + setState), folders.js / links.js (save actions), home-assets.js, popup-state.js
+  views/               One folder per screen: sidebar/ folder/ search/ schedule/ board/ home/ palette/ settings/ (one file per tab) popup/
   styles/              tokens.css (design tokens) + shared.css (shared components: .row, .badge, .btn, .menu, .toast)
   icons/               16/48/128 PNG
 tools/                 make-icons.py (build extension/icons/ from any logo), package.sh (release ZIP), set-shortcuts.js (console script that sets the keys)
@@ -38,6 +37,7 @@ site/                  GitHub Pages website + live demo (site/build.sh, deployed
 - **Rendering** is full re-render with the `h()` DOM helper. Never use `innerHTML` with bookmark data (titles/URLs are user content). `svgIcon()` is the only `innerHTML` and takes fixed strings.
 - **Drag & drop** is native HTML5 DnD. `drag` (module-level) holds `{ kind: 'link'|'folder', id, parentId }`. Row reorder only in Manual sort; dropping a row on a sidebar item moves it to that folder. Folder drag reorders `settings.order` only.
 - **Categories** (`settings.categories`, `folderCat`) group sidebar folders; **sections** are a folder's direct subfolders shown as headers on the folder page. Full rules: `.claude/rules/business-logic.md`.
+- **Layers** (checked by `tests/unit/architecture.test.mjs`): constants ← domain ← services ← ui ← state ← views ← entry points. A view never imports another view; the entry point passes a `ctx` of functions (`select`, `renderNav`, `renderPage`, `folderMenu`, `renderRow`, `setFolderPrefs` …). Only `services/` may call `chrome.*`.
 - Same-parent `chrome.bookmarks.move` quirk: pass the target's **current** index for "drop before" and `index + 1` for "drop after"; Chrome adjusts for the removed item.
 
 ## Commands

@@ -6,14 +6,14 @@ description: Add or change a feature in the warehouse new-tab page, Home, or pop
 # Add a feature
 
 0. **Read the rules first:** `.claude/rules/business-logic.md` (what must keep working), `ui.md`, `extension.md`, `bookmarks-api.md`. Plan the change and get approval before writing code.
-1. **Locate the layer.** Fixed values → `constants/`. Pure logic → `domain/<topic>.js` (export it so it can be unit-tested). `chrome.*` calls → `services/`. Reusable DOM pieces → `ui/`. Folder page and sidebar → `newtab.js`. Home → `home.js`. Popup → `popup.js`. Styles → `styles/shared.css` (tokens in `styles/tokens.css`) if shared, else `newtab.css`.
+1. **Locate the layer.** Fixed values → `constants/`. Pure logic → `domain/<topic>.js` (export it so it can be unit-tested). `chrome.*` calls → `services/`. Reusable DOM pieces → `ui/`. Shared page state and save actions → `state/`. Screens → `views/<screen>/` (sidebar, folder, search, schedule, board, home, palette, settings, popup); a view never imports another view, it gets cross-screen functions from the entry point's `ctx`. Boot and wiring → `newtab.js` / `popup.js` / `background.js`. Styles → `styles/shared.css` (tokens in `styles/tokens.css`) if shared, else `newtab.css`.
 2. **Persisted?** Decide where it lives before writing UI:
    - per folder → `folderPrefs()` / `setFolderPrefs(id, patch)` and add the default to `folderPrefs()`
    - global → add the default to `DEFAULT_SETTINGS` (or `DEFAULT_HOME`) in `constants/defaults.js`, save via `saveSettings()`
    - large blobs (images) → their own `chrome.storage.local` key, never inside `settings`
    - bookmark content → `chrome.bookmarks.*` only, never storage
    - when changing a stored list (categories, colors), look items up by **id** in the current `settings`, never through an object captured at render time
-3. **Build with `h()`**, reuse existing classes (see `ui.md`). Put the control where its siblings are: sort/view/show in `.toolbar`, per-link actions in `linkMenu()`, per-folder actions in `folderMenu()`, section actions in `partMenu()`, category actions in `catMenu()`, any global or Home option in the matching tab of `settings.js`.
+3. **Build with `h()`**, reuse existing classes (see `ui.md`). Put the control where its siblings are: sort/view/show in `.toolbar`, per-link actions in `linkMenu()` and per-folder actions in `folderMenu()` (`views/folder/menus.js`), section actions in `partMenu()` (`views/folder/parts.js`), category actions in `catMenu()` (`views/sidebar/categories.js`), any global or Home option in the matching tab file of `views/settings/`.
 4. **Re-render path:** after a settings change call `renderPage()`/`renderBody()`/`renderNav()`; after a bookmark change do nothing — the debounced `chrome.bookmarks` listener calls `refresh()`.
 5. **Rules + tests in the same change** (see `/regression-check`):
    - add or update the rule in `.claude/rules/business-logic.md`

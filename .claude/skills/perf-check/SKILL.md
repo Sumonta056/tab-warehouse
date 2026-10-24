@@ -64,17 +64,17 @@ grep -nE "https?://" -r extension --include=*.js
 grep -n '"permissions"\|content_security_policy\|host_permissions' extension/manifest.json
 ```
 
-| Rule                                                                                                                                                                  | Where                                     |
-| --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- |
-| Bookmark titles/URLs never reach `innerHTML`; only `svgIcon()` uses it, with fixed strings.                                                                           | `ui/dom.js`                               |
-| No `content_security_policy` key in the manifest (keep the strict MV3 default). No remote scripts.                                                                    | `manifest.json`                           |
-| Each permission is used and is the narrowest one. The popup reads the active tab through `activeTab`; do not add `tabs` back (it shows "Read your browsing history"). | `manifest.json`, `popup.js`               |
-| Links opened from the page use `rel="noopener"`.                                                                                                                      | `newtab.js`, `home.js`                    |
-| CSS `url("…")` only gets `canvas.toDataURL` output, never user text.                                                                                                  | `home.js`, `domain/theme.js sideLookVars` |
-| Import validates the shape of `preferences` (envRules, hostMap, folders) before `saveSettings`.                                                                       | `domain/transfer.js cleanImport`          |
-| HTML export escapes titles and URLs.                                                                                                                                  | `domain/transfer.js esc`                  |
-| Remote requests from Home (gstatic, default icon URLs, "Icon from URL") are known and listed.                                                                         | `home.js`, `domain/icons.js googleIcon`   |
-| `chrome.storage.local` stays under 10 MB (no `unlimitedStorage`); write failures show a correct message.                                                              | `home.js setHomeBg / saveIcons`           |
+| Rule                                                                                                                                                                  | Where                                              |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| Bookmark titles/URLs never reach `innerHTML`; only `svgIcon()` uses it, with fixed strings.                                                                           | `ui/dom.js`                                        |
+| No `content_security_policy` key in the manifest (keep the strict MV3 default). No remote scripts.                                                                    | `manifest.json`                                    |
+| Each permission is used and is the narrowest one. The popup reads the active tab through `activeTab`; do not add `tabs` back (it shows "Read your browsing history"). | `manifest.json`, `popup.js`                        |
+| Links opened from the page use `rel="noopener"`.                                                                                                                      | `views/folder/row.js`, `views/home/home.js`        |
+| CSS `url("…")` only gets `canvas.toDataURL` output, never user text.                                                                                                  | `ui/image.js`, `domain/theme.js sideLookVars`      |
+| Import validates the shape of `preferences` (envRules, hostMap, folders) before `saveSettings`.                                                                       | `domain/transfer.js cleanImport`                   |
+| HTML export escapes titles and URLs.                                                                                                                                  | `domain/transfer.js esc`                           |
+| Remote requests from Home (gstatic, default icon URLs, "Icon from URL") are known and listed.                                                                         | `views/home/home.js`, `domain/icons.js googleIcon` |
+| `chrome.storage.local` stays under 10 MB (no `unlimitedStorage`); write failures show a correct message.                                                              | `state/home-assets.js setHomeBg / setHomeIcon`     |
 
 ## Report format
 

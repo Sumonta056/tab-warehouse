@@ -3,6 +3,8 @@ description: Visual and interaction conventions for newtab + popup
 paths:
   - 'extension/newtab.*'
   - 'extension/popup.*'
+  - 'extension/views/**'
+  - 'extension/ui/**'
   - 'extension/styles/*.css'
 ---
 

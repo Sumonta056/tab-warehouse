@@ -260,14 +260,13 @@ Tab Warehouse is plain JavaScript with ES modules. There is no framework, no bun
 extension/             Everything Chrome loads (choose this folder in Load unpacked)
   manifest.json        Manifest V3: new tab override, popup, ⌘⇧B, ⌘K and ⌘⇧K commands
   newtab.html/.css/.js The main page: sidebar + folder page
-  home.js              Home view: clock, tiles, default links
-  board.js             Board view: every folder as a column of cards
-  settings.js          Settings view (7 tabs)
   popup.html/.js       Toolbar popup: save the current tab
   constants/           Fixed values: envs, tags, sorts, themes, limits, defaults
   domain/              Pure logic: env detection, derive, sort, matrix, search, due dates, backup
-  services/            Chrome API calls: storage, bookmarks, favicons, import
-  ui/                  Shared DOM pieces: h() helper, badges, icons, pickers, export
+  services/            The only code that calls Chrome APIs: storage, bookmarks, tabs, omnibox, favicons, import
+  ui/                  Shared DOM pieces: h() helper, toast, menu, badges, icons, pickers, export
+  state/               Shared page state and the actions that save it
+  views/               One folder per screen: sidebar, folder, search, schedule, board, home, palette, settings, popup
   styles/              Design tokens and shared components
   icons/               Extension icons (source: icons/logo.svg)
 tools/make-icons.py    Build the icon sizes from any logo

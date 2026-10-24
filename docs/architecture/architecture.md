@@ -6,15 +6,15 @@ Tab Warehouse has three entry points. All three use one shared module, and that 
 
 ## Entry points
 
-| Entry point        | File                      | What it does                                                                                                      |
-| ------------------ | ------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| New tab page       | `extension/newtab.js`     | The main page: sidebar and folder page. Sends each view to `home.js`, `board.js`, `settings.js` and `palette.js`. |
-| Popup              | `extension/popup.js`      | Saves the current tab into a folder (⌘⇧B); warns when the page is already saved.                                  |
-| Address bar worker | `extension/background.js` | Searches links from the address bar with the keyword `tw`; runs quick save (⌘K) and the palette command (⌘⇧K).    |
+| Entry point        | File                      | What it does                                                                                                   |
+| ------------------ | ------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| New tab page       | `extension/newtab.js`     | The main page. Boots, refreshes and sends each screen to its folder in `views/`.                               |
+| Popup              | `extension/popup.js`      | Saves the current tab into a folder (⌘⇧B); warns when the page is already saved.                               |
+| Address bar worker | `extension/background.js` | Searches links from the address bar with the keyword `tw`; runs quick save (⌘K) and the palette command (⌘⇧K). |
 
 ## Shared core
 
-Shared code is split by layer: `extension/constants/` holds fixed values, `extension/domain/` the pure logic (sorting, tag detection, `searchLinks()`, backup data), `extension/services/` every `chrome.*` call (loading and saving settings, the bookmark tree, import), and `extension/ui/` the DOM pieces (the `h()` helper, badges, pickers, export download). A file imports only from its own layer or the layers before it; `tests/unit/architecture.test.mjs` checks this.
+Shared code is split by layer: `extension/constants/` holds fixed values, `extension/domain/` the pure logic (sorting, tag detection, `searchLinks()`, backup data), `extension/services/` every `chrome.*` call (loading and saving settings, the bookmark tree, import), `extension/ui/` the DOM pieces (the `h()` helper, toast, menu, badges, pickers, export download), `extension/state/` the shared page state and the actions that save it, and `extension/views/` one folder per screen (sidebar, folder, search, schedule, board, home, palette, settings, popup). A file imports only from its own layer or the layers before it, a view never imports another view, and only `services/` calls `chrome.*`; `tests/unit/architecture.test.mjs` checks this.
 
 ## Stores
 

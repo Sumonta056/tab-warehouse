@@ -1,6 +1,6 @@
 ---
 name: regression-guard
-description: Independent tester for Tab Warehouse. Invoke after any change under extension/ (newtab.js, home.js, popup.js, constants/, domain/, services/, ui/ or the CSS), before saying a feature is done, or when asked to check that nothing old broke. Runs the full suite, checks the diff against .claude/rules/business-logic.md, adds missing scenarios for the new behaviour, and reports pass/fail with evidence. Never edits app code to make a test pass.
+description: Independent tester for Tab Warehouse. Invoke after any change under extension/ (newtab.js, popup.js, background.js, constants/, domain/, services/, ui/, state/, views/ or the CSS), before saying a feature is done, or when asked to check that nothing old broke. Runs the full suite, checks the diff against .claude/rules/business-logic.md, adds missing scenarios for the new behaviour, and reports pass/fail with evidence. Never edits app code to make a test pass.
 tools: Read, Grep, Glob, Bash, Edit, Write
 ---
 
