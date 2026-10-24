@@ -6,10 +6,10 @@ description: Add or change a feature in the warehouse new-tab page, Home, or pop
 # Add a feature
 
 0. **Read the rules first:** `.claude/rules/business-logic.md` (what must keep working), `ui.md`, `extension.md`, `bookmarks-api.md`. Plan the change and get approval before writing code.
-1. **Locate the layer.** Pure logic → `lib/core.js` (export it so it can be unit-tested). Folder page and sidebar → `newtab.js`. Home → `home.js`. Popup → `popup.js`. Styles → `lib/shared.css` if shared, else `newtab.css`.
+1. **Locate the layer.** Fixed values → `constants/`. Pure logic → `domain/<topic>.js` (export it so it can be unit-tested). `chrome.*` calls → `services/`. Reusable DOM pieces → `ui/`. Folder page and sidebar → `newtab.js`. Home → `home.js`. Popup → `popup.js`. Styles → `styles/shared.css` (tokens in `styles/tokens.css`) if shared, else `newtab.css`.
 2. **Persisted?** Decide where it lives before writing UI:
    - per folder → `folderPrefs()` / `setFolderPrefs(id, patch)` and add the default to `folderPrefs()`
-   - global → add the default to `DEFAULT_SETTINGS` (or `DEFAULT_HOME`) in `lib/core.js`, save via `saveSettings()`
+   - global → add the default to `DEFAULT_SETTINGS` (or `DEFAULT_HOME`) in `constants/defaults.js`, save via `saveSettings()`
    - large blobs (images) → their own `chrome.storage.local` key, never inside `settings`
    - bookmark content → `chrome.bookmarks.*` only, never storage
    - when changing a stored list (categories, colors), look items up by **id** in the current `settings`, never through an object captured at render time
@@ -17,7 +17,7 @@ description: Add or change a feature in the warehouse new-tab page, Home, or pop
 4. **Re-render path:** after a settings change call `renderPage()`/`renderBody()`/`renderNav()`; after a bookmark change do nothing — the debounced `chrome.bookmarks` listener calls `refresh()`.
 5. **Rules + tests in the same change** (see `/regression-check`):
    - add or update the rule in `.claude/rules/business-logic.md`
-   - unit test for new pure logic in `tests/unit/core.test.mjs`
+   - unit test for new pure logic in `tests/unit/domain/<topic>.test.mjs`
    - e2e scenario(s) in `tests/e2e/scenarios/*.js` for the user-visible behaviour, including the edge cases (empty folder, Unsorted, sections, categories, Home)
    - prove each new test fails when the feature is broken
 6. **Check:** `./tests/run.sh` must be fully green. Then reload at `chrome://extensions`, open a new tab, try it with the Shop API folder (longest URLs, all four envs), an empty folder, a folder with sections, and Home.

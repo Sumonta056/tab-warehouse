@@ -6,7 +6,7 @@ description: Chrome MV3 constraints that apply to every file in this repo
 
 - Manifest V3 only. No `background` service worker is needed today; add one only for alarms/omnibox/context menus, and declare why.
 - Pages are `chrome-extension://` documents: no inline `<script>` and no inline event handlers (`onclick="..."`) — CSP blocks them. Attach listeners in JS (`h()` supports `onClick`).
-- No remote code. No CDN `<script>` tags. Fonts come from the system stack in `lib/shared.css`.
+- No remote code. No CDN `<script>` tags. Fonts come from the system stack in `styles/tokens.css`.
 - `chrome.*` calls are promise-based; always `await` them and keep UI-blocking work out of event listeners.
 - Opening a URL from the new-tab page: `<a target="_blank" rel="noopener">` for plain clicks; `chrome.tabs.create({ url, active })` when you need background tabs or are inside the popup.
 - Favicons come from `chrome.runtime.getURL('/_favicon/?pageUrl=…&size=32')` (needs the `favicon` permission). Always provide the letter-icon fallback via `iconEl()`.

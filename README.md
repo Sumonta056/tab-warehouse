@@ -264,9 +264,11 @@ extension/             Everything Chrome loads (choose this folder in Load unpac
   board.js             Board view: every folder as a column of cards
   settings.js          Settings view (7 tabs)
   popup.html/.js       Toolbar popup: save the current tab
-  lib/core.js          Shared logic: settings, env detection, derive, sort, matrix, DOM helper
-  lib/transfer.js      Export (JSON, Netscape HTML) and merge import
-  lib/shared.css       Design tokens and shared components
+  constants/           Fixed values: envs, tags, sorts, themes, limits, defaults
+  domain/              Pure logic: env detection, derive, sort, matrix, search, due dates, backup
+  services/            Chrome API calls: storage, bookmarks, favicons, import
+  ui/                  Shared DOM pieces: h() helper, badges, icons, pickers, export
+  styles/              Design tokens and shared components
   icons/               Extension icons (source: icons/logo.svg)
 tools/make-icons.py    Build the icon sizes from any logo
 tools/package.sh       Build the release ZIP from extension/ (--store: Web Store ZIP)

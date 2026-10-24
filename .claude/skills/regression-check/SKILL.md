@@ -17,7 +17,8 @@ Exit code 0 = all green. The e2e part prints `pass N / fail M / total T` and one
 ## Layout
 
 ```
-tests/unit/core.test.mjs        pure functions in lib/core.js (node --test)
+tests/unit/<layer>/<module>.test.mjs  one file per module under extension/<layer>/ (node --test)
+tests/unit/architecture.test.mjs      layer dependency rule
 tests/e2e/chrome-stub.js        fake chrome.bookmarks / storage / tabs / runtime (state lives in the runner page)
 tests/e2e/fixtures.js           base() tree: My Links > Sprint tasks (+Blocked), Shop API (4 envs), GITHUB - PIN, Empty, Loose; Other bookmarks > Home
 tests/e2e/runner.html|js        loads newtab.html / popup.html in an iframe per scenario, helpers on `t`
@@ -36,7 +37,7 @@ tests/run.sh                    starts tests/serve.py, runs everything, parses E
 ## Adding tests for a new feature
 
 1. Write the rule in `.claude/rules/business-logic.md`.
-2. Pure logic → export it from `lib/core.js` and test it in `tests/unit/core.test.mjs`.
+2. Pure logic → export it from the matching `domain/<topic>.js` and test it in `tests/unit/domain/<topic>.test.mjs`.
 3. Behaviour → add a scenario object to the matching `tests/e2e/scenarios/*.js`:
    ```js
    { area: 'folders', name: 'what the user sees, in plain words', page: 'newtab', fixture: () => base({ /* overrides */ }),

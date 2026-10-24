@@ -59,22 +59,22 @@ The 5000-link row is from 2026-10-22 (2.3.0). The DOM node count after 1000 link
 Run these and read every hit:
 
 ```
-grep -nE "innerHTML|outerHTML|insertAdjacentHTML|document\.write|eval\(|new Function" extension/*.js extension/lib/*.js
-grep -nE "https?://" extension/*.js extension/lib/*.js
+grep -nE "innerHTML|outerHTML|insertAdjacentHTML|document\.write|eval\(|new Function" -r extension --include=*.js
+grep -nE "https?://" -r extension --include=*.js
 grep -n '"permissions"\|content_security_policy\|host_permissions' extension/manifest.json
 ```
 
-| Rule                                                                                                                                                                  | Where                                 |
-| --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
-| Bookmark titles/URLs never reach `innerHTML`; only `svgIcon()` uses it, with fixed strings.                                                                           | `lib/core.js`                         |
-| No `content_security_policy` key in the manifest (keep the strict MV3 default). No remote scripts.                                                                    | `manifest.json`                       |
-| Each permission is used and is the narrowest one. The popup reads the active tab through `activeTab`; do not add `tabs` back (it shows "Read your browsing history"). | `manifest.json`, `popup.js`           |
-| Links opened from the page use `rel="noopener"`.                                                                                                                      | `newtab.js`, `home.js`                |
-| CSS `url("…")` only gets `canvas.toDataURL` output, never user text.                                                                                                  | `home.js`, `lib/core.js sideLookVars` |
-| Import validates the shape of `preferences` (envRules, hostMap, folders) before `saveSettings`.                                                                       | `lib/transfer.js`                     |
-| HTML export escapes titles and URLs.                                                                                                                                  | `lib/transfer.js esc`                 |
-| Remote requests from Home (gstatic, default icon URLs, "Icon from URL") are known and listed.                                                                         | `home.js`, `lib/core.js googleIcon`   |
-| `chrome.storage.local` stays under 10 MB (no `unlimitedStorage`); write failures show a correct message.                                                              | `home.js setHomeBg / saveIcons`       |
+| Rule                                                                                                                                                                  | Where                                     |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- |
+| Bookmark titles/URLs never reach `innerHTML`; only `svgIcon()` uses it, with fixed strings.                                                                           | `ui/dom.js`                               |
+| No `content_security_policy` key in the manifest (keep the strict MV3 default). No remote scripts.                                                                    | `manifest.json`                           |
+| Each permission is used and is the narrowest one. The popup reads the active tab through `activeTab`; do not add `tabs` back (it shows "Read your browsing history"). | `manifest.json`, `popup.js`               |
+| Links opened from the page use `rel="noopener"`.                                                                                                                      | `newtab.js`, `home.js`                    |
+| CSS `url("…")` only gets `canvas.toDataURL` output, never user text.                                                                                                  | `home.js`, `domain/theme.js sideLookVars` |
+| Import validates the shape of `preferences` (envRules, hostMap, folders) before `saveSettings`.                                                                       | `domain/transfer.js cleanImport`          |
+| HTML export escapes titles and URLs.                                                                                                                                  | `domain/transfer.js esc`                  |
+| Remote requests from Home (gstatic, default icon URLs, "Icon from URL") are known and listed.                                                                         | `home.js`, `domain/icons.js googleIcon`   |
+| `chrome.storage.local` stays under 10 MB (no `unlimitedStorage`); write failures show a correct message.                                                              | `home.js setHomeBg / saveIcons`           |
 
 ## Report format
 

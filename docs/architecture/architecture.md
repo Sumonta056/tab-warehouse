@@ -14,7 +14,7 @@ Tab Warehouse has three entry points. All three use one shared module, and that 
 
 ## Shared core
 
-`extension/lib/core.js` holds the logic that every page uses: the `h()` DOM helper, sorting, tag detection, `searchLinks()`, and loading and saving settings. `extension/lib/transfer.js` adds backup export and import.
+Shared code is split by layer: `extension/constants/` holds fixed values, `extension/domain/` the pure logic (sorting, tag detection, `searchLinks()`, backup data), `extension/services/` every `chrome.*` call (loading and saving settings, the bookmark tree, import), and `extension/ui/` the DOM pieces (the `h()` helper, badges, pickers, export download). A file imports only from its own layer or the layers before it; `tests/unit/architecture.test.mjs` checks this.
 
 ## Stores
 

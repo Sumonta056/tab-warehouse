@@ -13,9 +13,11 @@ extension/             Everything that ships; the Load unpacked folder. Paths be
   settings.js          Settings view (right pane, 7 tabs); opened by the sidebar gear
   popup.html/.js       Toolbar popup: save the current tab into any folder, warns on duplicates
   background.js        Service worker: `tw` omnibox, quick save (⌘K), palette command (⌘⇧K)
-  lib/core.js          Shared: settings schema, env detection, derive, sort, matrix, DOM helpers
-  lib/transfer.js      Export (JSON w/ prefs, Netscape HTML) and merge-import
-  lib/shared.css       Design tokens + shared components (.row, .badge, .btn, .menu, .toast)
+  constants/           Fixed values only (envs, tags, sorts, themes, limits, defaults incl. DEFAULT_SETTINGS, pages, icons)
+  domain/              Pure functions: no DOM, no chrome.* (env, tags, url, tree, sort, matrix, due, search, transfer …)
+  services/            The only modules that call chrome.* (storage, bookmarks, favicon, import)
+  ui/                  Reusable DOM pieces (dom.js h/svgIcon/highlight, badges, icons, pickers, theme, export)
+  styles/              tokens.css (design tokens) + shared.css (shared components: .row, .badge, .btn, .menu, .toast)
   icons/               16/48/128 PNG
 tools/                 make-icons.py (build extension/icons/ from any logo), package.sh (release ZIP), set-shortcuts.js (console script that sets the keys)
 docs/                  Notes and requirements
@@ -29,7 +31,7 @@ site/                  GitHub Pages website + live demo (site/build.sh, deployed
 ## How it works (read before changing anything)
 
 - **Source of truth is `chrome.bookmarks`.** Titles, URLs, folder membership and manual order live in Chrome. We never cache bookmark data; every change calls the API and `refresh()` re-renders from `chrome.bookmarks.getTree()` via the `onCreated/onRemoved/onChanged/onMoved/onChildrenReordered` listeners.
-- **Extension-only state lives in `chrome.storage.local.settings`** (see `DEFAULT_SETTINGS` in `lib/core.js`): root folder, sidebar `order`, `lastFolder`, per-folder `folders[id] = { sort, view, show, closed }`, `envRules`, `hostMap`, `showFavicons`. Sidebar order deliberately does _not_ reorder Chrome's tree.
+- **Extension-only state lives in `chrome.storage.local.settings`** (see `DEFAULT_SETTINGS` in `constants/defaults.js`): root folder, sidebar `order`, `lastFolder`, per-folder `folders[id] = { sort, view, show, closed }`, `envRules`, `hostMap`, `showFavicons`. Sidebar order deliberately does _not_ reorder Chrome's tree.
 - **Home** is the default view. Its links are a bookmark folder _Home_ in Other bookmarks (`settings.home.folderId`), empty on a new install (no built-in links); icon overrides in `storage.local.homeIcons`, background in `storage.local.homeBg`. The Home folder is never a sidebar section.
 - **Sidebar sections** = child folders of the root folder, plus a virtual `Unsorted` section for loose links directly under root (`id = "unsorted:<rootId>"`, `virtual: true`). Virtual sections can't be renamed, deleted or dragged.
 - **Env** comes from `detectEnv()` (`explainEnv()` also says why): ordered host-substring rules (empty by default; edited in Settings › Environments), then PROD/TEST/STAGE/DEV words in the title. **Derive** (`deriveUrl()`) swaps the host for the same path using `hostMap`.
@@ -54,7 +56,7 @@ There is no build. Load unpacked at `chrome://extensions` (choose `extension/`),
 - Keep the extension dependency-free at runtime. If something seems to need a library, it doesn't. Dev tools (Husky, Prettier, lint-staged, commitlint) live in `devDependencies` and never ship.
 - UI text: sentence case, plain verbs ("Save", not "Submit"). Buttons say what happens.
 - All interactive elements ≥ 28 px tall in dense lists, ≥ 36 px in toolbars, ≥ 44 px for primary actions. Keep `:focus-visible` working.
-- Colors only via tokens in `lib/shared.css`. Env colors: PROD orange, TEST blue, STAGE purple, LOCAL green — do not reassign.
+- Colors only via tokens in `styles/tokens.css`. Env colors: PROD orange, TEST blue, STAGE purple, LOCAL green — do not reassign.
 - Every destructive action gets either an undo toast (links, Home tiles) or a confirm (folders, sections, categories).
 - Every behaviour change updates `.claude/rules/business-logic.md` and adds/updates a test in the same change. Never weaken a test to make it pass.
 - Match the existing code style: 2-space indent, single quotes, semicolons, early returns, no classes.

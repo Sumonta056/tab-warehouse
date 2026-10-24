@@ -119,12 +119,12 @@ Every rule here has at least one test. If you change a rule, change its test in 
 ## Text size
 
 - `settings.fontSide`, `settings.fontPage` and `settings.fontBoard` are percents (80–140, default 100; `clampFont()`; bad values → 100).
-- Every px `font-size` in `newtab.css` and `lib/shared.css` is `calc(Npx * var(--fs, 1))`. `.side` sets `--fs` from `--fs-side`, `.page` from `--fs-page`, and the Board (`.page.board-mode`) from `--fs-board` (all set on `:root` by `applyFontSize()`). The Board ignores the Page size; every other view ignores the Board size. Only text scales; row heights, icons and click areas stay. The Home clock and tile letters keep their own sizes.
+- Every px `font-size` in `newtab.css` and `styles/shared.css` is `calc(Npx * var(--fs, 1))`. `.side` sets `--fs` from `--fs-side`, `.page` from `--fs-page`, and the Board (`.page.board-mode`) from `--fs-board` (all set on `:root` by `applyFontSize()`). The Board ignores the Page size; every other view ignores the Board size. Only text scales; row heights, icons and click areas stay. The Home clock and tile letters keep their own sizes.
 - Edited in Settings › Appearance › Text size: Sidebar, Page and Board sliders, steps of 5. Text sizes are not part of Backup export/import. Changes apply at once and save after 300 ms.
 
 ## Theme
 
-- `settings.theme` = a preset name (`blue` default, `teal`, `green`, `purple`, `pink`, `orange`, `red`; `THEMES` in `lib/core.js`) or a custom `#rrggbb`. Unknown values fall back to blue.
+- `settings.theme` = a preset name (`blue` default, `teal`, `green`, `purple`, `pink`, `orange`, `red`; `THEMES` in `constants/themes.js`) or a custom `#rrggbb`. Unknown values fall back to blue.
 - `applyTheme()` sets `--accent`, `--accent-bg`, `--accent-text`, `--accent-ink` on `:root` in the new-tab page and the popup. A custom color derives the other three (`color-mix`; ink is dark on light colors, white on dark).
 - Picked in Settings › Appearance (7 swatches + custom color). It applies and saves at once.
 - Env colors never change with the theme.

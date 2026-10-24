@@ -41,9 +41,11 @@ extension/             Everything Chrome loads (choose this folder in Load unpac
   board.js             Board view: every folder as a column of cards
   settings.js          Settings view (7 tabs)
   popup.html/.js       Toolbar popup: save the current tab
-  lib/core.js          Shared logic: settings, env detection, derive, sort, matrix, DOM helper
-  lib/transfer.js      Export and import
-  lib/shared.css       Design tokens and shared components
+  constants/           Fixed values: envs, tags, sorts, themes, limits, defaults
+  domain/              Pure logic: env detection, derive, sort, matrix, search, due dates, backup
+  services/            Chrome API calls: storage, bookmarks, favicons, import
+  ui/                  Shared DOM pieces: h() helper, badges, icons, pickers, export
+  styles/              Design tokens and shared components
   icons/               Extension icons
 tools/                 make-icons.py · package.sh (release ZIP)
 docs/                  Notes and requirements
@@ -70,7 +72,7 @@ Read these 2 files before you change behaviour:
 - 2-space indent, single quotes, semicolons.
 - Early returns. No classes.
 - Match the code around your change.
-- Colors only through the tokens in `lib/shared.css`. Do not change the env colors: PROD orange, TEST blue, STAGE purple, LOCAL green.
+- Colors only through the tokens in `styles/tokens.css`. Do not change the env colors: PROD orange, TEST blue, STAGE purple, LOCAL green.
 - UI text in sentence case with plain verbs ("Save", not "Submit").
 - Interactive elements at least 28 px tall in lists, 36 px in toolbars and 44 px for primary actions. Keep `:focus-visible` working.
 - Every destructive action gets an undo toast (links, Home tiles) or a confirm (folders, sections, categories).
