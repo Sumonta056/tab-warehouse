@@ -65,6 +65,7 @@ Read these 2 files before you change behaviour:
 4. **No `innerHTML` with user data.** Build DOM with the `h()` helper. Titles and URLs are user content.
 5. **No new permissions** without a reason in the pull request and a line in the README's permissions table.
 6. **Layers.** `constants ← domain ← services ← ui ← state ← views ← entry points`: a file imports only from its own layer or the layers to its left, and a view never imports another view (the entry point passes it a `ctx` of functions). `domain/` and `constants/` never touch `document`, `window` or `chrome`. **Only `services/` calls `chrome.*`.** `tests/unit/architecture.test.mjs` checks all of this.
+7. **Lazy views, preloaded modules.** Only Home and the sidebar load with the new tab. A new view is lazy-loaded with `import()` in `newtab.js` (add it to `LOADERS` and `viewsFor()`), never imported statically. Every module that `newtab.js` or `popup.js` imports statically must have a `<link rel="modulepreload">` in its HTML; `tests/unit/architecture.test.mjs` enforces both and prints the lines to add or remove.
 
 ## Where new code goes
 

@@ -272,4 +272,5 @@ Every rule here has at least one test. If you change a rule, change its test in 
 - Sidebar resize updates at most once per animation frame and saves only on release.
 - Sorts compute each link's key (env rank, host, path, display URL) once, then sort with one shared `Intl.Collator`; nothing parses a URL inside the compare function. The env title words are compiled once (`ENV_WORDS`).
 - Closing a menu removes its document click listener.
+- Only Home and the sidebar load with the new tab. The folder page, search, schedule, Board, Settings and palette load with `import()` the first time they open (`LOADERS` in `newtab.js`); the page shows once the module is in, and a second open reuses it. Every module `newtab.js` / `popup.js` imports statically has a `<link rel="modulepreload">` in its HTML, and no lazy module has one (test "module preload" in `tests/unit/architecture.test.mjs`).
 - Leak and speed check on the real extension: `node tests/perf/memprobe.mjs` (`/perf-check`).

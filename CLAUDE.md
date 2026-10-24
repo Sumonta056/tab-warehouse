@@ -51,6 +51,7 @@ site/                  GitHub Pages website + live demo (site/build.sh, deployed
   | Boot, wiring, the `ctx` passed to views          | `newtab.js` / `popup.js` / `background.js`                                                  | The e2e scenarios                                                                         |
   | Styles                                           | `styles/ui/<piece>.css` or `styles/views/<screen>.css`, linked in the HTML in cascade order | `tests/unit/styles.test.mjs`                                                              |
 
+- **Loading** (checked by `tests/unit/architecture.test.mjs` › module preload): only Home and the sidebar load with the page. Every other view (folder page, search, schedule, board, settings, palette) loads with `import()` in `newtab.js` the first time it opens (`LOADERS`, `viewsFor()`); a new view gets a `LOADERS` entry, never a static import. Every module the page imports statically has a `<link rel="modulepreload">` in `newtab.html` / `popup.html`, so the browser fetches them in parallel; the test lists what to add or remove.
 - Same-parent `chrome.bookmarks.move` quirk: pass the target's **current** index for "drop before" and `index + 1` for "drop after"; Chrome adjusts for the removed item.
 
 ## Commands
