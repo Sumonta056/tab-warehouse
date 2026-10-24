@@ -259,7 +259,7 @@ Tab Warehouse is plain JavaScript with ES modules. There is no framework, no bun
 ```
 extension/             Everything Chrome loads (choose this folder in Load unpacked)
   manifest.json        Manifest V3: new tab override, popup, ⌘⇧B, ⌘K and ⌘⇧K commands
-  newtab.html/.css/.js The main page: sidebar + folder page
+  newtab.html/.js      The main page: sidebar + folder page
   popup.html/.js       Toolbar popup: save the current tab
   constants/           Fixed values: envs, tags, sorts, themes, limits, defaults
   domain/              Pure logic: env detection, derive, sort, matrix, search, due dates, backup
@@ -267,7 +267,7 @@ extension/             Everything Chrome loads (choose this folder in Load unpac
   ui/                  Shared DOM pieces: h() helper, toast, menu, badges, icons, pickers, export
   state/               Shared page state and the actions that save it
   views/               One folder per screen: sidebar, folder, search, schedule, board, home, palette, settings, popup
-  styles/              Design tokens and shared components
+  styles/              tokens.css, base.css, ui/ (one file per ui piece), views/ (one file per screen)
   icons/               Extension icons (source: icons/logo.svg)
 tools/make-icons.py    Build the icon sizes from any logo
 tools/package.sh       Build the release ZIP from extension/ (--store: Web Store ZIP)
@@ -292,7 +292,7 @@ Contributions are welcome — bug reports, ideas and pull requests.
 No dependencies: Node's built-in test runner and headless Chrome.
 
 ```sh
-./tests/run.sh             # syntax check + unit tests + end-to-end scenarios
+./tests/run.sh             # syntax check + unit tests + coverage gate + end-to-end scenarios
 ./tests/run.sh popup       # only e2e scenarios whose name contains "popup"
 node tests/perf/memprobe.mjs   # RAM, leak and render-speed check on the real extension
 ```

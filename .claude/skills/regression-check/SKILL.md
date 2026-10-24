@@ -26,8 +26,8 @@ tests/e2e/chrome-stub.js        fake chrome.bookmarks / storage / tabs / runtime
 tests/e2e/fixtures.js           base() tree: My Links > Sprint tasks (+Blocked), Shop API (4 envs), GITHUB - PIN, Empty, Loose; Other bookmarks > Home
 tests/e2e/runner.html|js        loads newtab.html / popup.html in an iframe per scenario, helpers on `t`
 tests/e2e/scenarios/*.js        newtab (folders), sections, categories, home, popup, …; ui.js checks each ui/ piece alone
-tests/serve.py                  no-cache static server used by run.sh and for visual debugging
-tests/run.sh                    starts tests/serve.py, runs everything, parses E2E_RESULT
+tests/serve.py                  no-cache, keep-alive (HTTP/1.1) static server used by run.sh and for visual debugging
+tests/run.sh                    starts tests/serve.py on PORT (default 8799; stops if the port is taken), runs everything, parses E2E_RESULT
 ```
 
 ## When a test fails
@@ -36,11 +36,13 @@ tests/run.sh                    starts tests/serve.py, runs everything, parses E
 2. Decide which side is wrong. Check `.claude/rules/business-logic.md`. If the rule says the old behaviour is correct, the code regressed — fix the code. If the rule changed on purpose, update the rule **and** the test in the same change. Never weaken an assertion just to get green.
 3. Debug visually: `python3 -I tests/serve.py 8799` from the repo root (sends `Cache-Control: no-store`, so edited CSS/JS is never stale), open `http://127.0.0.1:8799/tests/e2e/runner.html?only=<name>` in Chrome (or with the Chrome DevTools MCP: `new_page`, `take_screenshot`, `list_console_messages`). The iframe shows the app; `window.__harness` holds the fake tree and storage.
 4. Page JS errors are collected automatically and fail the scenario (`page error: …`).
+5. `e2e: port N is already in use` → another server (often a stale `tests/serve.py`) holds the port. Stop it or use `PORT=<free port> ./tests/run.sh`. Never point the run at a server you did not start: it may serve another checkout.
+6. Many scenarios in a row fail with `newtab did not become ready` → the pages stopped loading, not the scenarios. The server must keep connections alive (`protocol_version = 'HTTP/1.1'` in `tests/serve.py`); with one connection per file, each scenario loads about 90 files and macOS runs out of local ports (TIME_WAIT) after about 190 scenarios.
 
 ## Adding tests for a new feature
 
 1. Write the rule in `.claude/rules/business-logic.md`.
-2. Pure logic → export it from the matching `domain/<topic>.js` and test it in `tests/unit/domain/<topic>.test.mjs`.
+2. Pure logic → export it from the matching `domain/<topic>.js` and test it in `tests/unit/domain/<topic>.test.mjs`. A `chrome.*` call → `services/<api>.js`, tested in `tests/unit/services/<api>.test.mjs` with `tests/unit/fake-chrome.mjs`. A reusable DOM piece → `ui/<piece>.js`, checked alone in `tests/e2e/scenarios/ui.js`. Every `domain/` and `services/` file needs its test file, and the coverage gate needs ≥ 90 % (domain) / ≥ 80 % (services) lines.
 3. Behaviour → add a scenario object to the matching `tests/e2e/scenarios/*.js`:
    ```js
    { area: 'folders', name: 'what the user sees, in plain words', page: 'newtab', fixture: () => base({ /* overrides */ }),

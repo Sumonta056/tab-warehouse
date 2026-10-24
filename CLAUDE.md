@@ -7,7 +7,7 @@ Bookmarks as a warehouse: a Home page (clock + link tiles), a resizable folder s
 ```
 extension/             Everything that ships; the Load unpacked folder. Paths below are relative to it.
   manifest.json        MV3: newtab override + action popup + omnibox + ⌘⇧B / ⌘K / ⌘⇧K commands
-  newtab.html/.css/.js The warehouse page. newtab.js is the entry point: boot, refresh, select, page dispatch, global keys, ctx objects
+  newtab.html/.js      The warehouse page. newtab.js is the entry point: boot, refresh, select, page dispatch, global keys, ctx objects
   popup.html/.js       Toolbar popup entry point: save the current tab into any folder, warns on duplicates
   background.js        Service worker entry point: `tw` omnibox, quick save (⌘K), palette command (⌘⇧K)
   constants/           Fixed values only (envs, tags, sorts, themes, limits, defaults incl. DEFAULT_SETTINGS, pages, icons)
@@ -23,7 +23,7 @@ docs/                  Notes and requirements
 tests/                 run.sh · unit/ (node --test) · e2e/ (headless Chrome + fake chrome.* API)
 site/                  GitHub Pages website + live demo (site/build.sh, deployed by .github/workflows/pages.yml)
 .claude/rules/         Always-on conventions; business-logic.md is the behaviour spec
-.claude/skills/        Workflows: add-feature, regression-check, debug-extension, release, update-website, web-store
+.claude/skills/        Workflows: add-feature, regression-check, debug-extension, perf-check, release, update-website, web-store
 .claude/agents/        feature-builder (implements), regression-guard (verifies)
 ```
 
@@ -38,6 +38,19 @@ site/                  GitHub Pages website + live demo (site/build.sh, deployed
 - **Drag & drop** is native HTML5 DnD. `drag` (module-level) holds `{ kind: 'link'|'folder', id, parentId }`. Row reorder only in Manual sort; dropping a row on a sidebar item moves it to that folder. Folder drag reorders `settings.order` only.
 - **Categories** (`settings.categories`, `folderCat`) group sidebar folders; **sections** are a folder's direct subfolders shown as headers on the folder page. Full rules: `.claude/rules/business-logic.md`.
 - **Layers** (checked by `tests/unit/architecture.test.mjs`): constants ← domain ← services ← ui ← state ← views ← entry points. A view never imports another view; the entry point passes a `ctx` of functions (`select`, `renderNav`, `renderPage`, `folderMenu`, `renderRow`, `setFolderPrefs` …). Only `services/` may call `chrome.*`.
+- **Where new code goes:**
+
+  | New code                                         | Goes in                                                                                     | Its test                                                                                  |
+  | ------------------------------------------------ | ------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+  | A fixed value (name list, limit, default, label) | `constants/`                                                                                | Covered by the tests of the code that uses it                                             |
+  | Pure logic (no DOM, no `chrome.*`, no storage)   | `domain/<topic>.js`                                                                         | `tests/unit/domain/<topic>.test.mjs` (required; ≥ 90 % lines)                             |
+  | A `chrome.*` call                                | `services/<api>.js`                                                                         | `tests/unit/services/<api>.test.mjs` with `tests/unit/fake-chrome.mjs` (required; ≥ 80 %) |
+  | A reusable DOM piece (takes data, returns nodes) | `ui/<piece>.js`                                                                             | A scenario in `tests/e2e/scenarios/ui.js`                                                 |
+  | Shared page state or an action that saves it     | `state/`                                                                                    | Through the scenarios of the views that use it                                            |
+  | A screen or part of a screen                     | `views/<screen>/`                                                                           | A scenario in `tests/e2e/scenarios/<area>.js`                                             |
+  | Boot, wiring, the `ctx` passed to views          | `newtab.js` / `popup.js` / `background.js`                                                  | The e2e scenarios                                                                         |
+  | Styles                                           | `styles/ui/<piece>.css` or `styles/views/<screen>.css`, linked in the HTML in cascade order | `tests/unit/styles.test.mjs`                                                              |
+
 - Same-parent `chrome.bookmarks.move` quirk: pass the target's **current** index for "drop before" and `index + 1` for "drop after"; Chrome adjusts for the removed item.
 
 ## Commands
@@ -46,7 +59,7 @@ There is no build. Load unpacked at `chrome://extensions` (choose `extension/`),
 
 - First time: `npm install`. It installs the dev tools and the git hooks: pre-commit runs Prettier on staged files and `npm run test:fast`; commit-msg enforces Conventional Commits (`feat:`, `fix:`, `docs:` …); pre-push runs `./tests/run.sh`.
 - Format: `npm run format` (Prettier, config in `.prettierrc.json`).
-- Full check (syntax + unit + coverage gate + e2e): `./tests/run.sh` — must be green before any change is called done. Filter e2e: `./tests/run.sh "sections"`.
+- Full check (syntax + unit + coverage gate + e2e, about a minute): `./tests/run.sh` — must be green before any change is called done. Filter e2e: `./tests/run.sh "sections"`. It serves the repo on `PORT` (default 8799) and stops with an error when that port is already taken, so a stale server can never answer for it; use `PORT=8800 ./tests/run.sh` to run two at once.
 - Coverage: `npm run coverage` prints the per-file table; `npm run coverage:gate` (`tools/coverage-gate.mjs`, also run by `tests/run.sh` and CI) fails when a `domain/` file is under 90 % line coverage or a `services/` file under 80 %. Every `domain/` and `services/` file needs its own `tests/unit/<layer>/<name>.test.mjs` (checked by `tests/unit/architecture.test.mjs`); services tests use the in-memory fake in `tests/unit/fake-chrome.mjs`.
 - RAM / leak / render-speed check on the real extension (~1 min, needs Chrome for Testing): `node tests/perf/memprobe.mjs`. See the `/perf-check` skill.
 - Debug a scenario visually: `python3 -I tests/serve.py 8799` (no-cache server), open `http://127.0.0.1:8799/tests/e2e/runner.html?only=<name>`.

@@ -14,7 +14,7 @@ Right after you read the brief, call the savvy-progress `step` tool with your pl
 2. Find what changed: the brief names the files or the feature; read those files and the matching scenarios in `tests/e2e/scenarios/`.
 3. Run `./tests/run.sh`. Record the exact `pass / fail / total` line.
 4. For every failure decide: regression (code broke a rule) or intended change (rule must be updated). Quote the rule. Do not edit app code — report the regression with the scenario name, expected vs actual, and the file/function you believe is responsible.
-5. Coverage gap check: for each new or changed rule, is there a scenario that would fail if the behaviour broke? If not, write one in the matching scenario file (and a unit test for new pure functions in `domain/`, under `tests/unit/domain/`). Assert on state (`t.node`, `t.kids`, `t.settings()`, `t.store`) and visible DOM.
+5. Coverage gap check: for each new or changed rule, is there a scenario that would fail if the behaviour broke? If not, write one in the matching scenario file (and a unit test for new pure functions in `domain/` under `tests/unit/domain/`, for new `services/` functions under `tests/unit/services/` with `tests/unit/fake-chrome.mjs`, and a `tests/e2e/scenarios/ui.js` scenario for a new `ui/` piece). The coverage gate (domain ≥ 90 %, services ≥ 80 % lines) and `architecture.test.mjs` (layers, chrome only in services, a test file per domain/services module) must pass. Assert on state (`t.node`, `t.kids`, `t.settings()`, `t.store`) and visible DOM.
 6. Prove each test you added can fail: break the guarded line temporarily (copy the file to the scratchpad first), run `./tests/run.sh "<scenario name>"`, confirm the failure, restore the file byte-for-byte, re-run.
 7. Run the whole suite again.
 

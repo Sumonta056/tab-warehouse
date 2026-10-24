@@ -17,12 +17,13 @@ description: Add or change a feature in the warehouse new-tab page, Home, or pop
 4. **Re-render path:** after a settings change call `renderPage()`/`renderBody()`/`renderNav()`; after a bookmark change do nothing — the debounced `chrome.bookmarks` listener calls `refresh()`.
 5. **Rules + tests in the same change** (see `/regression-check`):
    - add or update the rule in `.claude/rules/business-logic.md`
-   - unit test for new pure logic in `tests/unit/domain/<topic>.test.mjs`
+   - unit test for new pure logic in `tests/unit/domain/<topic>.test.mjs`; a new `chrome.*` call in `tests/unit/services/<api>.test.mjs` with the fake in `tests/unit/fake-chrome.mjs` (a new `domain/` or `services/` file without its test file fails `architecture.test.mjs`; the coverage gate wants ≥ 90 % lines for domain, ≥ 80 % for services)
+   - a new or changed `ui/` piece → a scenario in `tests/e2e/scenarios/ui.js` that checks it alone
    - e2e scenario(s) in `tests/e2e/scenarios/*.js` for the user-visible behaviour, including the edge cases (empty folder, Unsorted, sections, categories, Home)
    - prove each new test fails when the feature is broken
 6. **Check:** `./tests/run.sh` must be fully green. Then reload at `chrome://extensions`, open a new tab, try it with the Shop API folder (longest URLs, all four envs), an empty folder, a folder with sections, and Home.
 7. **Document:** README.md (feature table / section + changelog line). After the feature is committed, run `/update-website` so the website, its live demo, the screenshots and the README show it.
 
-Checklist before saying done: `./tests/run.sh` green · keyboard reachable · focus visible · works in URL mode and Title mode · works with Manual and Env sort · works with and without categories · works in a folder with sections · nothing truncates a URL on the folder page · no new permission without a README line.
+Checklist before saying done: `./tests/run.sh` green (layers, coverage gate and e2e) · only `services/` calls `chrome.*` · keyboard reachable · focus visible · works in URL mode and Title mode · works with Manual and Env sort · works with and without categories · works in a folder with sections · nothing truncates a URL on the folder page · no new permission without a README line.
 
 For a larger feature, hand the build to the `feature-builder` agent and the verification to the `regression-guard` agent (see `.claude/agents/`).

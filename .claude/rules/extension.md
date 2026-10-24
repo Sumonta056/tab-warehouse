@@ -4,7 +4,8 @@ description: Chrome MV3 constraints that apply to every file in this repo
 
 # Chrome extension rules
 
-- Manifest V3 only. No `background` service worker is needed today; add one only for alarms/omnibox/context menus, and declare why.
+- Manifest V3 only. `background.js` is a module service worker for the `tw` omnibox and the `quick-save` / `palette` commands; it is an entry point and only wires services to domain functions.
+- Only `services/` calls `chrome.*` (checked by `tests/unit/architecture.test.mjs`). Everything else gets Chrome data through a service function, so domain code stays pure and every service is unit-tested against `tests/unit/fake-chrome.mjs`.
 - Pages are `chrome-extension://` documents: no inline `<script>` and no inline event handlers (`onclick="..."`) — CSP blocks them. Attach listeners in JS (`h()` supports `onClick`).
 - No remote code. No CDN `<script>` tags. Fonts come from the system stack in `styles/tokens.css`.
 - `chrome.*` calls are promise-based; always `await` them and keep UI-blocking work out of event listeners.

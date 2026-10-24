@@ -36,7 +36,7 @@ To test with your real bookmarks safely, use a separate Chrome profile.
 ```
 extension/             Everything Chrome loads (choose this folder in Load unpacked)
   manifest.json        Manifest V3: new tab override, popup, omnibox, ⌘⇧B / ⌘K / ⌘⇧K commands
-  newtab.html/.css/.js The main page: sidebar + folder page
+  newtab.html/.js      The main page: sidebar + folder page
   popup.html/.js       Toolbar popup: save the current tab
   constants/           Fixed values: envs, tags, sorts, themes, limits, defaults
   domain/              Pure logic: env detection, derive, sort, matrix, search, due dates, backup
@@ -44,9 +44,9 @@ extension/             Everything Chrome loads (choose this folder in Load unpac
   ui/                  Shared DOM pieces: h() helper, toast, menu, badges, icons, pickers, export
   state/               Shared page state and the actions that save it
   views/               One folder per screen: sidebar, folder, search, schedule, board, home, palette, settings, popup
-  styles/              Design tokens and shared components
+  styles/              tokens.css, base.css, ui/ (one file per ui piece), views/ (one file per screen)
   icons/               Extension icons
-tools/                 make-icons.py · package.sh (release ZIP)
+tools/                 make-icons.py · package.sh (release ZIP) · coverage-gate.mjs (unit coverage gate)
 docs/                  Notes and requirements
 tests/                 run.sh · unit/ · e2e/ · perf/
 .claude/rules/         Conventions and the behaviour spec (business-logic.md)
@@ -64,6 +64,19 @@ Read these 2 files before you change behaviour:
 3. **No remote code.** No CDN scripts, no inline `<script>` and no inline event handlers (the extension CSP blocks them).
 4. **No `innerHTML` with user data.** Build DOM with the `h()` helper. Titles and URLs are user content.
 5. **No new permissions** without a reason in the pull request and a line in the README's permissions table.
+6. **Layers.** `constants ← domain ← services ← ui ← state ← views ← entry points`: a file imports only from its own layer or the layers to its left, and a view never imports another view (the entry point passes it a `ctx` of functions). `domain/` and `constants/` never touch `document`, `window` or `chrome`. **Only `services/` calls `chrome.*`.** `tests/unit/architecture.test.mjs` checks all of this.
+
+## Where new code goes
+
+| New code                                         | Goes in                                             | Its test                                                                             |
+| ------------------------------------------------ | --------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| A fixed value (name list, limit, default, label) | `extension/constants/`                              | Covered by the tests of the code that uses it                                        |
+| Pure logic (no DOM, no `chrome.*`, no storage)   | `extension/domain/<topic>.js`                       | `tests/unit/domain/<topic>.test.mjs`                                                 |
+| A `chrome.*` call                                | `extension/services/<api>.js`                       | `tests/unit/services/<api>.test.mjs`, using the fake in `tests/unit/fake-chrome.mjs` |
+| A reusable DOM piece (takes data, returns nodes) | `extension/ui/<piece>.js`                           | A scenario in `tests/e2e/scenarios/ui.js`                                            |
+| Shared page state or an action that saves it     | `extension/state/`                                  | Through the scenarios of the views that use it                                       |
+| A screen or part of a screen                     | `extension/views/<screen>/`                         | A scenario in `tests/e2e/scenarios/<area>.js`                                        |
+| Styles                                           | `extension/styles/ui/` or `extension/styles/views/` | `tests/unit/styles.test.mjs` checks the links and their order                        |
 
 ## Code style
 
@@ -78,14 +91,16 @@ Read these 2 files before you change behaviour:
 
 ## Tests
 
-Run the full check before you open a pull request. It takes about 10 seconds.
+Run the full check before you open a pull request. It takes about a minute.
 
 ```sh
-./tests/run.sh               # syntax + unit + end-to-end
+./tests/run.sh               # syntax + unit + coverage gate + end-to-end
 ./tests/run.sh "sections"    # only e2e scenarios whose name contains "sections"
 ```
 
-- Unit tests are in `tests/unit/` and use `node --test`.
+- Unit tests are in `tests/unit/<layer>/` and use `node --test`. Every file in `extension/domain/` and `extension/services/` needs its own `tests/unit/<layer>/<name>.test.mjs`; `tests/unit/architecture.test.mjs` fails when one is missing.
+- Coverage gate: `tools/coverage-gate.mjs` (run by `./tests/run.sh` and CI, or `npm run coverage:gate`) fails when a `domain/` file is under 90 % line coverage or a `services/` file under 80 %. `npm run coverage` prints the table.
+- `./tests/run.sh` serves the repo on port 8799 (`PORT=<n>` picks another) and stops with an error when the port is already taken.
 - End-to-end scenarios are in `tests/e2e/scenarios/`. They run the real pages in headless Chrome with a fake `chrome.*` API.
 - To watch one scenario run:
   ```sh
