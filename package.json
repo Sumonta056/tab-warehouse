@@ -7,7 +7,8 @@
   "scripts": {
     "prepare": "husky",
     "test": "./tests/run.sh",
-    "test:fast": "for f in extension/*.js extension/lib/*.js; do node --check $f || exit 1; done && node --test tests/unit/",
+    "test:fast": "for f in $(find extension -name '*.js'); do node --check $f || exit 1; done && node --test tests/unit/",
+    "coverage": "node --test --experimental-test-coverage tests/unit/ 2>&1 | grep -E '^# (start|end) of coverage|^# file|^# -+$|^# extension/|^# (tests|pass|fail) '",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },

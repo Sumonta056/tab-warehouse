@@ -8,7 +8,7 @@ PORT="${PORT:-8799}"
 status=0
 
 echo "== syntax =="
-for f in extension/*.js extension/lib/*.js; do node --check "$f" || status=1; done
+for f in $(find extension -name '*.js'); do node --check "$f" || status=1; done
 
 echo "== unit (node --test) =="
 node --test tests/unit/ 2>&1 | grep -E '^# (tests|pass|fail)|^not ok|^\s+not ok' || true
