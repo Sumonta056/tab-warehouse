@@ -8,7 +8,7 @@ description: Cut a release of the extension — bump version, sanity-check, prod
 1. Bump `version` in `extension/manifest.json` and `package.json` (semver; UI change = minor, fix = patch).
 2. Run: `./tests/run.sh` — it must end with exit code 0 (syntax, unit, the e2e scenarios on `extension/` and the same scenarios on the `dist/` build). Do not release on red.
 3. Confirm `extension/manifest.json` lists only `bookmarks storage favicon activeTab` unless a new permission was documented in README.md.
-   Then run `npm run build` and `node tests/perf/memprobe.mjs dist` (see `/perf-check`). It must exit 0. Compare its table with the baseline in the perf-check skill; explain any large rise before you release.
+   Then run `npm run build`, `node tests/perf/memprobe.mjs dist` and `npm run perf:load` (see `/perf-check`). Both must exit 0. Compare its table with the baseline in the perf-check skill; explain any large rise before you release.
 4. Build and package the committed tree (it exports `HEAD`, runs `tools/build.mjs` on it and zips `dist/` plus LICENSE, so commit first; needs `npm install` for esbuild):
    ```
    ./tools/package.sh

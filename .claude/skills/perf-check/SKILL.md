@@ -1,11 +1,11 @@
 ---
 name: perf-check
-description: Measure RAM use, look for memory leaks and slow renders, and run the security checklist on the real extension. Use when asked "how much RAM", "any leak", "performance check", "security check", "audit", or before a release that changed rendering, listeners, timers, storage, permissions or import.
+description: Measure RAM use, memory leaks, render speed and new-tab load time, and run the security checklist on the real extension. Use when asked "how much RAM", "any leak", "is the new tab slow", "load time", "performance check", "security check", "audit", or before a release that changed rendering, listeners, timers, storage, permissions, import, lazy views, HTML or the build.
 ---
 
 # Performance, leak and security check
 
-Two parts: a measured run on the real extension (`tests/perf/memprobe.mjs`) and a static security checklist. Report numbers, not guesses.
+Two parts: measured runs on the real extension (`tests/perf/memprobe.mjs` for memory and render, `tests/perf/loadtime.mjs` for new-tab load time) and a static security checklist. Report numbers, not guesses.
 
 ## 1. Measured run
 
@@ -54,6 +54,31 @@ Process memory is reported but not checked: Chrome keeps freed pages for reuse, 
 | 5000 links, after 300 cycles | 3.5 MB  | 7631      | 2884      | 148 MB   |
 
 The 5000-link row is from 2026-10-22 (2.3.0). The DOM node count after 1000 links moves between 2478 and 2480 from run to run, so the "DOM nodes stable" check can fail by ±2 without a leak; rerun before you look for one. Folder render: 4–5 ms at 50 rows (3.9 ms in 2.3.0), 16 ms at 250 rows. Sorting 5000 links in Node: env 10 ms, name 10 ms, url 9 ms, host 12 ms. Update this table when a change moves the numbers on purpose.
+
+### New-tab load time
+
+```
+npm run perf:load                                   # builds dist/, then compares extension/ and dist/
+COLD=20 WARM=30 node tests/perf/loadtime.mjs dist   # more samples, release build only
+```
+
+`tests/perf/loadtime.mjs` opens the new tab in Chrome for Testing: `COLD` times in a fresh profile (ready = Home shown), then `WARM` times in one browser with 500 links (ready = Home and sidebar shown). It prints the median ready time, DOMContentLoaded and the number of `chrome-extension://` requests for each folder. The last line is `LOAD_RESULT {json}`.
+
+Checks on `dist` (exit 1 when one fails): ready ≤ 60 ms cold and warm (`READY_MS`), requests ≤ 25 (`REQUESTS`). The request count is exact; the times move by a few ms between runs, so rerun once before you look for a cause.
+
+| Folder (2026-10-24, Chrome for Testing 1243) | Cold ready | Warm ready | Requests |
+| -------------------------------------------- | ---------- | ---------- | -------- |
+| `dist` (what ships)                          | 37–40 ms   | 37 ms      | 18       |
+| `extension/` (source, dev only)              | 67–75 ms   | 68–70 ms   | 79       |
+| main before the layer refactor               | 37 ms      | 35 ms      | 11       |
+
+When `dist` gets slower or makes more requests:
+
+1. A view that should be lazy is imported statically. `newtab.js` may import only Home and the sidebar at start (`architecture.test.mjs` › lazy views); other views go through `LOADERS` with `import()`.
+2. A new file that the page loads by path (not by import) was added to the HTML. The build joins only the `<link rel=stylesheet>` list and the module graph.
+3. A large module moved into the eager graph. Compare `dist/newtab.js` and `dist/chunks/` sizes with the last release.
+
+The source in `extension/` is slower by design (one request per module). Only `dist` is what users get.
 
 ## 2. Security checklist
 
