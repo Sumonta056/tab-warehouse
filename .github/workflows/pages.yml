@@ -26,6 +26,16 @@ jobs:
         with:
           ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install the build tool
+        run: npm ci
+        env:
+          HUSKY: 0
+
       - name: Build the site and the live demo
         run: ./site/build.sh "$PWD/_site"
 

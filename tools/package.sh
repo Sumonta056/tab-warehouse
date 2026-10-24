@@ -14,9 +14,12 @@ OUT="${1:-$ROOT/tab-warehouse-$VERSION$SUFFIX.zip}"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
-mkdir -p "$TMP/tab-warehouse"
-git -C "$ROOT" archive "$REF:extension" | tar -x -C "$TMP/tab-warehouse"
-git -C "$ROOT" archive "$REF" -- LICENSE | tar -x -C "$TMP/tab-warehouse"
+test -d "$ROOT/node_modules/esbuild" || { echo "esbuild is missing: run npm install first." >&2; exit 1; }
+mkdir -p "$TMP/src"
+git -C "$ROOT" archive "$REF" | tar -x -C "$TMP/src"
+ln -s "$ROOT/node_modules" "$TMP/src/node_modules"
+node "$TMP/src/tools/build.mjs" "$TMP/tab-warehouse" >/dev/null
+cp "$TMP/src/LICENSE" "$TMP/tab-warehouse/"
 test -f "$TMP/tab-warehouse/manifest.json"
 rm -f "$OUT"
 if [ "$STORE" = 1 ]; then

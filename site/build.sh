@@ -7,8 +7,13 @@ rm -rf "$OUT"
 mkdir -p "$OUT"
 cp -R "$ROOT/site/." "$OUT/"
 rm "$OUT/build.sh"
-mkdir -p "$OUT/demo"
-git -C "$ROOT" archive HEAD:extension | tar -x -C "$OUT/demo"
+test -d "$ROOT/node_modules/esbuild" || { echo "esbuild is missing: run npm ci first." >&2; exit 1; }
+SRC="$(mktemp -d)"
+trap 'rm -rf "$SRC"' EXIT
+git -C "$ROOT" archive HEAD | tar -x -C "$SRC"
+ln -s "$ROOT/node_modules" "$SRC/node_modules"
+node "$SRC/tools/build.mjs" "$SRC/dist" >/dev/null
+cp -R "$SRC/dist/." "$OUT/demo/"
 for page in newtab popup; do
   perl -0pi -e 's|<script type="module"|<script src="demo-chrome.js"></script>\n    <script type="module"|' "$OUT/demo/$page.html"
   perl -0pi -e 's|<head>|<head>\n    <meta name="robots" content="noindex" />|' "$OUT/demo/$page.html"

@@ -1,5 +1,5 @@
 import { build } from 'esbuild';
-import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -88,7 +88,7 @@ export async function buildDist(out = join(ROOT, 'dist')) {
   return out;
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
+if (process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const out = resolve(process.argv[2] || join(ROOT, 'dist'));
   try {
     await buildDist(out);
