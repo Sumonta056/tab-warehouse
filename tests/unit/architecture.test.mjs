@@ -8,6 +8,8 @@ const EXT = resolve(dirname(fileURLToPath(import.meta.url)), '../../extension');
 
 const LAYERS = ['constants', 'domain', 'services', 'ui', 'state', 'views', 'entry'];
 const PURE = ['constants', 'domain'];
+const CHROME_OK = ['services', 'entry'];
+const usesWord = (src, word) => new RegExp(`(^|[^\\w.$])${word.replace('.', '\\.')}`).test(src);
 
 const LEGACY = ['home.js', 'board.js', 'palette.js', 'settings.js'];
 
@@ -77,9 +79,16 @@ describe('architecture', () => {
     for (const { abs, file } of files) {
       if (legacy(file) || !PURE.includes(layerOf(file))) continue;
       const src = readFileSync(abs, 'utf8');
-      for (const word of ['document.', 'window.', 'chrome.'])
-        if (new RegExp(`(^|[^\\w.$])${word.replace('.', '\\.')}`).test(src)) bad.push(`${file} uses ${word}`);
+      for (const word of ['document.', 'window.', 'chrome.']) if (usesWord(src, word)) bad.push(`${file} uses ${word}`);
     }
+    assert.deepEqual(bad, []);
+  });
+
+  test('only services and entry points call chrome.*', () => {
+    const bad = files
+      .filter(({ file }) => !legacy(file) && !CHROME_OK.includes(layerOf(file)))
+      .filter(({ abs }) => usesWord(readFileSync(abs, 'utf8'), 'chrome.'))
+      .map(({ file }) => file);
     assert.deepEqual(bad, []);
   });
 });

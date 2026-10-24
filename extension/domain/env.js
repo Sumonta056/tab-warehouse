@@ -16,3 +16,9 @@ export function explainEnv(bm, rules) {
 export function detectEnv(bm, rules) {
   return explainEnv(bm, rules).env;
 }
+
+export function envGroups(links, rules, tags) {
+  const by = {};
+  for (const bm of links) (by[detectEnv(bm, rules) || 'NONE'] ||= []).push(bm);
+  return [...tags, 'NONE'].filter((e) => by[e]).map((env) => ({ env, links: by[env] }));
+}

@@ -1,7 +1,7 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { ENVS } from '../../../extension/constants/envs.js';
-import { deriveUrl, switchTargets } from '../../../extension/domain/derive.js';
+import { deriveUrl, switchTargets, otherVersions } from '../../../extension/domain/derive.js';
 import { SAMPLE_HOST_MAP } from '../fixtures.mjs';
 
 describe('switchTargets', () => {
@@ -56,5 +56,26 @@ describe('custom tags', () => {
         { env: 'TEST', url: 'https://test.shop.example.com/x' },
       ],
     });
+  });
+});
+
+describe('otherVersions', () => {
+  test('every other tag that the site row fills, with the same path', () => {
+    assert.deepEqual(otherVersions('https://shop.example.com/a?b=1', 'PROD', SAMPLE_HOST_MAP), [
+      { env: 'TEST', url: 'https://test.shop.example.com/a?b=1' },
+      { env: 'STAGE', url: 'https://stage.shop.example.com/a?b=1' },
+      { env: 'LOCAL', url: 'http://localhost:8080/a?b=1' },
+    ]);
+  });
+  test('empty boxes and unknown hosts give nothing', () => {
+    assert.deepEqual(
+      otherVersions('https://www.example.org/x', 'PROD', SAMPLE_HOST_MAP).map((x) => x.env),
+      ['TEST'],
+    );
+    assert.deepEqual(otherVersions('https://nowhere.net/', '', SAMPLE_HOST_MAP), []);
+  });
+  test('custom tags take part when passed', () => {
+    const map = [{ PROD: 'a.com', QA: 'qa.a.com' }];
+    assert.deepEqual(otherVersions('https://qa.a.com/p', 'QA', map, [...ENVS, 'QA']), [{ env: 'PROD', url: 'https://a.com/p' }]);
   });
 });

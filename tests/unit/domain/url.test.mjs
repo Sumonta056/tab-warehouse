@@ -1,6 +1,6 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { displayUrl, hostOf, isGithub, normalizeUrl, pathKey, sameAsUrl } from '../../../extension/domain/url.js';
+import { displayUrl, hostOf, isGithub, normalizeUrl, pathKey, sameAsUrl, withScheme } from '../../../extension/domain/url.js';
 
 describe('URL helpers', () => {
   test('hostOf lowercases host and keeps port; bad URL gives empty string', () => {
@@ -35,5 +35,15 @@ describe('URL helpers', () => {
     assert.equal(normalizeUrl('chrome://flags'), 'chrome://flags');
     assert.equal(normalizeUrl(''), '');
     assert.equal(normalizeUrl(null), '');
+  });
+});
+
+describe('withScheme', () => {
+  test('adds https:// only when there is no scheme', () => {
+    assert.equal(withScheme('example.com/x'), 'https://example.com/x');
+    assert.equal(withScheme('http://a.com'), 'http://a.com');
+    assert.equal(withScheme('chrome://extensions'), 'chrome://extensions');
+    assert.equal(withScheme('localhost:3000'), 'localhost:3000');
+    assert.equal(withScheme(''), '');
   });
 });

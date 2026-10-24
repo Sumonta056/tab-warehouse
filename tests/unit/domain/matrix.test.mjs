@@ -1,8 +1,8 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { ENVS } from '../../../extension/constants/envs.js';
-import { buildMatrix } from '../../../extension/domain/matrix.js';
-import { SAMPLE_ENV_RULES, L } from '../fixtures.mjs';
+import { buildMatrix, matrixLinks, matrixMissing, queryLabel } from '../../../extension/domain/matrix.js';
+import { SAMPLE_ENV_RULES, SAMPLE_HOST_MAP, L } from '../fixtures.mjs';
 
 describe('buildMatrix', () => {
   test('groups the same path across envs; no-env links go to rest', () => {
@@ -39,5 +39,36 @@ describe('custom tags', () => {
       buildMatrix(links, rules).rest.map((x) => x.id),
       ['2'],
     );
+  });
+});
+
+describe('matrix row helpers', () => {
+  const tags = [...ENVS];
+  const row = {
+    key: '/a',
+    cells: {
+      PROD: [L('1', 'p', 'https://shop.example.com/a')],
+      TEST: [L('2', 't', 'https://test.shop.example.com/a'), L('3', 't2', 'https://test.shop.example.com/a?x=1')],
+      STAGE: [],
+      LOCAL: [],
+    },
+  };
+  test('matrixLinks lists every link of the row in tag order', () => {
+    assert.deepEqual(
+      matrixLinks(row, tags).map((x) => x.id),
+      ['1', '2', '3'],
+    );
+  });
+  test('matrixMissing derives the empty tags from the first link', () => {
+    assert.deepEqual(matrixMissing(row, tags, SAMPLE_HOST_MAP), [
+      { env: 'STAGE', url: 'https://stage.shop.example.com/a' },
+      { env: 'LOCAL', url: 'http://localhost:8080/a' },
+    ]);
+    assert.deepEqual(matrixMissing(row, tags, []), []);
+  });
+  test('queryLabel shows the query part', () => {
+    assert.equal(queryLabel('https://a.com/x'), 'open');
+    assert.equal(queryLabel('https://a.com/x?id=7&b=2'), 'open ?id=7&b=2');
+    assert.equal(queryLabel('not a url'), 'open');
   });
 });

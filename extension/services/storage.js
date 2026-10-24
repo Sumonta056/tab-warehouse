@@ -26,3 +26,11 @@ export async function setLinkMeta(id, m) {
   await chrome.storage.local.set({ linkMeta: all });
   return all;
 }
+
+export function saveLinkMeta(all) {
+  return chrome.storage.local.set({ linkMeta: all });
+}
+
+export function onStorageChange(fn) {
+  chrome.storage.onChanged.addListener(fn);
+}

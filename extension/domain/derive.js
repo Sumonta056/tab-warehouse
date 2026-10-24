@@ -33,3 +33,10 @@ export function switchTargets(url, hostMap, tags = ENVS) {
       .filter((x) => x.url),
   };
 }
+
+export function otherVersions(url, env, hostMap, tags = ENVS) {
+  return tags
+    .filter((x) => x !== env)
+    .map((x) => ({ env: x, url: deriveUrl(url, x, hostMap, tags) }))
+    .filter((x) => x.url);
+}

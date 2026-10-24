@@ -36,3 +36,7 @@ export function normalizeUrl(input) {
   if (!v) return '';
   return /^[a-z][a-z0-9+.-]*:/i.test(v) ? v : `https://${v}`;
 }
+
+export function withScheme(url) {
+  return url && !/^[a-z]+:/i.test(url) ? 'https://' + url : url;
+}
