@@ -79,3 +79,9 @@ describe('otherVersions', () => {
     assert.deepEqual(otherVersions('https://qa.a.com/p', 'QA', map, [...ENVS, 'QA']), [{ env: 'PROD', url: 'https://a.com/p' }]);
   });
 });
+
+describe('deriveUrl with a bad address', () => {
+  test('a text that is not a URL derives nothing, even when a site row has empty boxes', () => {
+    assert.equal(deriveUrl('not a url', 'PROD', [{ PROD: 'shop.example.com', TEST: '' }]), null);
+  });
+});

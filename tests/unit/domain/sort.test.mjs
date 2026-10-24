@@ -85,3 +85,13 @@ describe('sortLinks keeps input order for equal keys', () => {
     );
   });
 });
+
+describe('sortLinks by URL', () => {
+  test('orders by the address without the scheme, case-insensitive and numeric', () => {
+    const links = [L('1', 'z', 'https://b.com/10'), L('2', 'y', 'http://A.com/x'), L('3', 'x', 'https://b.com/9')];
+    assert.deepEqual(
+      sortLinks(links, 'url').map((l) => l.id),
+      ['2', '3', '1'],
+    );
+  });
+});

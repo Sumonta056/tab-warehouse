@@ -2,7 +2,18 @@ import { test, describe, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { DEFAULT_BOARD, DEFAULT_HOME, DEFAULT_SIDE_LOOK } from '../../../extension/constants/defaults.js';
 import { SIDE_WIDTH } from '../../../extension/constants/limits.js';
-import { loadSettings, saveSettings } from '../../../extension/services/storage.js';
+import {
+  loadSettings,
+  saveSettings,
+  loadLinkMeta,
+  setLinkMeta,
+  saveLinkMeta,
+  onStorageChange,
+  loadHomeStore,
+  saveHomeIcons,
+  saveHomeBg,
+} from '../../../extension/services/storage.js';
+import { fakeChrome } from '../fake-chrome.mjs';
 
 describe('settings storage', () => {
   let store;
@@ -150,5 +161,44 @@ describe('no built-in company or personal data', () => {
     assert.equal(s.rootName, '');
     assert.deepEqual([s.envRules, s.hostMap], [[], []]);
     assert.doesNotMatch(JSON.stringify(s), /shop\.example|My Links|Sprint tasks|sumonta|gitbook|vercel/i);
+  });
+});
+
+describe('link meta, Home store and storage events', () => {
+  test('setLinkMeta stores a cleaned entry and removes it when it is empty', async () => {
+    const ch = fakeChrome();
+    let all = await setLinkMeta('11', { note: '  call Ann  ', pri: 'urgent' });
+    assert.deepEqual(all, { 11: { note: 'call Ann' } });
+    assert.deepEqual(await loadLinkMeta(), { 11: { note: 'call Ann' } });
+    await setLinkMeta('12', { pri: 'high' });
+    all = await setLinkMeta('11', { note: '' });
+    assert.deepEqual(all, { 12: { pri: 'high' } });
+    assert.deepEqual(ch.data.linkMeta, { 12: { pri: 'high' } });
+  });
+
+  test('loadLinkMeta is empty on a fresh install; saveLinkMeta replaces everything', async () => {
+    fakeChrome();
+    assert.deepEqual(await loadLinkMeta(), {});
+    await saveLinkMeta({ 5: { pri: 'low' } });
+    assert.deepEqual(await loadLinkMeta(), { 5: { pri: 'low' } });
+  });
+
+  test('Home icons and background load with empty defaults and save separately', async () => {
+    const ch = fakeChrome();
+    assert.deepEqual(await loadHomeStore(), { icons: {}, bg: '' });
+    await saveHomeIcons({ 71: 'data:image/png;base64,AAA' });
+    await saveHomeBg('data:image/jpeg;base64,BBB');
+    assert.deepEqual(await loadHomeStore(), { icons: { 71: 'data:image/png;base64,AAA' }, bg: 'data:image/jpeg;base64,BBB' });
+    assert.equal(ch.data.settings, undefined, 'never written into settings');
+    await saveHomeBg('');
+    assert.equal('homeBg' in ch.data, false, 'an empty background removes the key');
+  });
+
+  test('onStorageChange registers a listener', () => {
+    const ch = fakeChrome();
+    let seen = null;
+    onStorageChange((changes, area) => (seen = [Object.keys(changes), area]));
+    ch.storage.onChanged.fire({ settings: {} }, 'local');
+    assert.deepEqual(seen, [['settings'], 'local']);
   });
 });
