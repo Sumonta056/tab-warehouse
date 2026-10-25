@@ -20,6 +20,7 @@
 <p align="center">
   <a href="https://sumonta056.github.io/tab-warehouse/"><b>Website</b></a> ·
   <a href="https://sumonta056.github.io/tab-warehouse/#demo"><b>Live demo</b></a> ·
+  <a href="https://chromewebstore.google.com/detail/tab-warehouse-%E2%80%94-bookmark/fcpkkepfhfoflkhfflcicjdmhimkgpio"><b>Chrome Web Store</b></a> ·
   <a href="#install"><b>Install</b></a>
 </p>
 
@@ -178,7 +179,14 @@ The website and the demo live in [`site/`](site/). The demo loads the extension'
 
 ## Install
 
-### Download (recommended)
+### Chrome Web Store (recommended)
+
+1. Open **[Tab Warehouse on the Chrome Web Store](https://chromewebstore.google.com/detail/tab-warehouse-%E2%80%94-bookmark/fcpkkepfhfoflkhfflcicjdmhimkgpio)** and click **Add to Chrome**.
+2. Open a new tab, then open ⚙ Settings to add your name, your Home sites and your root folder.
+
+If the store page does not open or the add does not work, use the ZIP below.
+
+### Download ZIP (if the store does not work)
 
 1. Download the latest ZIP from **[Releases](https://github.com/Sumonta056/tab-warehouse/releases/latest)** and unzip it. Move the folder to a place where it can stay, for example Documents.
 2. Open `chrome://extensions` and turn on **Developer mode** (top right).
@@ -196,10 +204,6 @@ git clone https://github.com/Sumonta056/tab-warehouse.git
 Load the `extension` folder of the clone with **Load unpacked**. It runs as it is, with no build. After a `git pull`, click ↻ on the extension card.
 
 The release ZIP is built: `npm install`, then `./tools/package.sh` (or `npm run build` for an unzipped `dist/` folder you can load the same way).
-
-### Chrome Web Store
-
-Coming soon.
 
 ## Quick start
 
