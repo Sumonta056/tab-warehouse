@@ -1,4 +1,5 @@
 import { ICON_PATHS } from '../constants/icons.js';
+import { cleanIcon } from '../domain/marks.js';
 
 export function h(tag, attrs = {}, ...children) {
   const el = document.createElement(tag);
@@ -56,4 +57,9 @@ export function highlight(el, text, query) {
     last = m.index + m[0].length;
   }
   if (last < text.length) el.append(text.slice(last));
+}
+
+export function markIcon(icon) {
+  const v = cleanIcon(icon);
+  return v ? h('span', { class: 'mark-icon', 'aria-hidden': 'true' }, v) : null;
 }

@@ -35,6 +35,8 @@ export const DEFAULT_SETTINGS = {
   folderCat: {},
   partColors: {},
   folderColors: {},
+  partIcons: {},
+  folderIcons: {},
   folders: {},
   envRules: [],
   hostMap: [],

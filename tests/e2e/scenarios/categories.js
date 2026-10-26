@@ -143,6 +143,27 @@ export default [
   },
   {
     area,
+    name: 'category icon shows on the sidebar header and the Board lane; Remove clears it',
+    page: 'newtab',
+    fixture: withCats,
+    async run(t) {
+      t.click(t.catHeader('Daily working').querySelector('.more'));
+      t.click(t.$('.menu .ico[aria-label="Icon 💼"]'));
+      await t.settle();
+      t.eq(t.settings().categories[0].icon, '💼', 'saved');
+      t.eq(t.catHeader('Daily working').querySelector('.mark-icon')?.textContent, '💼', 'header icon');
+      t.click(t.$('#boardBtn'));
+      await t.settle();
+      const lane = t.$$('#page .blane-h').find((l) => l.textContent.includes('Daily working'));
+      t.eq(lane.querySelector('.mark-icon')?.textContent, '💼', 'Board lane icon');
+      t.click(t.catHeader('Daily working').querySelector('.more'));
+      t.click(t.$('.menu .ico-clr'));
+      await t.settle();
+      t.ok(!('icon' in t.settings().categories[0]), 'removed');
+    },
+  },
+  {
+    area,
     name: 'category custom color shows on the sidebar header and the Board lane',
     page: 'newtab',
     fixture: withCats,

@@ -1,6 +1,6 @@
 import { reorderCategories } from '../../domain/folders.js';
 import { markAttrs } from '../../domain/marks.js';
-import { h, svgIcon } from '../../ui/dom.js';
+import { h, markIcon, svgIcon } from '../../ui/dom.js';
 import { clearMarks, headerDrag, markInto, unmarkOnLeave } from '../../ui/dnd.js';
 import { showMenu } from '../../ui/menu.js';
 import { toast } from '../../ui/toast.js';
@@ -28,6 +28,7 @@ export function catHeader(ctx, { cat, items }) {
           'button',
           { class: 'cat-toggle', 'aria-expanded': String(!cat.closed), title: cat.closed ? 'Expand' : 'Collapse', onClick: () => toggleCat(ctx, cat.id) },
           svgIcon('chevron'),
+          markIcon(cat.icon),
           ...label,
         )
       : h('span', { class: 'cat-label' }, ...label),
@@ -101,6 +102,15 @@ function catMenu(ctx, e, ref) {
       value: cat.color || null,
       pick: (color) => {
         cat.color = color;
+        save(ctx, { categories: cats });
+      },
+    },
+    {
+      icons: true,
+      value: cat.icon || null,
+      pick: (icon) => {
+        if (icon) cat.icon = icon;
+        else delete cat.icon;
         save(ctx, { categories: cats });
       },
     },

@@ -1,6 +1,6 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { cleanMark, markAttrs, withMark } from '../../../extension/domain/marks.js';
+import { cleanIcon, cleanMark, markAttrs, withMark } from '../../../extension/domain/marks.js';
 
 describe('marks', () => {
   test('cleanMark keeps a preset name or a #rrggbb color (lower-cased) and drops the rest', () => {
@@ -22,5 +22,20 @@ describe('marks', () => {
     assert.deepEqual(withMark(map, '1', null), {});
     assert.deepEqual(withMark(map, '1', 'bad'), {});
     assert.deepEqual(map, { 1: 'red' });
+  });
+
+  test('cleanIcon keeps the first emoji (also flags, keycaps and ZWJ sequences) and drops text', () => {
+    assert.equal(cleanIcon(' 🚀 '), '🚀');
+    assert.equal(cleanIcon('🔥🚀'), '🔥');
+    assert.equal(cleanIcon('🇧🇩'), '🇧🇩');
+    assert.equal(cleanIcon('1️⃣'), '1️⃣');
+    assert.equal(cleanIcon('👩‍💻'), '👩‍💻');
+    assert.equal(cleanIcon('❤️'), '❤️');
+    for (const bad of ['a', 'Ab', '1', '#', ' ', '', '<b>', null, undefined, 5, {}]) assert.equal(cleanIcon(bad), null, String(bad));
+  });
+
+  test('withMark takes the cleaner to use', () => {
+    assert.deepEqual(withMark({}, '1', ' 🚀x', cleanIcon), { 1: '🚀' });
+    assert.deepEqual(withMark({ 1: '🚀' }, '1', 'x', cleanIcon), {});
   });
 });

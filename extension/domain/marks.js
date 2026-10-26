@@ -1,3 +1,4 @@
+import { ICON_MAX } from '../constants/limits.js';
 import { MARK_COLORS } from '../constants/themes.js';
 
 export function cleanMark(v) {
@@ -12,9 +13,17 @@ export function markAttrs(color, dataset = null) {
   return { dataset: { ...dataset, color: custom ? 'custom' : c }, style: custom ? { '--c': c } : null };
 }
 
-export function withMark(map, id, color) {
+const segmenter = new Intl.Segmenter(undefined, { granularity: 'grapheme' });
+
+export function cleanIcon(v) {
+  if (typeof v !== 'string') return null;
+  const first = segmenter.segment(v.trim())[Symbol.iterator]().next().value?.segment;
+  return first && first.length <= ICON_MAX && /\p{Extended_Pictographic}|\p{Regional_Indicator}|\u20e3/u.test(first) ? first : null;
+}
+
+export function withMark(map, id, value, clean = cleanMark) {
   const out = { ...map };
-  const c = cleanMark(color);
+  const c = clean(value);
   if (c) out[id] = c;
   else delete out[id];
   return out;

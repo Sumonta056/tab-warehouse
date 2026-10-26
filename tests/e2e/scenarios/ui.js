@@ -109,6 +109,50 @@ export default [
   },
   {
     area,
+    name: 'ui menu: the icon row picks a quick emoji, a typed emoji (300 ms or Enter), refuses text and removes the icon',
+    page: 'newtab',
+    fixture: () => base(),
+    async run(t) {
+      const { showMenu } = await mod(t, 'menu');
+      const picked = [];
+      const open = (value) => showMenu({ clientX: 20, clientY: 20 }, [{ icons: true, value, pick: (v) => picked.push(v) }]);
+      open(null);
+      t.eq(t.$$('.menu .ico').length, 8, '8 quick emoji');
+      t.ok(!t.$('.menu .ico-clr'), 'no Remove without an icon');
+      t.click(t.$('.menu .ico[aria-label="Icon 🚀"]'));
+      t.eq(picked, ['🚀'], 'quick pick');
+      t.ok(!t.$('.menu'), 'quick pick closes the menu');
+      open('🚀');
+      t.eq(t.$('.menu .ico.on').textContent, '🚀', 'current icon marked');
+      const box = t.$('.menu .ico-in');
+      t.eq(box.value, '🚀', 'box shows the current icon');
+      box.dispatchEvent(new t.w.MouseEvent('click', { bubbles: true }));
+      await t.sleep(20);
+      t.ok(t.$('.menu'), 'a click in the box keeps the menu open');
+      box.value = '🧪';
+      box.dispatchEvent(new t.w.Event('input', { bubbles: true }));
+      t.eq(picked, ['🚀'], 'waits after input');
+      await t.sleep(350);
+      t.eq(picked, ['🚀', '🧪'], 'saved after 300 ms, menu stays');
+      t.ok(t.$('.menu'), 'still open');
+      box.value = 'abc';
+      t.key(box, 'Enter');
+      t.ok(t.$('.menu'), 'text is refused');
+      t.eq(t.toast()?.textContent.includes('Type or paste one emoji.'), true, 'says what to do');
+      box.value = '';
+      t.key(box, 'Enter');
+      t.eq(picked, ['🚀', '🧪', null], 'Enter on an empty box removes the icon');
+      t.ok(!t.$('.menu'), 'closed');
+      open('📌');
+      t.click(t.$('.menu .ico-clr'));
+      t.eq(picked, ['🚀', '🧪', null, null], 'Remove icon');
+      open('📌');
+      t.key(t.$('.menu .ico-in'), 'Escape');
+      t.ok(!t.$('.menu'), 'Escape closes');
+    },
+  },
+  {
+    area,
     name: 'ui menu: the custom color input picks any color, saves 300 ms after input and at once on change',
     page: 'newtab',
     fixture: () => base(),

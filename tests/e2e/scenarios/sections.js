@@ -150,6 +150,23 @@ export default [
   },
   {
     area,
+    name: 'section icon shows on the folder-page header and the Board section header',
+    page: 'newtab',
+    fixture: () => base(),
+    async run(t) {
+      await t.folder('Sprint tasks');
+      t.click(t.part('Blocked').querySelector('.more'));
+      t.click(t.$('.menu .ico[aria-label="Icon 🐞"]'));
+      await t.settle();
+      t.eq(t.settings().partIcons['23'], '🐞', 'saved');
+      t.eq(t.part('Blocked').querySelector('.mark-icon')?.textContent, '🐞', 'header icon');
+      t.click(t.$('#boardBtn'));
+      await t.settle();
+      t.eq(t.$('.bsec[data-part="23"] .mark-icon')?.textContent, '🐞', 'Board section icon');
+    },
+  },
+  {
+    area,
     name: 'a bad stored section color is ignored',
     page: 'newtab',
     fixture: () => base({ settings: { partColors: { 23: 'red; background: url(x)' } } }),

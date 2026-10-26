@@ -1,15 +1,15 @@
-import { cleanMark, markAttrs, withMark } from '../../domain/marks.js';
+import { cleanIcon, cleanMark, markAttrs } from '../../domain/marks.js';
 import { priFirst } from '../../domain/meta.js';
 import { sortLinks } from '../../domain/sort.js';
 import { tagNames } from '../../domain/tags.js';
 import { isFiltering } from '../../domain/filter.js';
 import { createBookmark, moveBookmark, removeBookmark, updateBookmark } from '../../services/bookmarks.js';
-import { saveSettings } from '../../services/storage.js';
-import { h, svgIcon } from '../../ui/dom.js';
+import { h, markIcon, svgIcon } from '../../ui/dom.js';
 import { clearMarks, headerDrag, markInto, unmarkOnLeave } from '../../ui/dnd.js';
 import { showMenu } from '../../ui/menu.js';
 import { toast } from '../../ui/toast.js';
 import { state } from '../../state/page-state.js';
+import { saveMark } from '../../state/folders.js';
 import { renderBody } from './body.js';
 import { renderRow } from './row.js';
 
@@ -47,6 +47,7 @@ function partHeader(ctx, g, s, p, closed, count) {
       { class: 'part-toggle', 'aria-expanded': String(!closed), onClick: () => ctx.setFolderPrefs(s.id, { closed: { ...p.closed, [g.id]: !closed } }) },
       chev,
       color ? h('span', { class: 'dot' }) : null,
+      g.none ? null : markIcon(state.settings.partIcons[g.id]),
       g.title,
     ),
     h('span', { class: 'line' }),
@@ -97,9 +98,15 @@ function partMenu(ctx, e, g, s) {
       swatches: true,
       value: state.settings.partColors[g.id] || null,
       pick: async (color) => {
-        const partColors = withMark(state.settings.partColors, g.id, color);
-        state.settings.partColors = partColors;
-        await saveSettings({ partColors });
+        await saveMark('partColors', g.id, color);
+        renderBody(ctx);
+      },
+    },
+    {
+      icons: true,
+      value: state.settings.partIcons[g.id] || null,
+      pick: async (icon) => {
+        await saveMark('partIcons', g.id, icon, cleanIcon);
         renderBody(ctx);
       },
     },

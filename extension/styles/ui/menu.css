@@ -79,6 +79,51 @@
   background: conic-gradient(var(--red-fg), var(--yellow-fg), var(--local-fg), var(--test-fg), var(--stage-fg), var(--red-fg)) !important;
 }
 
+.menu .icons {
+  display: grid;
+  gap: 4px;
+  padding: 4px 6px;
+}
+.menu .ico-row {
+  display: flex;
+  gap: 4px;
+}
+.menu .ico {
+  min-height: 28px;
+  width: 28px;
+  padding: 0;
+  justify-content: center;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  font-size: calc(15px * var(--fs, 1));
+}
+.menu .ico.on {
+  border-color: var(--text);
+}
+.menu .ico-in {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 28px;
+  padding: 0 8px;
+  border: 1px solid var(--line-2);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+}
+.menu .ico-clr {
+  min-height: 28px;
+  width: 28px;
+  padding: 0;
+  justify-content: center;
+}
+
+.mark-icon {
+  flex: 0 0 auto;
+  font-style: normal;
+  line-height: 1;
+}
+
 [data-color='red'] {
   --c: var(--red-fg);
 }

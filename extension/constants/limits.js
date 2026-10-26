@@ -9,3 +9,5 @@ export const OMNI_MAX = 5;
 export const PALETTE_LINK_MAX = 30;
 
 export const QUICK_BADGE_MS = 2500;
+
+export const ICON_MAX = 32;

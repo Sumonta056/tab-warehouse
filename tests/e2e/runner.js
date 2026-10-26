@@ -251,7 +251,12 @@ function makeT(scenario) {
       return t.$$('#nav .cat').find((c) => c.querySelector('.t')?.textContent === name);
     },
     part(title) {
-      return t.$$('#page .grp.part').find((p) => p.querySelector('.part-toggle')?.textContent === title);
+      const text = (b) =>
+        [...(b?.childNodes || [])]
+          .filter((n) => n.nodeType === 3)
+          .map((n) => n.textContent)
+          .join('');
+      return t.$$('#page .grp.part').find((p) => text(p.querySelector('.part-toggle')) === title);
     },
     toast() {
       return t.$('.toast');

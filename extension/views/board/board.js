@@ -7,7 +7,7 @@ import { tagNames } from '../../domain/tags.js';
 import { sameAsUrl, displayUrl, hostOf, normalizeUrl } from '../../domain/url.js';
 import { createBookmark, moveBookmark } from '../../services/bookmarks.js';
 import { linkBadge } from '../../ui/badges.js';
-import { h, svgIcon, highlight } from '../../ui/dom.js';
+import { h, markIcon, svgIcon, highlight } from '../../ui/dom.js';
 import { iconEl } from '../../ui/icons.js';
 
 let adding = null;
@@ -77,7 +77,15 @@ function renderColumns(ctx) {
   }
   for (const lane of boardLanes(ctx.settings, ctx.secs)) {
     if (lane.name)
-      box.append(h('div', { class: 'blane-h', ...markAttrs(lane.color) }, h('span', {}, `${lane.name} (${lane.items.length})`), h('span', { class: 'line' })));
+      box.append(
+        h(
+          'div',
+          { class: 'blane-h', ...markAttrs(lane.color) },
+          markIcon(lane.icon),
+          h('span', {}, `${lane.name} (${lane.items.length})`),
+          h('span', { class: 'line' }),
+        ),
+      );
     box.append(h('div', { class: 'blane' }, ...lane.items.map((s) => column(s, ctx))));
   }
 }
@@ -112,7 +120,7 @@ function column(s, ctx) {
       draggable: !s.virtual,
       title: s.virtual ? 'Loose links directly under the root' : 'Drag to reorder folders',
     },
-    h('button', { class: 'bcol-name', title: 'Open folder', onClick: () => ctx.select(s) }, s.title),
+    h('button', { class: 'bcol-name', title: 'Open folder', onClick: () => ctx.select(s) }, s.virtual ? null : markIcon(settings.folderIcons[s.id]), s.title),
     h('span', { class: 'bcol-n' }, String(s.all.length)),
     h(
       'button',
@@ -191,6 +199,7 @@ function sectionHeader(g, count, ctx) {
     'div',
     { class: `bsec ${g.none ? 'NONE' : ''}`, ...markAttrs(color, { part: g.id }) },
     color ? h('span', { class: 'dot' }) : null,
+    g.none ? null : markIcon(ctx.settings.partIcons[g.id]),
     h('span', { class: 't' }, g.title),
     h('span', { class: 'n' }, String(count)),
   );

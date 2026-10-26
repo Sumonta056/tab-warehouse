@@ -93,6 +93,9 @@
   font-weight: 600;
   overflow-wrap: anywhere;
 }
+.bcol-name .mark-icon {
+  margin-right: 6px;
+}
 .bcol-h[data-color] .bcol-name {
   color: var(--c);
 }

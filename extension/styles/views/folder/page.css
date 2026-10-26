@@ -19,6 +19,9 @@
   font-weight: 600;
   cursor: text;
 }
+.head h2 .mark-icon {
+  margin-right: 8px;
+}
 .head h2[data-color] {
   color: var(--c);
 }

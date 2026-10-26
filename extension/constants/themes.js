@@ -9,3 +9,5 @@ export const THEMES = {
 };
 
 export const MARK_COLORS = ['red', 'orange', 'yellow', 'green', 'blue', 'purple'];
+
+export const MARK_ICONS = ['⭐', '🔥', '🚀', '🐞', '🧪', '📌', '💼', '📚'];

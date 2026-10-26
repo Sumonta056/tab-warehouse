@@ -8,7 +8,8 @@ import { openTab } from '../../services/tabs.js';
 import { showMenu } from '../../ui/menu.js';
 import { toast } from '../../ui/toast.js';
 import { state } from '../../state/page-state.js';
-import { saveFolderColor, saveOrder, moveToCategory } from '../../state/folders.js';
+import { cleanIcon } from '../../domain/marks.js';
+import { saveMark, saveOrder, moveToCategory } from '../../state/folders.js';
 import { deleteLink, openCalendar, setDue, setPri } from './actions.js';
 import { startEdit } from './edit.js';
 import { renameFolder } from './page.js';
@@ -45,6 +46,11 @@ export function linkMenu(ctx, e, bm, row) {
 
 export function folderMenu(ctx, e, s) {
   const { settings } = state;
+  const mark = async (key, value, clean) => {
+    await saveMark(key, s.id, value, clean);
+    ctx.renderNav();
+    if (state.current?.id === s.id || state.current?.board) ctx.renderPage();
+  };
   const toCategory = async (target) => {
     await moveToCategory(s, target);
     ctx.renderNav();
@@ -60,15 +66,8 @@ export function folderMenu(ctx, e, s) {
       ? []
       : [
           '-',
-          {
-            swatches: true,
-            value: settings.folderColors[s.id] || null,
-            pick: async (color) => {
-              await saveFolderColor(s.id, color);
-              ctx.renderNav();
-              if (state.current?.id === s.id || state.current?.board) ctx.renderPage();
-            },
-          },
+          { swatches: true, value: settings.folderColors[s.id] || null, pick: (color) => mark('folderColors', color) },
+          { icons: true, value: settings.folderIcons[s.id] || null, pick: (icon) => mark('folderIcons', icon, cleanIcon) },
           '-',
           {
             label: 'Rename folder',

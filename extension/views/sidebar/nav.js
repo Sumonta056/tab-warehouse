@@ -3,7 +3,7 @@ import { folderGroups, orderStep } from '../../domain/folders.js';
 import { markAttrs } from '../../domain/marks.js';
 import { createBookmark, moveBookmark } from '../../services/bookmarks.js';
 import { saveSettings } from '../../services/storage.js';
-import { h, svgIcon } from '../../ui/dom.js';
+import { h, markIcon, svgIcon } from '../../ui/dom.js';
 import { clearMarks, markHalf, markInto, unmarkOnLeave } from '../../ui/dnd.js';
 import { toast } from '../../ui/toast.js';
 import { state, setState, openView } from '../../state/page-state.js';
@@ -57,6 +57,7 @@ function navItem(ctx, s) {
       },
     },
     h('span', { class: 'grip', 'aria-hidden': 'true' }, svgIcon('grip')),
+    s.virtual ? null : markIcon(state.settings.folderIcons[s.id]),
     h('span', { class: 't' }, s.title),
     h('span', { class: 'n' }, String(s.all.length)),
   );

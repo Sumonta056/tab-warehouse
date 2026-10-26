@@ -84,7 +84,7 @@ export function boardLanes(settings, secs) {
   const unsorted = secs.filter((s) => s.virtual);
   if (!settings.categories.length || settings.board.group === 'flat') return [{ name: null, items: secs }];
   const groups = folderGroups(settings, secs);
-  const out = groups.filter((g) => g.cat).map((g) => ({ name: g.cat.name, color: g.cat.color, items: g.items }));
+  const out = groups.filter((g) => g.cat).map((g) => ({ name: g.cat.name, color: g.cat.color, icon: g.cat.icon, items: g.items }));
   const rest = groups.find((g) => !g.cat);
   out.push({ name: 'No category', items: [...rest.items, ...unsorted] });
   return out.filter((l) => l.items.length);

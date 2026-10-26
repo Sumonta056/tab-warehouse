@@ -45,6 +45,41 @@ export default [
   },
   {
     area,
+    name: 'folder icon: the folder menu sets an emoji on the sidebar row, the folder title and the Board column; Remove clears it',
+    page: 'newtab',
+    fixture: () => base(),
+    async run(t) {
+      t.context(t.nav('Sprint tasks'));
+      await t.menuShown();
+      t.click(t.$('.menu .ico[aria-label="Icon 🚀"]'));
+      await t.settle();
+      t.eq(t.settings().folderIcons['20'], '🚀', 'saved');
+      t.eq(t.nav('Sprint tasks').querySelector('.mark-icon')?.textContent, '🚀', 'sidebar row');
+      await t.folder('Sprint tasks');
+      t.eq(t.$('#page .head h2 .mark-icon')?.textContent, '🚀', 'folder title');
+      t.click(t.$('#boardBtn'));
+      await t.until(() => t.$('.bcol[data-id="20"]'), 'the Board');
+      t.eq(t.$('.bcol[data-id="20"] .bcol-name .mark-icon')?.textContent, '🚀', 'Board column');
+      t.context(t.nav('Sprint tasks'));
+      await t.menuShown();
+      t.click(t.$('.menu .ico-clr'));
+      await t.settle();
+      t.ok(!('20' in t.settings().folderIcons), 'removed');
+      t.ok(!t.nav('Sprint tasks').querySelector('.mark-icon'), 'sidebar row plain');
+      t.ok(!t.$('.bcol[data-id="20"] .mark-icon'), 'Board column plain');
+    },
+  },
+  {
+    area,
+    name: 'folder icon: a stored value that is not an emoji is not shown',
+    page: 'newtab',
+    fixture: () => base({ settings: { folderIcons: { 20: '<b>x</b>' } } }),
+    async run(t) {
+      t.ok(!t.nav('Sprint tasks').querySelector('.mark-icon'), 'no icon');
+    },
+  },
+  {
+    area,
     name: 'folder color: the open folder row keeps the accent color',
     page: 'newtab',
     fixture: () => base({ settings: { folderColors: { 20: 'red' } } }),

@@ -51,8 +51,8 @@ export function queueSave(patch) {
   return state.saveQueue;
 }
 
-export async function saveFolderColor(id, color) {
-  const folderColors = withMark(state.settings.folderColors, id, color);
-  state.settings.folderColors = folderColors;
-  await saveSettings({ folderColors });
+export async function saveMark(key, id, value, clean) {
+  const map = withMark(state.settings[key], id, value, clean);
+  state.settings[key] = map;
+  await saveSettings({ [key]: map });
 }

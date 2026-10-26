@@ -1,7 +1,7 @@
 import { SORTS } from '../../constants/sorts.js';
 import { markAttrs } from '../../domain/marks.js';
 import { updateBookmark } from '../../services/bookmarks.js';
-import { h, svgIcon } from '../../ui/dom.js';
+import { h, markIcon, svgIcon } from '../../ui/dom.js';
 import { seg } from '../../ui/seg.js';
 import { state, setState } from '../../state/page-state.js';
 import { folderPrefs } from '../../state/folders.js';
@@ -20,6 +20,7 @@ export function renderFolder(page, ctx) {
       title: s.virtual ? '' : 'Double-click to rename',
       onDblclick: () => !s.virtual && renameFolder(ctx, s, title),
     },
+    s.virtual ? null : markIcon(state.settings.folderIcons[s.id]),
     s.title,
   );
   page.append(
