@@ -1,5 +1,6 @@
 import { saveSettings } from '../services/storage.js';
 import { sections } from '../domain/tree.js';
+import { withMark } from '../domain/marks.js';
 import { folderPrefs as prefsOf, catOf, orderMove, orderIntoCategory, withCategory } from '../domain/folders.js';
 import { state, setState } from './page-state.js';
 
@@ -48,4 +49,10 @@ export function queueSave(patch) {
     setState({ settings: await saveSettings(patch) });
   });
   return state.saveQueue;
+}
+
+export async function saveFolderColor(id, color) {
+  const folderColors = withMark(state.settings.folderColors, id, color);
+  state.settings.folderColors = folderColors;
+  await saveSettings({ folderColors });
 }

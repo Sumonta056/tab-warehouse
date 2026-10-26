@@ -93,6 +93,9 @@
   font-weight: 600;
   overflow-wrap: anywhere;
 }
+.bcol-h[data-color] .bcol-name {
+  color: var(--c);
+}
 .bcol-name:hover {
   color: var(--accent);
   text-decoration: underline;

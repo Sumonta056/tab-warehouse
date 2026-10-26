@@ -109,6 +109,37 @@ export default [
   },
   {
     area,
+    name: 'ui menu: the custom color input picks any color, saves 300 ms after input and at once on change',
+    page: 'newtab',
+    fixture: () => base(),
+    async run(t) {
+      const { showMenu } = await mod(t, 'menu');
+      const picked = [];
+      showMenu({ clientX: 20, clientY: 20 }, [{ swatches: true, value: 'red', pick: (c) => picked.push(c) }]);
+      t.ok(!t.$('.menu .sw.custom').classList.contains('on'), 'a preset leaves Custom unmarked');
+      showMenu({ clientX: 20, clientY: 20 }, [{ swatches: true, value: '#123456', pick: (c) => picked.push(c) }]);
+      const inp = t.$('.menu .sw.custom');
+      t.eq(inp.getAttribute('aria-label'), 'Custom color', 'labeled');
+      t.ok(inp.classList.contains('on'), 'a hex value marks Custom');
+      t.eq(inp.value, '#123456', 'shows the current color');
+      t.eq(t.$$('.menu .sw[aria-checked="true"]').length, 0, 'no preset checked');
+      inp.dispatchEvent(new t.w.MouseEvent('click', { bubbles: true }));
+      await t.sleep(20);
+      t.ok(t.$('.menu'), 'a click on it keeps the menu open');
+      inp.value = '#00ff00';
+      inp.dispatchEvent(new t.w.Event('input', { bubbles: true }));
+      t.eq(picked, [], 'waits after input');
+      await t.sleep(350);
+      t.eq(picked, ['#00ff00'], 'saved after 300 ms');
+      t.ok(t.$('.menu'), 'still open while picking');
+      inp.value = '#ff0000';
+      inp.dispatchEvent(new t.w.Event('change', { bubbles: true }));
+      t.eq(picked, ['#00ff00', '#ff0000'], 'change saves at once');
+      t.ok(!t.$('.menu'), 'change closes the menu');
+    },
+  },
+  {
+    area,
     name: 'ui pickers: the priority picker presses one choice and reports it',
     page: 'newtab',
     fixture: () => base(),

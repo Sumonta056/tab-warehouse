@@ -1,3 +1,4 @@
+import { cleanMark, markAttrs, withMark } from '../../domain/marks.js';
 import { priFirst } from '../../domain/meta.js';
 import { sortLinks } from '../../domain/sort.js';
 import { tagNames } from '../../domain/tags.js';
@@ -32,12 +33,12 @@ export function renderParts(ctx, body, s, p, match) {
 function partHeader(ctx, g, s, p, closed, count) {
   const chev = svgIcon('chevron');
   chev.classList.add('chev');
-  const color = !g.none && state.settings.partColors[g.id];
+  const color = !g.none && cleanMark(state.settings.partColors[g.id]);
   const el = h(
     'div',
     {
       class: `grp part ${closed ? 'closed' : ''} ${g.none ? 'NONE' : ''}`,
-      dataset: color ? { color } : null,
+      ...markAttrs(color),
       draggable: !g.none,
       title: g.none ? null : 'Drag to reorder sections',
     },
@@ -96,9 +97,7 @@ function partMenu(ctx, e, g, s) {
       swatches: true,
       value: state.settings.partColors[g.id] || null,
       pick: async (color) => {
-        const partColors = { ...state.settings.partColors };
-        if (color) partColors[g.id] = color;
-        else delete partColors[g.id];
+        const partColors = withMark(state.settings.partColors, g.id, color);
         state.settings.partColors = partColors;
         await saveSettings({ partColors });
         renderBody(ctx);

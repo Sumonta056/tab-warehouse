@@ -1,4 +1,5 @@
 import { SORTS } from '../../constants/sorts.js';
+import { markAttrs } from '../../domain/marks.js';
 import { updateBookmark } from '../../services/bookmarks.js';
 import { h, svgIcon } from '../../ui/dom.js';
 import { seg } from '../../ui/seg.js';
@@ -12,7 +13,15 @@ export function renderFolder(page, ctx) {
   const s = state.current;
   const p = folderPrefs(s.id);
 
-  const title = h('h2', { title: s.virtual ? '' : 'Double-click to rename', onDblclick: () => !s.virtual && renameFolder(ctx, s, title) }, s.title);
+  const title = h(
+    'h2',
+    {
+      ...markAttrs(!s.virtual && state.settings.folderColors[s.id]),
+      title: s.virtual ? '' : 'Double-click to rename',
+      onDblclick: () => !s.virtual && renameFolder(ctx, s, title),
+    },
+    s.title,
+  );
   page.append(
     h(
       'div',

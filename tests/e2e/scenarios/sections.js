@@ -132,6 +132,35 @@ export default [
   },
   {
     area,
+    name: 'section custom color is saved as a hex and shown through --c',
+    page: 'newtab',
+    fixture: () => base(),
+    async run(t) {
+      await t.folder('Sprint tasks');
+      t.click(t.part('Blocked').querySelector('.more'));
+      const inp = t.$('.menu .sw.custom');
+      inp.value = '#12abcd';
+      inp.dispatchEvent(new t.w.Event('change', { bubbles: true }));
+      await t.settle();
+      t.eq(t.settings().partColors['23'], '#12abcd', 'saved');
+      t.eq(t.part('Blocked').dataset.color, 'custom', 'marked custom');
+      t.eq(t.part('Blocked').style.getPropertyValue('--c'), '#12abcd', 'color variable set');
+      t.eq(t.w.getComputedStyle(t.part('Blocked')).color, 'rgb(18, 171, 205)', 'header shows the color');
+    },
+  },
+  {
+    area,
+    name: 'a bad stored section color is ignored',
+    page: 'newtab',
+    fixture: () => base({ settings: { partColors: { 23: 'red; background: url(x)' } } }),
+    async run(t) {
+      await t.folder('Sprint tasks');
+      t.ok(!t.part('Blocked').dataset.color, 'no color');
+      t.ok(!t.part('Blocked').getAttribute('style'), 'no style');
+    },
+  },
+  {
+    area,
     name: 'rename section updates the Chrome folder title',
     page: 'newtab',
     fixture: () => base(),

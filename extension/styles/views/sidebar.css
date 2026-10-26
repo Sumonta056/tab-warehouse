@@ -123,6 +123,9 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.nav[data-color]:not(.on) .t {
+  color: var(--c);
+}
 .nav .n {
   font-size: calc(11px * var(--fs, 1));
   color: var(--muted);

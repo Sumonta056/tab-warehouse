@@ -19,6 +19,9 @@
   font-weight: 600;
   cursor: text;
 }
+.head h2[data-color] {
+  color: var(--c);
+}
 .head h2 input {
   background: var(--bg);
   border: 1px solid #3d3d3d;

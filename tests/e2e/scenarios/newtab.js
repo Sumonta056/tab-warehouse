@@ -4,7 +4,57 @@ const PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJA
 
 const area = 'folders';
 
+const pickColor = (t, value) => {
+  const inp = t.$('.menu .sw.custom');
+  inp.value = value;
+  inp.dispatchEvent(new t.w.Event('change', { bubbles: true }));
+};
+
 export default [
+  {
+    area,
+    name: 'folder color: the folder menu colors the sidebar row, the folder title and the Board column; Default clears it',
+    page: 'newtab',
+    fixture: () => base(),
+    async run(t) {
+      t.context(t.nav('Sprint tasks'));
+      await t.menuShown();
+      t.click(t.$('.menu .sw[data-color="red"]'));
+      await t.settle();
+      t.eq(t.settings().folderColors['20'], 'red', 'preset saved');
+      t.eq(t.nav('Sprint tasks').dataset.color, 'red', 'sidebar row colored');
+      await t.folder('Sprint tasks');
+      t.click(t.$('#page .head .btn.icon[aria-label="Folder menu"]'));
+      pickColor(t, '#12abcd');
+      await t.settle();
+      t.eq(t.settings().folderColors['20'], '#12abcd', 'custom saved');
+      t.eq(t.$('#page .head h2').dataset.color, 'custom', 'folder title colored');
+      t.eq(t.w.getComputedStyle(t.$('#page .head h2')).color, 'rgb(18, 171, 205)', 'title shows the color');
+      t.eq(t.nav('Sprint tasks').style.getPropertyValue('--c'), '#12abcd', 'sidebar row follows');
+      t.click(t.$('#boardBtn'));
+      await t.until(() => t.$('.bcol[data-id="20"]'), 'the Board');
+      t.eq(t.$('.bcol[data-id="20"] .bcol-h').dataset.color, 'custom', 'Board column colored');
+      t.context(t.nav('Sprint tasks'));
+      await t.menuShown();
+      t.click(t.$('.menu .sw.none'));
+      await t.settle();
+      t.ok(!('20' in t.settings().folderColors), 'Default clears it');
+      t.ok(!t.$('.bcol[data-id="20"] .bcol-h').dataset.color, 'Board column plain again');
+      t.ok(!t.nav('Sprint tasks').dataset.color, 'sidebar row plain again');
+    },
+  },
+  {
+    area,
+    name: 'folder color: the open folder row keeps the accent color',
+    page: 'newtab',
+    fixture: () => base({ settings: { folderColors: { 20: 'red' } } }),
+    async run(t) {
+      await t.folder('Sprint tasks');
+      const row = t.nav('Sprint tasks');
+      t.ok(row.classList.contains('on'), 'open');
+      t.eq(t.w.getComputedStyle(row.querySelector('.t')).color, t.w.getComputedStyle(row).color, 'title uses the accent text, not the mark');
+    },
+  },
   {
     area,
     name: 'boots on Home; Home, Board and Schedule are labeled view tabs under a full-width search; Home folder is not a sidebar section',

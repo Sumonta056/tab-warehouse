@@ -1,4 +1,5 @@
 import { reorderCategories } from '../../domain/folders.js';
+import { markAttrs } from '../../domain/marks.js';
 import { h, svgIcon } from '../../ui/dom.js';
 import { clearMarks, headerDrag, markInto, unmarkOnLeave } from '../../ui/dnd.js';
 import { showMenu } from '../../ui/menu.js';
@@ -18,7 +19,7 @@ export function catHeader(ctx, { cat, items }) {
     'div',
     {
       class: `cat ${cat?.closed ? 'closed' : ''} ${hasOn ? 'has-on' : ''}`,
-      dataset: cat?.color ? { color: cat.color } : null,
+      ...markAttrs(cat?.color),
       draggable: !!cat,
       title: cat ? 'Drag to reorder categories' : null,
     },

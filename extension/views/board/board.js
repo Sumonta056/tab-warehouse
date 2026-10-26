@@ -1,5 +1,6 @@
 import { detectEnv } from '../../domain/env.js';
 import { boardLanes } from '../../domain/folders.js';
+import { cleanMark, markAttrs } from '../../domain/marks.js';
 import { matchTitleUrl } from '../../domain/search.js';
 import { sortLinks } from '../../domain/sort.js';
 import { tagNames } from '../../domain/tags.js';
@@ -76,14 +77,7 @@ function renderColumns(ctx) {
   }
   for (const lane of boardLanes(ctx.settings, ctx.secs)) {
     if (lane.name)
-      box.append(
-        h(
-          'div',
-          { class: 'blane-h', dataset: lane.color ? { color: lane.color } : null },
-          h('span', {}, `${lane.name} (${lane.items.length})`),
-          h('span', { class: 'line' }),
-        ),
-      );
+      box.append(h('div', { class: 'blane-h', ...markAttrs(lane.color) }, h('span', {}, `${lane.name} (${lane.items.length})`), h('span', { class: 'line' })));
     box.append(h('div', { class: 'blane' }, ...lane.items.map((s) => column(s, ctx))));
   }
 }
@@ -112,7 +106,12 @@ function column(s, ctx) {
   const col = h('section', { class: `bcol ${s.virtual ? 'unsorted' : ''}`, dataset: { id: s.id }, 'aria-label': s.title });
   const head = h(
     'header',
-    { class: 'bcol-h', draggable: !s.virtual, title: s.virtual ? 'Loose links directly under the root' : 'Drag to reorder folders' },
+    {
+      class: 'bcol-h',
+      ...markAttrs(!s.virtual && settings.folderColors[s.id]),
+      draggable: !s.virtual,
+      title: s.virtual ? 'Loose links directly under the root' : 'Drag to reorder folders',
+    },
     h('button', { class: 'bcol-name', title: 'Open folder', onClick: () => ctx.select(s) }, s.title),
     h('span', { class: 'bcol-n' }, String(s.all.length)),
     h(
@@ -187,10 +186,10 @@ function column(s, ctx) {
 }
 
 function sectionHeader(g, count, ctx) {
-  const color = !g.none && ctx.settings.partColors[g.id];
+  const color = !g.none && cleanMark(ctx.settings.partColors[g.id]);
   const el = h(
     'div',
-    { class: `bsec ${g.none ? 'NONE' : ''}`, dataset: color ? { color, part: g.id } : { part: g.id } },
+    { class: `bsec ${g.none ? 'NONE' : ''}`, ...markAttrs(color, { part: g.id }) },
     color ? h('span', { class: 'dot' }) : null,
     h('span', { class: 't' }, g.title),
     h('span', { class: 'n' }, String(count)),

@@ -34,6 +34,7 @@ export function showMenu(e, items) {
               },
             }),
           ),
+          customSwatch(it),
         ),
       );
       continue;
@@ -59,6 +60,28 @@ export function showMenu(e, items) {
   m.style.top = `${Math.min(e.clientY, window.innerHeight - m.offsetHeight - 8)}px`;
   openMenu = m;
   setTimeout(() => document.addEventListener('click', closeMenu, { once: true }));
+}
+
+function customSwatch(it) {
+  const hex = it.value?.startsWith('#') ? it.value : null;
+  let t;
+  return h('input', {
+    type: 'color',
+    class: `sw custom ${hex ? 'on' : ''}`,
+    value: hex || '#8ab4f8',
+    'aria-label': 'Custom color',
+    title: 'Custom color',
+    onClick: (e) => e.stopPropagation(),
+    onInput: (e) => {
+      clearTimeout(t);
+      t = setTimeout(() => it.pick(e.target.value), 300);
+    },
+    onChange: (e) => {
+      clearTimeout(t);
+      closeMenu();
+      it.pick(e.target.value);
+    },
+  });
 }
 
 export function closeMenu() {

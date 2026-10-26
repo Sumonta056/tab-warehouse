@@ -4,15 +4,15 @@ Every rule here has at least one test. If you change a rule, change its test in 
 
 ## Data ownership
 
-| Data                                                                                                                                                             | Lives in                                                                | Never in                                       |
-| ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- | ---------------------------------------------- |
-| Link title, URL, folder membership, order inside a folder                                                                                                        | `chrome.bookmarks`                                                      | `chrome.storage`                               |
-| Sections (status groups inside a folder)                                                                                                                         | Real subfolders in `chrome.bookmarks`                                   | settings                                       |
-| Home links and their order                                                                                                                                       | Bookmark folder `settings.home.folderId` (created in _Other bookmarks_) | settings                                       |
-| Sidebar order, categories, folder→category, section colors, per-folder prefs, env rules, host map, Home look, sidebar width, theme, sidebar look, Board grouping | `chrome.storage.local.settings`                                         | bookmarks                                      |
-| Home icon overrides (URL or 128 px data URL), keyed by bookmark id                                                                                               | `chrome.storage.local.homeIcons`                                        | settings                                       |
-| Link note (max 200 chars), priority (`high`/`med`/`low`) and due date, keyed by bookmark id                                                                      | `chrome.storage.local.linkMeta`                                         | settings, bookmark titles                      |
-| Home background image (JPEG, max 1920 px)                                                                                                                        | `chrome.storage.local.homeBg`                                           | settings (it would be rewritten on every save) |
+| Data                                                                                                                                                                             | Lives in                                                                | Never in                                       |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- | ---------------------------------------------- |
+| Link title, URL, folder membership, order inside a folder                                                                                                                        | `chrome.bookmarks`                                                      | `chrome.storage`                               |
+| Sections (status groups inside a folder)                                                                                                                                         | Real subfolders in `chrome.bookmarks`                                   | settings                                       |
+| Home links and their order                                                                                                                                                       | Bookmark folder `settings.home.folderId` (created in _Other bookmarks_) | settings                                       |
+| Sidebar order, categories, folder→category, category/section/folder colors, per-folder prefs, env rules, host map, Home look, sidebar width, theme, sidebar look, Board grouping | `chrome.storage.local.settings`                                         | bookmarks                                      |
+| Home icon overrides (URL or 128 px data URL), keyed by bookmark id                                                                                                               | `chrome.storage.local.homeIcons`                                        | settings                                       |
+| Link note (max 200 chars), priority (`high`/`med`/`low`) and due date, keyed by bookmark id                                                                                      | `chrome.storage.local.linkMeta`                                         | settings, bookmark titles                      |
+| Home background image (JPEG, max 1920 px)                                                                                                                                        | `chrome.storage.local.homeBg`                                           | settings (it would be rewritten on every save) |
 
 - `loadSettings()` merges stored settings over `DEFAULT_SETTINGS`, and merges `home`, `sideLook` and `board` one level deep over `DEFAULT_HOME` / `DEFAULT_SIDE_LOOK` / `DEFAULT_BOARD`, so old stored objects gain new keys.
 - Code that changes settings re-reads by **id** from the current `settings` object. The `storage.onChanged` listener replaces `settings` objects, so a category/section object captured at render time can be stale (this bug happened; test "category menu: color, rename, Move down").
@@ -146,8 +146,16 @@ Every rule here has at least one test. If you change a rule, change its test in 
 - Header text: `Name (count)`. "No category" is a fixed group after the categories, shown only when it has folders; it cannot be renamed, colored, dragged or collapsed.
 - Drop a folder on a header → that category, placed at its end. Drop a folder on a folder in another category → adopts that category at that position.
 - Folder menu: _Move to <category>_ (except its current one), _Remove from category_.
-- Header menu: color (default + red/orange/yellow/green/blue/purple), Rename, Move up/down, Delete. Drag a header onto another header to reorder.
+- Header menu: color (see _Colors_), Rename, Move up/down, Delete. Drag a header onto another header to reorder.
 - Delete asks `confirm()`, removes the category and its `folderCat` entries; folders and bookmarks stay.
+
+## Colors
+
+- Categories (`categories[i].color`), sections (`settings.partColors[sectionId]`) and sidebar folders (`settings.folderColors[folderId]`, not Unsorted) can have a color. A color is a preset name (`MARK_COLORS`: red, orange, yellow, green, blue, purple) or a custom `#rrggbb`. `cleanMark()` keeps only those (hex lower-cased); any other stored value shows as no color, so a bad value never reaches `style`.
+- The color row in the category, section and folder menus: Default, the 6 presets, then **Custom color** (`input type=color`, `.sw.custom`, marked `on` while the value is a hex). A click on it keeps the menu open; it saves 300 ms after the last `input` and at once on `change`, which also closes the menu. Default removes the color.
+- `markAttrs()` renders it: a preset is `data-color="<name>"` (CSS maps it to `--c`), a hex is `data-color="custom"` with `--c: <hex>` inline. Every colored piece reads `var(--c)`.
+- Where it shows: category → sidebar header and Board lane header; section → folder-page header (with a dot) and Board section header; folder → sidebar row title (not while the row is open: then it keeps the accent), folder-page title and Board column name.
+- There is no contrast clamp: the color shows as picked.
 
 ## Board
 
@@ -224,7 +232,7 @@ Every rule here has at least one test. If you change a rule, change its test in 
 - Collapse is per folder: `folders[id].closed[sectionId]`.
 - Drop a link on a header → move into that subfolder. Drop a link before/after a row of another section (Manual sort) → move to that position.
 - Link menu: _Move to <section>_ for every section except the current one, including _No section_.
-- Header menu: color (saved in `settings.partColors[folderId]`), Rename (Chrome title), Move up/down (Chrome order), Delete (moves its children to the parent first, then removes the empty folder; asks `confirm()`). Drag a header onto another header to reorder.
+- Header menu: color (saved in `settings.partColors[sectionId]`, see _Colors_), Rename (Chrome title), Move up/down (Chrome order), Delete (moves its children to the parent first, then removes the empty folder; asks `confirm()`). Drag a header onto another header to reorder.
 - Folder count, Open all, Copy all URLs, Tag matrix and search include links in sections.
 
 ## Home

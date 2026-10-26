@@ -8,7 +8,7 @@ import { openTab } from '../../services/tabs.js';
 import { showMenu } from '../../ui/menu.js';
 import { toast } from '../../ui/toast.js';
 import { state } from '../../state/page-state.js';
-import { saveOrder, moveToCategory } from '../../state/folders.js';
+import { saveFolderColor, saveOrder, moveToCategory } from '../../state/folders.js';
 import { deleteLink, openCalendar, setDue, setPri } from './actions.js';
 import { startEdit } from './edit.js';
 import { renameFolder } from './page.js';
@@ -59,6 +59,17 @@ export function folderMenu(ctx, e, s) {
     ...(s.virtual
       ? []
       : [
+          '-',
+          {
+            swatches: true,
+            value: settings.folderColors[s.id] || null,
+            pick: async (color) => {
+              await saveFolderColor(s.id, color);
+              ctx.renderNav();
+              if (state.current?.id === s.id || state.current?.board) ctx.renderPage();
+            },
+          },
+          '-',
           {
             label: 'Rename folder',
             icon: 'pencil',

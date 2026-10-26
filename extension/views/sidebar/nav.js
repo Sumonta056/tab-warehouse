@@ -1,5 +1,6 @@
 import { PAGES } from '../../constants/pages.js';
 import { folderGroups, orderStep } from '../../domain/folders.js';
+import { markAttrs } from '../../domain/marks.js';
 import { createBookmark, moveBookmark } from '../../services/bookmarks.js';
 import { saveSettings } from '../../services/storage.js';
 import { h, svgIcon } from '../../ui/dom.js';
@@ -44,7 +45,7 @@ function navItem(ctx, s) {
     'button',
     {
       class: `nav ${s.id === openView()?.id ? 'on' : ''} ${s.virtual ? 'unsorted' : ''}`,
-      dataset: { id: s.id },
+      ...markAttrs(!s.virtual && state.settings.folderColors[s.id], { id: s.id }),
       draggable: !s.virtual,
       title: s.virtual ? 'Loose links directly under the root' : 'Drag to reorder · Alt+↑/↓ to move',
       onClick: () => ctx.select(s),
