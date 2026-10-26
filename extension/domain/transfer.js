@@ -1,5 +1,6 @@
 import { ENVS } from '../constants/envs.js';
 import { SORTS } from '../constants/sorts.js';
+import { markOf } from './marks.js';
 import { cleanMeta } from './meta.js';
 import { cleanTags } from './tags.js';
 
@@ -25,6 +26,7 @@ export function exportData(root, secs, settings, meta) {
       categories: settings.categories.map((c) => ({
         name: c.name,
         closed: !!c.closed,
+        ...markOf(c.color, c.icon),
         folders: Object.entries(settings.folderCat)
           .filter(([id, cat]) => cat === c.id && byId[id])
           .map(([id]) => byId[id]),
@@ -38,8 +40,13 @@ export function exportData(root, secs, settings, meta) {
     sections: secs.map((s) => ({
       title: s.title,
       unsorted: !!s.virtual,
+      ...(s.virtual ? {} : markOf(settings.folderColors?.[s.id], settings.folderIcons?.[s.id])),
       links: s.links.map(out),
-      parts: s.parts.map((pt) => ({ title: pt.title, links: pt.links.map(out) })),
+      parts: s.parts.map((pt) => ({
+        title: pt.title,
+        ...markOf(settings.partColors?.[pt.id], settings.partIcons?.[pt.id]),
+        links: pt.links.map(out),
+      })),
     })),
   };
 }
@@ -113,10 +120,11 @@ export function cleanImport(d) {
     .map((s) => ({
       title: s.title,
       unsorted: s.unsorted === true,
+      ...(s.unsorted === true ? {} : markOf(s.color, s.icon)),
       links: cleanLinks(s.links),
       parts: list(s.parts)
         .filter((pt) => isObj(pt) && isStr(pt.title))
-        .map((pt) => ({ title: pt.title, links: cleanLinks(pt.links) })),
+        .map((pt) => ({ title: pt.title, ...markOf(pt.color, pt.icon), links: cleanLinks(pt.links) })),
     }));
   const p = d.preferences;
   if (!isObj(p)) return { sections, preferences: null };
@@ -135,7 +143,7 @@ export function cleanImport(d) {
       folders,
       categories: list(p.categories)
         .filter((c) => isObj(c) && isStr(c.name) && c.name.trim())
-        .map((c) => ({ name: c.name.trim(), closed: c.closed === true, folders: list(c.folders).filter(isStr) })),
+        .map((c) => ({ name: c.name.trim(), closed: c.closed === true, ...markOf(c.color, c.icon), folders: list(c.folders).filter(isStr) })),
       envRules: list(p.envRules)
         .filter((r) => isObj(r) && isStr(r.pattern) && r.pattern.trim() && tags.includes(r.env))
         .map((r) => ({ pattern: r.pattern.trim().toLowerCase(), env: r.env })),

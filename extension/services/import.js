@@ -16,6 +16,16 @@ export async function importFile(file, root, settings) {
     const m = cleanMeta(l);
     if (m) metaIn[id] = m;
   };
+  const marks = {
+    folderColors: { ...settings.folderColors },
+    folderIcons: { ...settings.folderIcons },
+    partColors: { ...settings.partColors },
+    partIcons: { ...settings.partIcons },
+  };
+  const keepMark = (kind, id, m) => {
+    if (m.color) marks[`${kind}Colors`][id] ||= m.color;
+    if (m.icon) marks[`${kind}Icons`][id] ||= m.icon;
+  };
 
   for (const sec of parsed.sections) {
     let parentId;
@@ -29,6 +39,7 @@ export async function importFile(file, root, settings) {
         folders++;
       }
       parentId = f.id;
+      keepMark('folder', parentId, sec);
     }
     titleToId[sec.title] = parentId;
     const existing = new Map((parentId === root.id ? kids : kids.find((k) => k.id === parentId).children || []).filter((k) => k.url).map((k) => [k.url, k.id]));
@@ -55,6 +66,7 @@ export async function importFile(file, root, settings) {
         parent.children.push(sf);
         folders++;
       }
+      keepMark('part', sf.id, pt);
       const have = new Map((sf.children || []).filter((k) => k.url).map((k) => [k.url, k.id]));
       for (const l of pt.links || []) {
         if (!l.url) continue;
@@ -76,7 +88,7 @@ export async function importFile(file, root, settings) {
     const order = (p.order || []).map((t) => titleToId[t]).filter(Boolean);
     const foldersPrefs = { ...settings.folders };
     for (const [t, prefs] of Object.entries(p.folders || {})) if (titleToId[t]) foldersPrefs[titleToId[t]] = prefs;
-    const categories = [...settings.categories];
+    const categories = settings.categories.map((c) => ({ ...c }));
     const folderCat = { ...settings.folderCat };
     for (const c of p.categories || []) {
       if (!c?.name) continue;
@@ -85,6 +97,8 @@ export async function importFile(file, root, settings) {
         cat = { id: `c${Date.now()}${categories.length}`, name: c.name, closed: !!c.closed };
         categories.push(cat);
       }
+      if (c.color) cat.color ||= c.color;
+      if (c.icon) cat.icon ||= c.icon;
       for (const t of c.folders || []) if (titleToId[t]) folderCat[titleToId[t]] = cat.id;
     }
     await saveSettings({
@@ -99,6 +113,7 @@ export async function importFile(file, root, settings) {
       ...(p.board ? { board: { ...settings.board, ...p.board } } : {}),
     });
   }
+  await saveSettings(marks);
   if (Object.keys(metaIn).length) {
     const all = await loadLinkMeta();
     for (const [id, m] of Object.entries(metaIn)) all[id] ||= m;

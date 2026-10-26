@@ -1,6 +1,6 @@
 import { saveSettings } from '../services/storage.js';
-import { sections } from '../domain/tree.js';
-import { withMark } from '../domain/marks.js';
+import { folderList, sections } from '../domain/tree.js';
+import { staleMarks, withMark } from '../domain/marks.js';
 import { folderPrefs as prefsOf, catOf, orderMove, orderIntoCategory, withCategory } from '../domain/folders.js';
 import { state, setState } from './page-state.js';
 
@@ -55,4 +55,11 @@ export async function saveMark(key, id, value, clean) {
   const map = withMark(state.settings[key], id, value, clean);
   state.settings[key] = map;
   await saveSettings({ [key]: map });
+}
+
+export async function pruneMarks() {
+  const patch = staleMarks(state.settings, new Set(folderList(state.tree).map((f) => f.id)));
+  if (!patch) return;
+  Object.assign(state.settings, patch);
+  await saveSettings(patch);
 }

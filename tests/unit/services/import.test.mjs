@@ -138,6 +138,37 @@ describe('importFile (JSON backup)', () => {
     assert.equal(s.board.group, 'flat');
   });
 
+  test('applies folder, section and category colors and icons to the new ids; a local one is kept', async () => {
+    const ch = fakeChrome({ tree: TREE });
+    await saveSettings({ folderIcons: { 30: '🔥' }, categories: [{ id: 'c1', name: 'Work', closed: false, color: 'green' }] });
+    const root = ch.tree.children[0].children[0];
+    const data = backup({
+      preferences: {
+        categories: [
+          { name: 'Work', color: 'red', icon: '💼', folders: [] },
+          { name: 'New', color: '#123456', folders: [] },
+        ],
+      },
+    });
+    data.sections[0] = { ...data.sections[0], color: 'red', icon: '🚀' };
+    data.sections[0].parts[0] = { ...data.sections[0].parts[0], color: '#00ff00', icon: '🐞' };
+    data.sections[1] = { ...data.sections[1], icon: '📚' };
+    await importFile(file(data), root, await loadSettings());
+    const s = await loadSettings();
+    const blocked = child(child(root, 'Shop'), 'Blocked').id;
+    const docs = child(root, 'Docs').id;
+    assert.deepEqual(s.folderColors, { 30: 'red' });
+    assert.deepEqual(s.folderIcons, { 30: '🔥', [docs]: '📚' }, 'the local icon of Shop stays');
+    assert.deepEqual([s.partColors[blocked], s.partIcons[blocked]], ['#00ff00', '🐞']);
+    assert.deepEqual(
+      s.categories.map((c) => [c.name, c.color, c.icon]),
+      [
+        ['Work', 'green', '💼'],
+        ['New', '#123456', undefined],
+      ],
+    );
+  });
+
   test('empty rule and site lists in a backup keep the current ones', async () => {
     const ch = fakeChrome({ tree: TREE });
     await saveSettings({ envRules: [{ pattern: 'test.', env: 'TEST' }], hostMap: [{ PROD: 'a.com' }] });

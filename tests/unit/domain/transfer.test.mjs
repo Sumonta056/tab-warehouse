@@ -24,6 +24,20 @@ describe('cleanImport', () => {
     assert.equal('showFavicons' in r.preferences, false);
     assert.doesNotThrow(() => detectEnv({ title: 't', url: 'https://prod.example/x' }, r.preferences.envRules));
   });
+  test('keeps only valid colors and icons on sections, parts and categories', () => {
+    const r = cleanImport({
+      sections: [
+        { title: 'A', color: 'url(x)', icon: '🚀', links: [], parts: [{ title: 'P', color: '#ABCDEF', icon: '<b>' }] },
+        { title: 'U', unsorted: true, color: 'red', icon: '🚀', links: [] },
+      ],
+      preferences: { categories: [{ name: 'Ops', color: 'blue', icon: 'ok' }] },
+    });
+    assert.deepEqual(r.sections[0].icon, '🚀');
+    assert.ok(!('color' in r.sections[0]));
+    assert.deepEqual(r.sections[0].parts[0], { title: 'P', color: '#abcdef', links: [] });
+    assert.ok(!('color' in r.sections[1]) && !('icon' in r.sections[1]), 'Unsorted takes no mark');
+    assert.deepEqual(r.preferences.categories, [{ name: 'Ops', closed: false, color: 'blue', folders: [] }]);
+  });
   test('keeps board.group only when it is cat or flat', () => {
     const pick = (board) => cleanImport({ sections: [], preferences: { board } }).preferences.board;
     assert.deepEqual(pick({ group: 'flat', evil: 1 }), { group: 'flat' });
@@ -207,6 +221,31 @@ describe('exportData', () => {
     assert.deepEqual(back.preferences.envRules, [{ pattern: 'qa.', env: 'QA' }]);
     assert.deepEqual(back.preferences.hostMap, [{ PROD: 'shop.example.com', QA: 'qa.shop.example.com' }]);
     assert.equal(back.preferences.showFavicons, true);
+  });
+
+  test('writes category, folder and section colors and icons; Unsorted and bad values get none', () => {
+    const d = exportData(
+      ROOT,
+      SECS,
+      {
+        ...SETTINGS,
+        categories: [{ id: 'c1', name: 'Work', closed: false, color: '#12ABCD', icon: '💼' }],
+        folderColors: { 30: 'red', 'unsorted:10': 'blue' },
+        folderIcons: { 30: '🚀', 40: 'x' },
+        partColors: { 35: '#00ff00' },
+        partIcons: { 35: '🐞' },
+      },
+      {},
+    );
+    assert.deepEqual(d.preferences.categories[0], { name: 'Work', closed: false, color: '#12abcd', icon: '💼', folders: ['Shop & <API>'] });
+    assert.equal(d.sections[0].color, 'red');
+    assert.equal(d.sections[0].icon, '🚀');
+    assert.deepEqual([d.sections[0].parts[0].color, d.sections[0].parts[0].icon], ['#00ff00', '🐞']);
+    assert.ok(!('icon' in d.sections[1]), 'a bad icon is not written');
+    assert.ok(!('color' in d.sections[2]), 'Unsorted has no color');
+    const back = parseJson(JSON.stringify(d));
+    assert.deepEqual([back.sections[0].color, back.sections[0].icon, back.sections[0].parts[0].icon], ['red', '🚀', '🐞']);
+    assert.equal(back.preferences.categories[0].icon, '💼');
   });
 
   test('an old settings object without customTags or board still exports', () => {

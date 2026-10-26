@@ -12,7 +12,7 @@ import { showMenu, closeMenu, menuOpen } from './ui/menu.js';
 import { toast } from './ui/toast.js';
 import { clearMarks } from './ui/dnd.js';
 import { state, setState, clearQuery } from './state/page-state.js';
-import { folderPrefs, saveFolderPrefs, moveFolder, queueSave } from './state/folders.js';
+import { folderPrefs, saveFolderPrefs, moveFolder, pruneMarks, queueSave } from './state/folders.js';
 import { pruneLinkMeta } from './state/links.js';
 import { paintIcons, renderBrand } from './views/sidebar/header.js';
 import { renderNav as drawNav, bindNavDrag, newFolder } from './views/sidebar/nav.js';
@@ -107,6 +107,7 @@ async function refresh() {
   const root = resolveRoot(tree, state.settings);
   setState({ tree, root, secs: sections(root, state.settings.order, [state.settings.home.folderId]) });
   await pruneLinkMeta();
+  await pruneMarks();
   renderBrand();
   const { current } = state;
   setState({ current: current?.settings ? SETTINGS : findView(current?.id, PAGES, state.secs) || HOME });

@@ -1,6 +1,6 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { cleanIcon, cleanMark, markAttrs, withMark } from '../../../extension/domain/marks.js';
+import { cleanIcon, cleanMark, markAttrs, markOf, staleMarks, withMark } from '../../../extension/domain/marks.js';
 
 describe('marks', () => {
   test('cleanMark keeps a preset name or a #rrggbb color (lower-cased) and drops the rest', () => {
@@ -37,5 +37,18 @@ describe('marks', () => {
   test('withMark takes the cleaner to use', () => {
     assert.deepEqual(withMark({}, '1', ' 🚀x', cleanIcon), { 1: '🚀' });
     assert.deepEqual(withMark({ 1: '🚀' }, '1', 'x', cleanIcon), {});
+  });
+
+  test('markOf keeps only a valid color and icon', () => {
+    assert.deepEqual(markOf('#ABCDEF', '🚀'), { color: '#abcdef', icon: '🚀' });
+    assert.deepEqual(markOf('red', 'x'), { color: 'red' });
+    assert.deepEqual(markOf('nope', undefined), {});
+  });
+
+  test('staleMarks removes colors and icons of folders that are gone and returns null when nothing is stale', () => {
+    const settings = { folderColors: { 1: 'red', 9: 'blue' }, folderIcons: { 1: '🚀' }, partColors: {}, partIcons: { 8: '🐞', 2: '📌' } };
+    assert.deepEqual(staleMarks(settings, new Set(['1', '2'])), { folderColors: { 1: 'red' }, partIcons: { 2: '📌' } });
+    assert.equal(staleMarks(settings, new Set(['1', '2', '8', '9'])), null);
+    assert.equal(staleMarks({}, new Set()), null);
   });
 });

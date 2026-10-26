@@ -28,3 +28,20 @@ export function withMark(map, id, value, clean = cleanMark) {
   else delete out[id];
   return out;
 }
+
+export function markOf(color, icon) {
+  const c = cleanMark(color);
+  const i = cleanIcon(icon);
+  return { ...(c ? { color: c } : {}), ...(i ? { icon: i } : {}) };
+}
+
+const MARK_MAPS = ['folderColors', 'folderIcons', 'partColors', 'partIcons'];
+
+export function staleMarks(settings, folderIds) {
+  const patch = {};
+  for (const key of MARK_MAPS) {
+    const map = settings[key] || {};
+    if (Object.keys(map).some((id) => !folderIds.has(id))) patch[key] = Object.fromEntries(Object.entries(map).filter(([id]) => folderIds.has(id)));
+  }
+  return Object.keys(patch).length ? patch : null;
+}

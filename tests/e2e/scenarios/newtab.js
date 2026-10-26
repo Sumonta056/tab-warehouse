@@ -71,6 +71,18 @@ export default [
   },
   {
     area,
+    name: 'colors and icons of folders and sections that no longer exist are removed on refresh',
+    page: 'newtab',
+    fixture: () => base({ settings: { folderColors: { 20: 'red', 999: 'blue' }, folderIcons: { 998: '🚀' }, partIcons: { 23: '🐞', 997: '📌' } } }),
+    async run(t) {
+      await t.until(() => !('999' in t.settings().folderColors), 'the stale folder color to go');
+      t.eq(t.settings().folderColors, { 20: 'red' }, 'folder colors');
+      t.eq(t.settings().folderIcons, {}, 'folder icons');
+      t.eq(t.settings().partIcons, { 23: '🐞' }, 'section icons');
+    },
+  },
+  {
+    area,
     name: 'folder icon: a stored value that is not an emoji is not shown',
     page: 'newtab',
     fixture: () => base({ settings: { folderIcons: { 20: '<b>x</b>' } } }),
