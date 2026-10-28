@@ -135,6 +135,9 @@ export function fakeChrome({ tree, store = {}, manifest = {}, tabs = [], current
         return tabs;
       },
       getCurrent: async () => current,
+      onCreated: event(),
+      onRemoved: event(),
+      onUpdated: event(),
     },
     action: {
       setBadgeBackgroundColor: async (o) => calls.push(['badgeColor', o]),

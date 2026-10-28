@@ -56,3 +56,7 @@
   background: var(--tag-bg);
   color: var(--tag-fg);
 }
+.badge.tab-open {
+  background: var(--accent-bg);
+  color: var(--accent-text);
+}

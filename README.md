@@ -246,12 +246,13 @@ Tab Warehouse has no server, no account, no analytics and no tracking. It does n
 - Preferences (sidebar order, categories, env rules, Home look) and link notes stay in **`chrome.storage.local`** on your machine. Chrome sync does not copy them.
 - The only images loaded from the network are the official Google app icons (from `ssl.gstatic.com`), any icon URL you add yourself, and the icon of a Home link that Chrome has no icon for. For that last case the extension asks Google's favicon service (`www.google.com/s2/favicons`) and sends it only the host name of that link. Local addresses (localhost, IP addresses) are never sent.
 
-| Permission  | Why it is needed                                                                    |
-| ----------- | ----------------------------------------------------------------------------------- |
-| `bookmarks` | Read and edit your bookmarks — the core of the extension                            |
-| `storage`   | Save sidebar order, per-folder preferences, env rules, link notes and the Home look |
-| `favicon`   | Show site icons from Chrome's own favicon cache                                     |
-| `activeTab` | Read the current tab's title and URL, only when you open the popup or quick save    |
+| Permission  | Why it is needed                                                                              |
+| ----------- | --------------------------------------------------------------------------------------------- |
+| `bookmarks` | Read and edit your bookmarks — the core of the extension                                      |
+| `storage`   | Save sidebar order, per-folder preferences, env rules, link notes and the Home look           |
+| `favicon`   | Show site icons from Chrome's own favicon cache                                               |
+| `activeTab` | Read the current tab's title and URL, only when you open the popup or quick save              |
+| `tabs`      | See which saved links are open in a tab, to mark them "Open" in the list; kept only in memory |
 
 The extension has a background service worker (`background.js`) only for the address bar search (`tw`), quick save (`⌘K`) and the palette key (`⌘⇧K`, so it also works while the address bar has focus). It reads your bookmarks on each keystroke or key press and keeps nothing. The `omnibox` key is not a permission and shows no install warning.
 

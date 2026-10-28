@@ -219,13 +219,21 @@
         else H.tabs.push({ ...a, update: true });
         return { id: 0 };
       },
-      async query() {
+      async query(q = {}) {
+        if (!q.active) return clone(H.openTabs || []);
         return H.activeTab ? [clone(H.activeTab)] : [];
       },
+      onCreated: on('tabs.onCreated'),
+      onRemoved: on('tabs.onRemoved'),
+      onUpdated: on('tabs.onUpdated'),
       async getCurrent() {
         return H.currentTabId == null ? undefined : { id: H.currentTabId };
       },
     },
+  };
+  window.__tabs = (list) => {
+    H.openTabs = clone(list);
+    emit('tabs.onCreated', {});
   };
   window.__command = (name, tab) => Promise.all((listeners.onCommand || []).map((f) => f(name, tab && clone(tab))));
   window.close = () => {

@@ -14,3 +14,15 @@ export async function activeTab() {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   return tab;
 }
+
+export function listTabs() {
+  return chrome.tabs.query({});
+}
+
+export function onTabsChanged(fn) {
+  chrome.tabs.onCreated.addListener(fn);
+  chrome.tabs.onRemoved.addListener(fn);
+  chrome.tabs.onUpdated.addListener((id, info) => {
+    if (info.url) fn();
+  });
+}

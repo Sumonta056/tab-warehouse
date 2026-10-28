@@ -9,6 +9,7 @@ export const state = {
   filterQ: '',
   priF: 'all',
   linkMeta: {},
+  openKeys: new Set(),
   editingId: null,
   drag: null,
   beforeSettings: null,

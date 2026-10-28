@@ -10,3 +10,7 @@ export function linkBadge(env, url, customTags = []) {
   if (env) return tagBadge(env, customTags);
   return isGithub(url) ? h('span', { class: 'badge GH' }, 'GH') : null;
 }
+
+export function openBadge() {
+  return h('span', { class: 'badge tab-open', title: 'Open in a tab' }, 'Open');
+}

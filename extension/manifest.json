@@ -4,7 +4,7 @@
   "short_name": "Tab Warehouse",
   "version": "2.5.0",
   "description": "Bookmark manager and new tab page for developers: folders, full URLs, PROD/TEST/STAGE/LOCAL env tags, env matrix, drag and drop.",
-  "permissions": ["bookmarks", "storage", "favicon", "activeTab"],
+  "permissions": ["bookmarks", "storage", "favicon", "activeTab", "tabs"],
   "background": {
     "service_worker": "background.js",
     "type": "module"
