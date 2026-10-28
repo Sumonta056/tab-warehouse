@@ -114,14 +114,21 @@
   const open = $('#demoOpen');
   const title = $('#demoTitle');
   const showDemo = (src) => {
-    const isPopup = src.includes('popup');
-    $$('.demo-bar [role=tab]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.src === src)));
-    title.textContent = isPopup ? 'Save to Tab Warehouse' : 'New tab';
-    open.href = src;
+    const isPal = src.includes('palette');
+    const isPopup = isPal || src.includes('popup');
+    const tab = isPal ? 'demo/newtab.html' : src;
+    $$('.demo-bar [role=tab]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.src === tab)));
+    title.textContent = isPal ? 'Command palette' : isPopup ? 'Save to Tab Warehouse' : 'New tab';
+    open.href = tab;
     popupLayer.hidden = !isPopup;
-    if (isPopup) popup.src = src;
-    else popup.removeAttribute('src');
+    popupLayer.classList.toggle('pal', isPal);
+    popup.title = `Tab Warehouse live demo: ${isPal ? 'command palette' : 'save popup'}`;
+    if (isPopup) {
+      popup.src = src;
+      popup.focus();
+    } else popup.removeAttribute('src');
   };
+  window.__twDemoOpenPalette = () => showDemo('demo/palette.html');
   $$('.demo-bar [role=tab]').forEach((b) => b.addEventListener('click', () => showDemo(b.dataset.src)));
   window.__twDemoClosePopup = () => showDemo('demo/newtab.html');
   popupLayer.addEventListener('click', (e) => {

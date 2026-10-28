@@ -14,7 +14,7 @@ git -C "$ROOT" archive HEAD | tar -x -C "$SRC"
 ln -s "$ROOT/node_modules" "$SRC/node_modules"
 node "$SRC/tools/build.mjs" "$SRC/dist" >/dev/null
 cp -R "$SRC/dist/." "$OUT/demo/"
-for page in newtab popup; do
+for page in newtab popup palette; do
   perl -0pi -e 's|<script type="module"|<script src="demo-chrome.js"></script>\n    <script type="module"|' "$OUT/demo/$page.html"
   perl -0pi -e 's|<head>|<head>\n    <meta name="robots" content="noindex" />|' "$OUT/demo/$page.html"
   grep -q 'demo-chrome.js' "$OUT/demo/$page.html"

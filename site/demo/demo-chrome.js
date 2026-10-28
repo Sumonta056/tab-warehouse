@@ -81,9 +81,9 @@
     rootId: ids['Bookmarks bar'],
     showFavicons: true,
     categories: [
-      { id: 'c1', name: 'Work', closed: false, color: 'green' },
-      { id: 'c2', name: 'Learning', closed: false, color: 'yellow' },
-      { id: 'c3', name: 'Later', closed: false, color: 'red' },
+      { id: 'c1', name: 'Work', closed: false, color: 'green', icon: '💼' },
+      { id: 'c2', name: 'Learning', closed: false, color: 'yellow', icon: '📚' },
+      { id: 'c3', name: 'Later', closed: false, color: '#c084fc' },
     ],
     folderCat: {
       [ids['Shop project']]: 'c1',
@@ -94,6 +94,9 @@
       [ids['Reading list']]: 'c3',
     },
     partColors: { [ids['Priority']]: 'green', [ids['In progress']]: 'blue', [ids['Blocked']]: 'red' },
+    partIcons: { [ids['Blocked']]: '⛔' },
+    folderColors: { [ids['Sprint board']]: '#ff8a65' },
+    folderIcons: { [ids['Shop project']]: '🛒', [ids['Sprint board']]: '🏃' },
     envRules: [
       { pattern: 'localhost', env: 'LOCAL' },
       { pattern: 'test.', env: 'TEST' },
@@ -155,6 +158,10 @@
       },
       nextId: 1000,
       activeTab: { id: 1, title: 'Checkout · Shop TEST', url: 'https://test.shop.example.com/checkout/payment?step=2' },
+      openTabs: [
+        { id: 3, url: 'https://test.shop.example.com/checkout/cart' },
+        { id: 4, url: 'https://developer.chrome.com/docs/extensions/reference/api/bookmarks' },
+      ],
       listeners: [],
     };
   };
@@ -318,11 +325,19 @@
     },
   };
 
-  const messages = [];
-  window.addEventListener('keydown', (e) => {
+  const sendMessage = (msg) =>
+    new Promise((resolve) => {
+      for (const l of S.listeners.filter((x) => x.name === 'message')) {
+        try {
+          l.f(clone(msg), {}, resolve);
+        } catch {}
+      }
+      setTimeout(() => resolve(undefined), 50);
+    });
+  window.addEventListener('keydown', async (e) => {
     if (!(e.metaKey || e.ctrlKey) || !e.shiftKey || e.key.toLowerCase() !== 'k') return;
     e.preventDefault();
-    for (const f of messages) f({ type: 'open-palette', tabId: 1 }, {}, () => {});
+    if ((await sendMessage({ type: 'open-palette', tabId: 1 })) === true) host.__twDemoOpenPalette?.();
   });
 
   window.chrome = {
@@ -331,7 +346,8 @@
     runtime: {
       getURL: (p) => new URL(p.replace(/^\//, ''), location.href).href,
       getManifest: () => ({ omnibox: { keyword: 'tw' } }),
-      onMessage: { addListener: (f) => messages.push(f) },
+      onMessage: listen('message'),
+      sendMessage,
     },
     commands: {
       async getAll() {
@@ -353,7 +369,8 @@
         return { id: 1 };
       },
       async query(q = {}) {
-        return q.active && S.activeTab ? [clone(S.activeTab)] : [];
+        if (q.active) return S.activeTab ? [clone(S.activeTab)] : [];
+        return clone(S.openTabs || []);
       },
       async getCurrent() {
         return { id: 1 };

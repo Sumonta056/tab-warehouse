@@ -572,6 +572,11 @@ h3 {
   box-shadow: 0 24px 60px rgb(0 0 0 / 0.6);
 }
 
+.popup-layer.pal .popup-win {
+  width: 560px;
+  max-height: 520px;
+}
+
 .popup-win iframe {
   display: block;
   width: 100%;
