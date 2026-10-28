@@ -30,4 +30,7 @@
     justify-content: flex-start;
     padding-left: 52px;
   }
+  .list.schedule .row .due-col {
+    padding-left: 84px;
+  }
 }

@@ -104,7 +104,7 @@ export default [
   },
   {
     area,
-    name: 'boots on Home; Home, Board and Schedule are labeled view tabs under a full-width search; Home folder is not a sidebar section',
+    name: 'boots on Home; Home and Board are the two labeled view tabs under a full-width search; Home folder is not a sidebar section',
     page: 'newtab',
     fixture: () => base(),
     async run(t) {
@@ -127,14 +127,20 @@ export default [
       t.ok(Math.abs(search.getBoundingClientRect().width - tabs.getBoundingClientRect().width) <= 1, 'search is as wide as the tabs');
       t.ok(btn.getBoundingClientRect().height >= 28, 'Home tab is at least 28 px tall');
       t.ok(t.$('.side .view-tabs').getBoundingClientRect().height <= 36, 'view tabs take at most 36 px');
-      const all = [btn, t.$('#boardBtn'), t.$('#scheduleBtn')];
+      const all = t.$$('.side .view-tabs .view-tab');
+      t.eq(
+        all.map((b) => b.id),
+        ['homeBtn', 'boardBtn'],
+        'two tabs',
+      );
       t.ok(
         all.every((b) => Math.abs(b.getBoundingClientRect().width - btn.getBoundingClientRect().width) <= 1),
         'tabs share the width equally',
       );
+      t.ok(Math.abs(all.at(-1).getBoundingClientRect().right - tabs.getBoundingClientRect().right) <= 4, 'the two tabs fill the group');
       t.eq(
         all.map((b) => b.textContent.trim()),
-        ['Home', 'Board', 'Schedule'],
+        ['Home', 'Board'],
         'labeled',
       );
       t.ok(
@@ -151,33 +157,32 @@ export default [
   },
   {
     area,
-    name: 'view tabs: two lines split the three tabs while none is open',
+    name: 'view tabs: one line splits the two tabs while neither is open',
     page: 'newtab',
     fixture: () => base(),
     async run(t) {
       const tabs = t.$('.side .view-tabs');
-      const lines = () => ['::before', '::after'].map((x) => t.w.getComputedStyle(tabs, x));
+      const lines = () => ['::before', '::after'].map((x) => t.w.getComputedStyle(tabs, x)).filter((l) => l.content !== 'none');
       t.click(t.$('.nav[data-id="30"]'));
       await t.settle();
       const r = tabs.getBoundingClientRect();
-      lines().forEach((line, i) => {
-        t.ok(line.content !== 'none' && line.opacity === '1', `line ${i + 1} shows on a folder page`);
-        t.eq(line.width, '1px', '1 px wide');
-        t.ok(Math.abs(parseFloat(line.left) + 0.5 - (r.width * (i + 1)) / 3) <= 2, `at ${i + 1}/3`);
-        t.ok(parseFloat(line.height) < r.height - 8, 'shorter than the box');
-      });
+      t.eq(lines().length, 1, 'one line');
+      const [line] = lines();
+      t.eq(line.opacity, '1', 'shows on a folder page');
+      t.eq(line.width, '1px', '1 px wide');
+      t.ok(Math.abs(parseFloat(line.left) + 0.5 - r.width / 2) <= 2, 'in the middle');
+      t.ok(parseFloat(line.height) < r.height - 8, 'shorter than the box');
+      t.click(t.$('#scheduleBtn'));
+      await t.settle();
+      t.eq(lines()[0].opacity, '1', "still shows on Today's top list (not a tab)");
       t.click(t.$('#homeBtn'));
       await t.settle();
-      t.eq(
-        lines().map((l) => l.opacity),
-        ['0', '0'],
-        'hidden while a tab is marked on',
-      );
+      t.eq(lines()[0].opacity, '0', 'hidden while a tab is marked on');
     },
   },
   {
     area,
-    name: 'view tabs: labels at the default width, icons and labels when wide, icons only at the narrowest; nothing overflows',
+    name: 'view tabs: labels at the default width, icons and labels when wide, icons only at the narrowest; nothing overflows from 180 to 440 px at text 80 to 140 %',
     page: 'newtab',
     fixture: () => base({ settings: { sideWidth: 180 } }),
     async run(t) {
@@ -203,6 +208,19 @@ export default [
           t.ok(b.getAttribute('aria-label') && b.title, `${b.id} keeps its name and tooltip`);
         }
       }
+      const bad = [];
+      for (const fs of ['0.8', '1', '1.4']) {
+        t.d.documentElement.style.setProperty('--fs-side', fs);
+        for (let w = 180; w <= 440; w += 4) {
+          t.d.documentElement.style.setProperty('--side-w', `${w}px`);
+          await t.settle();
+          const tabs = t.$('.side .view-tabs');
+          for (const b of t.$$('.side .view-tab'))
+            if (!fits(b) || b.scrollWidth > b.clientWidth || b.getBoundingClientRect().height < 28) bad.push(`${b.id} ${fs} ${w}`);
+          if (tabs.scrollWidth > tabs.clientWidth || tabs.getBoundingClientRect().height > 36) bad.push(`group ${fs} ${w}`);
+        }
+      }
+      t.eq(bad, [], 'text sizes and widths where a tab overflows');
     },
   },
   {
@@ -891,7 +909,7 @@ export default [
   },
   {
     area,
-    name: 'j / k move through Home, Board, Schedule and folders in sidebar order',
+    name: "j / k move through Home, Board, Today's top list and folders in sidebar order",
     page: 'newtab',
     fixture: () => base(),
     async run(t) {
@@ -902,15 +920,15 @@ export default [
       t.d.activeElement?.blur();
       t.key(t.d, 'j');
       await t.settle();
-      t.eq(t.$('.head h2')?.textContent, 'Schedule', 'j from the Board goes to the Schedule');
+      t.eq(t.$('.head h2')?.textContent, "Today's top list", 'j from the Board goes to Today');
       t.d.activeElement?.blur();
       t.key(t.d, 'j');
       await t.settle();
-      t.eq(t.$('.head h2')?.textContent, 'Sprint tasks', 'j from the Schedule goes to first folder');
+      t.eq(t.$('.head h2')?.textContent, 'Sprint tasks', 'j from Today goes to first folder');
       t.d.activeElement?.blur();
       t.key(t.d, 'k');
       await t.settle();
-      t.eq(t.$('.head h2')?.textContent, 'Schedule', 'k goes back to the Schedule');
+      t.eq(t.$('.head h2')?.textContent, "Today's top list", 'k goes back to Today');
       t.d.activeElement?.blur();
       t.key(t.d, 'k');
       await t.settle();

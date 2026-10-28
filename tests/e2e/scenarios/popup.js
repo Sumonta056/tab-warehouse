@@ -155,6 +155,25 @@ export default [
   },
   {
     area,
+    name: 'already saved: Undo of Remove brings back note, priority and due date but never done',
+    page: 'popup',
+    fixture: () => {
+      const f = base({ activeTab: { title: 'Shop PROD', url: 'https://shop.example.com/api/x' } });
+      f.store.linkMeta = { 31: { note: 'n', pri: 'high', due: '2026-10-26', done: '2026-10-26' } };
+      return f;
+    },
+    async run(t) {
+      t.click(t.$('#exists .exists button'));
+      await t.settle();
+      t.ok(!t.node('31') && !t.store.linkMeta['31'], 'removed with its entry');
+      t.click(t.toast()?.querySelector('button'));
+      await t.settle();
+      const back = t.node('30').children[0];
+      t.eq(t.store.linkMeta[back.id], { note: 'n', pri: 'high', due: '2026-10-26' }, 'no done');
+    },
+  },
+  {
+    area,
     name: 'compact layout: named priority, one-line note beside Page/Site, Save visible with many folders',
     page: 'popup',
     fixture: () =>

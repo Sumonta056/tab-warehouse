@@ -3,6 +3,7 @@ import { detectEnv } from '../../domain/env.js';
 import { otherVersions } from '../../domain/derive.js';
 import { catOf, orderToTop, sectionTargets } from '../../domain/folders.js';
 import { tagNames } from '../../domain/tags.js';
+import { isDueToday } from '../../domain/today.js';
 import { moveBookmark, removeBookmarkTree } from '../../services/bookmarks.js';
 import { openTab } from '../../services/tabs.js';
 import { showMenu } from '../../ui/menu.js';
@@ -10,7 +11,7 @@ import { toast } from '../../ui/toast.js';
 import { state } from '../../state/page-state.js';
 import { cleanIcon } from '../../domain/marks.js';
 import { saveMark, saveOrder, moveToCategory } from '../../state/folders.js';
-import { deleteLink, openCalendar, setDue, setPri } from './actions.js';
+import { addLinkToToday, deleteLink, openCalendar, setDue, setPri } from './actions.js';
 import { startEdit } from './edit.js';
 import { renameFolder } from './page.js';
 import { newPart } from './parts.js';
@@ -26,6 +27,7 @@ export function linkMenu(ctx, e, bm, row) {
     { label: 'Copy URL', icon: 'copy', run: () => navigator.clipboard.writeText(bm.url).then(() => toast('URL copied')) },
     { label: 'Edit title / URL', icon: 'pencil', run: () => startEdit(ctx, bm, row) },
     { label: meta?.note ? 'Edit note' : 'Add note', icon: 'note', run: () => startEdit(ctx, bm, row, 'note') },
+    ...(isDueToday(meta?.due) ? [] : [{ label: 'Add to today', icon: 'check', run: () => addLinkToToday(ctx, bm) }]),
     { label: meta?.due ? 'Change due date' : 'Set due date', icon: 'calendar', run: () => startEdit(ctx, bm, row, 'due') },
     ...(meta?.due
       ? [

@@ -7,6 +7,93 @@
 .grp.dueg.today {
   color: var(--tag-yellow-fg);
 }
+.grp.dueg.done {
+  color: var(--done-fg);
+}
 .grp.dueg.soon {
   color: var(--accent);
+}
+.head .today-bar {
+  flex: 0 1 200px;
+  min-width: 60px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+.head .today-bar > span {
+  display: block;
+  height: 100%;
+  background: var(--done-fg);
+  transition: width 0.25s;
+}
+.today-part {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 22px 10px 0;
+  font-size: calc(13px * var(--fs, 1));
+  font-weight: 600;
+  color: var(--text-2);
+}
+.today-part .cnt {
+  font-size: calc(12px * var(--fs, 1));
+  font-weight: 400;
+}
+.list.schedule > .empty {
+  padding: 6px 10px;
+}
+.row .chk {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  margin: -5px -4px -5px -2px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--accent-ink);
+}
+.row .chk:hover {
+  background: var(--surface);
+}
+.row .chk .box {
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid var(--muted);
+  border-radius: 5px;
+}
+.row .chk svg {
+  width: 13px;
+  height: 13px;
+  stroke-width: 3;
+  visibility: hidden;
+}
+.row .chk[aria-checked='true'] .box {
+  background: var(--done-fg);
+  border-color: var(--done-fg);
+}
+.row .chk[aria-checked='true'] svg {
+  visibility: visible;
+}
+.row.done .ttl {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+.row .due-chip.done {
+  color: var(--done-fg);
+  background: var(--done-bg);
+  border-color: transparent;
+}
+@media (prefers-reduced-motion: reduce) {
+  .head .today-bar > span {
+    transition: none;
+  }
 }

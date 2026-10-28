@@ -1,4 +1,4 @@
-import { DUE_SOON_DAYS, MONTHS, WEEKDAYS } from '../constants/due.js';
+import { DONE_LABEL, DUE_SOON_DAYS, MONTHS, WEEKDAYS } from '../constants/due.js';
 
 const pad2 = (n) => String(n).padStart(2, '0');
 
@@ -16,6 +16,10 @@ export function parseDue(due) {
 
 export function isDue(due) {
   return !!parseDue(due);
+}
+
+export function isDay(s) {
+  return typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s) && isDue(s);
 }
 
 const daysBetween = (a, b) => Math.round((b - a) / 864e5);
@@ -69,4 +73,15 @@ export function gcalUrl({ title, url, note, due }) {
 export function dueQuickDate(days, now = new Date()) {
   const t = new Date(now.getFullYear(), now.getMonth(), now.getDate() + days);
   return `${t.getFullYear()}-${pad2(t.getMonth() + 1)}-${pad2(t.getDate())}`;
+}
+
+export function metaState(meta, now = new Date()) {
+  const state = dueState(meta?.due, now);
+  return state && meta.done ? 'done' : state;
+}
+
+export function dueChip(meta, now = new Date()) {
+  const state = metaState(meta, now);
+  if (!state) return null;
+  return { state, label: state === 'done' ? DONE_LABEL : dueLabel(meta.due, now) };
 }

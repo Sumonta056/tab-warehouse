@@ -60,10 +60,11 @@
         <button class="view-tab" id="boardBtn" aria-label="Board" title="Board · all folders as columns">
           <span id="boardIcon"></span><span class="lbl">Board</span>
         </button>
-        <button class="view-tab" id="scheduleBtn" aria-label="Schedule" title="Schedule · every link with a due date">
-          <span id="scheduleIcon"></span><span class="lbl">Schedule</span>
-        </button>
       </div>
+      <button class="nav today-nav" id="scheduleBtn" aria-label="Today's top list" title="Today's top list · links due today and later">
+        <span class="today-ic" id="scheduleIcon"></span><span class="t">Today's top list</span
+        ><span class="today-cnt" id="todayCnt" aria-hidden="true" hidden></span>
+      </button>
       <nav id="nav" aria-label="Folders"></nav>
       <button class="btn ghost sm newFolder" id="newFolderBtn"><span id="plusIcon"></span>New folder</button>
       <button class="btn ghost sm newFolder newCat" id="newCatBtn"><span id="catIcon"></span>New category</button>

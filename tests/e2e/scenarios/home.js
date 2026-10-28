@@ -11,6 +11,17 @@ const openHomeSettings = async (t) => {
   await t.settle();
   t.click(t.$('.set-tab[data-tab="home"]'));
 };
+const day = (offset) => {
+  const d = new Date();
+  d.setDate(d.getDate() + offset);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
+const withToday = (meta) => {
+  const f = base();
+  f.store.linkMeta = meta;
+  return f;
+};
+const upText = (t) => [t.$('#upNext .up-pos')?.textContent, t.$('#upNext .up-ttl')?.textContent, t.$('#upNext .up-host')?.textContent];
 const done = async (t) => {
   t.click(t.$('.set-done'));
   await t.settle();
@@ -521,6 +532,159 @@ export default [
       t.click(t.$('#homeBtn'));
       await t.settle();
       t.eq(t.$('.home-bg').style.backgroundImage, '', 'Home shows no unsaved image');
+    },
+  },
+  {
+    area,
+    name: 'Up next: shows the first open link of today; a click opens it in a new tab and ticks it, then the next one shows',
+    page: 'newtab',
+    fixture: () =>
+      withToday({
+        32: { due: day(0) },
+        31: { due: day(-2) },
+        33: { due: day(0), done: day(0) },
+        34: { due: day(3) },
+      }),
+    async run(t) {
+      const bar = t.$('#home #upNext');
+      t.ok(bar, 'bar on Home');
+      t.ok(t.$('#home').classList.contains('has-up'), 'Home makes room for it');
+      t.eq(t.$('#upNext .up-lbl').firstChild.textContent, 'Up next', 'label');
+      t.eq(upText(t), ['2 of 3', 'Shop PROD', 'shop.example.com'], 'overdue first; k of m counts the done link');
+      t.ok(t.$('#upNext .up-due')?.textContent.startsWith('Overdue'), 'overdue chip');
+      const open = t.$('#upNext .up-open');
+      t.ok(open.getBoundingClientRect().height >= 44, 'open button at least 44 px');
+      t.ok(t.$('#upNext .up-skip'), 'skip with 2 open links');
+      t.click(open);
+      await t.settle();
+      t.eq(t.tabs.at(-1), { url: 'https://shop.example.com/api/x' }, 'opened in a new tab');
+      t.eq(t.store.linkMeta['31'], { due: day(-2), done: day(0) }, 'ticked');
+      t.eq(upText(t), ['3 of 3', 'Shop TEST', 'test.shop.example.com'], 'next link shows');
+      t.ok(!t.$('#upNext .up-due'), 'no chip when due today');
+      t.ok(!t.$('#upNext .up-skip'), 'no skip with one open link');
+      t.eq(t.$('#scheduleBtn #todayCnt').textContent, '1', 'tab count follows');
+      t.click(t.$('#upNext .up-open'));
+      await t.settle();
+      t.ok(!t.$('#upNext'), 'all done: no bar');
+      t.ok(!t.$('#home').classList.contains('has-up'), 'no room kept');
+      t.eq(t.tabs.length, 2, 'two tabs opened');
+    },
+  },
+  {
+    area,
+    name: 'Up next: skip shows the next open link without changing data, wraps round and resets on reload',
+    page: 'newtab',
+    fixture: () => withToday({ 31: { due: day(-1) }, 32: { due: day(0) }, 33: { due: day(0) } }),
+    async run(t) {
+      const before = JSON.stringify(t.store.linkMeta);
+      const skip = t.$('#upNext .up-skip');
+      t.eq(skip?.getAttribute('aria-label'), 'Skip to the next link', 'accessible name');
+      t.ok(skip.getBoundingClientRect().width >= 28 && skip.getBoundingClientRect().height >= 28, 'at least 28 px');
+      t.click(skip);
+      await t.settle();
+      t.eq(upText(t)[1], 'Shop TEST', 'second link');
+      t.eq(upText(t)[0], '2 of 3', 'its place');
+      t.eq(t.d.activeElement, t.$('#upNext .up-skip'), 'focus stays on skip');
+      t.click(t.$('#upNext .up-skip'));
+      t.click(t.$('#upNext .up-skip'));
+      await t.settle();
+      t.eq(upText(t)[1], 'Shop PROD', 'wraps to the first');
+      t.eq(JSON.stringify(t.store.linkMeta), before, 'no data changed');
+      t.eq(t.tabs.length, 0, 'nothing opened');
+      t.click(t.$('#upNext .up-skip'));
+      await t.settle();
+      await t.reload();
+      t.eq(upText(t)[1], 'Shop PROD', 'skip is not kept after reload');
+    },
+  },
+  {
+    area,
+    name: 'Up next: hidden with nothing due today; shows when a link is added to today elsewhere',
+    page: 'newtab',
+    fixture: () => withToday({ 31: { due: day(0), done: day(0) }, 34: { due: day(2) } }),
+    async run(t) {
+      t.ok(t.$('#home'), 'Home');
+      t.ok(!t.$('#upNext'), 'no bar when every link of today is done');
+      await t.w.chrome.storage.local.set({ linkMeta: { ...t.store.linkMeta, 33: { due: day(0) } } });
+      await t.settle();
+      t.eq(upText(t), ['2 of 2', 'Shop STAGE', 'stage.shop.example.com'], 'bar comes with the new link');
+    },
+  },
+  {
+    area,
+    name: 'Up next: the bar fits its content (420 to 640 px, 24 px from each edge), shows a long title on two lines, centred controls, above the tiles',
+    page: 'newtab',
+    fixture: () => {
+      const long =
+        'Quarterly planning notes for the platform team and the release checklist that goes with them, plus the review of every open incident from last month, with the owners, the dates and the follow-up tasks for each service and each region';
+      const f = base({
+        extraRoot: [
+          F('900', 'Long', [
+            L(
+              '901',
+              long,
+              'https://a-rather-long-host-name-for-the-up-next-bar.that-goes-on-and-on-and-does-not-fit.in-one-line.team-workspace.internal.example.com/path',
+            ),
+          ]),
+        ],
+      });
+      f.store.linkMeta = { 901: { due: day(-1) }, 32: { due: day(0) } };
+      return f;
+    },
+    async run(t) {
+      const check = (where) => {
+        const home = t.$('#home').getBoundingClientRect();
+        const bar = t.$('#upNext').getBoundingClientRect();
+        const ttl = t.$('#upNext .up-ttl');
+        const host = t.$('#upNext .up-host');
+        const lh = (el) => parseFloat(t.w.getComputedStyle(el).lineHeight);
+        t.ok(bar.width <= home.width - 48 + 0.5, `${where}: never wider than the pane minus 48 px`);
+        t.ok(bar.left - home.left >= 23.5 && home.right - bar.right >= 23.5, `${where}: at least 24 px from each edge`);
+        t.ok(bar.width <= 640.5, `${where}: at most 640 px`);
+        t.ok(ttl.textContent.length > 60 && host.textContent.startsWith('a-rather-long-host'), `${where}: the full title is in the bar`);
+        t.ok(ttl.getBoundingClientRect().height > lh(ttl) * 1.5, `${where}: title is not cut to one line`);
+        t.ok(ttl.getBoundingClientRect().height <= lh(ttl) * 2 + 1, `${where}: title takes at most two lines`);
+        t.ok(ttl.scrollHeight > ttl.clientHeight + 1, `${where}: the rest of the title is cut after two lines`);
+        t.ok(
+          host.getBoundingClientRect().height <= parseFloat(t.w.getComputedStyle(host).fontSize) * 1.6 && host.scrollWidth > host.clientWidth,
+          `${where}: host on one line, cut with …`,
+        );
+        t.eq(t.w.getComputedStyle(host).textOverflow, 'ellipsis', `${where}: host ends with …`);
+        const txt = t.$('#upNext .up-txt').getBoundingClientRect();
+        const mid = (r) => r.top + r.height / 2;
+        for (const sel of ['.up-lbl', '.up-due', '.up-go', '.up-skip']) {
+          const el = t.$(`#upNext ${sel}`);
+          if (!el.getClientRects().length) continue;
+          t.ok(Math.abs(mid(el.getBoundingClientRect()) - mid(txt)) <= 2, `${where}: ${sel} centred against the title block`);
+        }
+        const skip = t.$('#upNext .up-skip').getBoundingClientRect();
+        t.ok(skip.width >= 28 && skip.height >= 28 && t.$('#upNext .up-open').getBoundingClientRect().height >= 44, `${where}: sizes kept`);
+        const room = parseFloat(t.w.getComputedStyle(t.$('#home .home-content')).paddingBottom);
+        t.ok(room >= home.bottom - bar.top + 8, `${where}: Home keeps room under the tiles for the whole bar`);
+        const tiles = t.$$('#home .tile').map((x) => x.getBoundingClientRect());
+        t.ok(tiles.length && tiles.every((r) => r.bottom <= bar.top), `${where}: the bar does not cover the tiles`);
+      };
+      t.eq(t.$('#upNext .up-ttl').textContent.slice(0, 18), 'Quarterly planning', 'long link is up next');
+      const wide = t.$('#upNext').getBoundingClientRect().width;
+      t.ok(wide > 600, 'a long title fills the bar up to its widest');
+      check('wide');
+      t.$('#upNext .up-skip').click();
+      await t.settle();
+      const short = t.$('#upNext').getBoundingClientRect().width;
+      t.ok(short < wide - 40 && short >= 419.5, `a short title gives a compact bar, not under 420 px (got ${Math.round(short)})`);
+      t.$('#upNext .up-skip').click();
+      await t.settle();
+      t.eq(t.$('#upNext .up-ttl').textContent.slice(0, 18), 'Quarterly planning', 'skip wraps back to the long link');
+      const fr = t.w.frameElement;
+      const w0 = fr.style.width;
+      fr.style.width = '700px';
+      await t.settle();
+      try {
+        check('700 px');
+      } finally {
+        fr.style.width = w0;
+        await t.settle();
+      }
     },
   },
 ];

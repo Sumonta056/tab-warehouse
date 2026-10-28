@@ -72,6 +72,25 @@ describe('importFile (JSON backup)', () => {
     });
   });
 
+  test('never stores a done day from a backup, so the next sweep keeps the links', async () => {
+    const ch = fakeChrome({ tree: TREE, store: { linkMeta: { 31: { note: 'mine' } } } });
+    const root = ch.tree.children[0].children[0];
+    const old = { due: '2026-01-02', done: '2026-01-02' };
+    const data = backup();
+    data.sections[0].links = [
+      { title: 'Shop PROD', url: 'https://shop.example.com/', ...old },
+      { title: 'Shop TEST', url: 'https://test.shop.example.com/', ...old, pri: 'high' },
+    ];
+    await importFile(file(data), root, await loadSettings());
+    const id = child(child(root, 'Shop'), 'Shop TEST').id;
+    assert.deepEqual(ch.data.linkMeta['31'], { note: 'mine' }, 'an existing link keeps its own entry');
+    assert.deepEqual(ch.data.linkMeta[id], { pri: 'high', due: '2026-01-02' }, 'a new link gets no done');
+    const fresh = fakeChrome({ tree: TREE });
+    await importFile(file(data), fresh.tree.children[0].children[0], await loadSettings());
+    assert.deepEqual(fresh.data.linkMeta['31'], { due: '2026-01-02' }, 'an existing link without an entry gets no done');
+    assert.ok(Object.values(fresh.data.linkMeta).every((m) => !('done' in m)));
+  });
+
   test('keeps an existing note on a link that is already saved', async () => {
     const ch = fakeChrome({ tree: TREE, store: { linkMeta: { 31: { note: 'mine' } } } });
     await importFile(file(backup()), ch.tree.children[0].children[0], await loadSettings());

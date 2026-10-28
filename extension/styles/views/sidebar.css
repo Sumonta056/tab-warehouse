@@ -161,6 +161,44 @@
   border-radius: 0 0 8px 8px;
   padding-top: 2px;
 }
+.today-nav {
+  margin-bottom: 6px;
+}
+.today-nav .today-ic {
+  flex: 0 0 auto;
+  display: flex;
+  color: var(--muted);
+}
+.today-nav.on .today-ic {
+  color: inherit;
+}
+.today-nav .today-ic svg {
+  width: 14px;
+  height: 14px;
+  display: block;
+}
+.today-nav .today-cnt {
+  flex: 0 0 auto;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--tag-yellow-bg);
+  color: var(--tag-yellow-fg);
+  font-size: calc(11px * var(--fs, 1));
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.today-nav .today-cnt.overdue {
+  background: var(--tag-red-bg);
+  color: var(--tag-red-fg);
+}
+.today-nav .today-cnt[hidden] {
+  display: none;
+}
 .newFolder {
   justify-content: flex-start;
   margin-top: 6px;
@@ -328,7 +366,7 @@
 .view-tabs {
   position: relative;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 2px;
   padding: 2px;
   margin-bottom: 10px;
@@ -336,22 +374,17 @@
   border-radius: 8px;
   background: var(--surface);
 }
-.view-tabs::before,
-.view-tabs::after {
+.view-tabs::before {
   content: '';
   position: absolute;
   top: 9px;
   bottom: 9px;
-  left: calc(100% / 3 - 0.5px);
+  left: calc(50% - 0.5px);
   width: 1px;
   background: var(--line-2);
   pointer-events: none;
 }
-.view-tabs::after {
-  left: calc(200% / 3 - 0.5px);
-}
-.view-tabs:has(.on)::before,
-.view-tabs:has(.on)::after {
+.view-tabs:has(.on)::before {
   opacity: 0;
 }
 .view-tab {
@@ -379,6 +412,11 @@
   height: 14px;
   display: block;
   flex: 0 0 auto;
+}
+.view-tab .lbl {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 @container side (width < 268px) {
   .view-tab {

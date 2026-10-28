@@ -73,7 +73,7 @@ export default [
       t.d.activeElement?.blur();
       t.key(t.d, 'j');
       await t.settle();
-      t.eq(t.$('.head h2')?.textContent, 'Schedule', 'j from the Board goes to the Schedule');
+      t.eq(t.$('.head h2')?.textContent, "Today's top list", 'j from the Board goes to Today');
       t.d.activeElement?.blur();
       t.key(t.d, 'j');
       await t.settle();

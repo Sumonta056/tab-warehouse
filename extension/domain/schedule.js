@@ -1,5 +1,5 @@
 import { DUE_GROUPS } from '../constants/due.js';
-import { dueState, parseDue } from './due.js';
+import { metaState, parseDue } from './due.js';
 import { searchLinks } from './search.js';
 
 export function scheduleGroups(secs, meta = {}, now = new Date()) {
@@ -10,6 +10,6 @@ export function scheduleGroups(secs, meta = {}, now = new Date()) {
   return DUE_GROUPS.map(([state, name]) => ({
     state,
     name,
-    items: dated.filter((x) => dueState(meta[x.bm.id].due, now) === state).map(({ bm, s, crumb }) => ({ bm, s, crumb })),
+    items: dated.filter((x) => metaState(meta[x.bm.id], now) === state).map(({ bm, s, crumb }) => ({ bm, s, crumb })),
   })).filter((g) => g.items.length);
 }

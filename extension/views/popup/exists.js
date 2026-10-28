@@ -1,6 +1,7 @@
 import { folderChoices } from '../../domain/popup.js';
 import { resolveRoot } from '../../domain/tree.js';
 import { findSaved } from '../../domain/duplicates.js';
+import { withoutDone } from '../../domain/meta.js';
 import { getTree, createBookmark, removeBookmark } from '../../services/bookmarks.js';
 import { loadLinkMeta, setLinkMeta } from '../../services/storage.js';
 import { h } from '../../ui/dom.js';
@@ -57,9 +58,10 @@ export async function renderExists() {
 }
 
 async function remove(b) {
-  const meta = (await loadLinkMeta())[b.id];
+  const had = (await loadLinkMeta())[b.id];
+  const meta = withoutDone(had);
   await removeBookmark(b.id);
-  if (meta) await setLinkMeta(b.id, null);
+  if (had) await setLinkMeta(b.id, null);
   await refresh();
   toast('Bookmark removed', async () => {
     const back = await createBookmark({ parentId: b.parentId, index: b.index, title: b.title, url: b.url });

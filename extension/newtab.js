@@ -5,6 +5,7 @@ import { onMessage } from './services/runtime.js';
 import { resolveRoot, sections, findById } from './domain/tree.js';
 import { navOrder, stepNav, findView } from './domain/folders.js';
 import { isPaletteRequest } from './domain/palette.js';
+import { dayKey, sweptText } from './domain/today.js';
 import { HOME, SETTINGS, BOARD, SCHEDULE, PAGES } from './constants/pages.js';
 import { h } from './ui/dom.js';
 import { applyTheme, applySideLook, applyFontSize } from './ui/theme.js';
@@ -13,14 +14,14 @@ import { toast } from './ui/toast.js';
 import { clearMarks } from './ui/dnd.js';
 import { state, setState, clearQuery } from './state/page-state.js';
 import { folderPrefs, saveFolderPrefs, moveFolder, pruneMarks, queueSave } from './state/folders.js';
-import { pruneLinkMeta } from './state/links.js';
-import { paintIcons, renderBrand } from './views/sidebar/header.js';
+import { pruneLinkMeta, sweepDoneLinks } from './state/links.js';
+import { paintIcons, renderBrand, renderTodayCount } from './views/sidebar/header.js';
 import { renderNav as drawNav, bindNavDrag, newFolder } from './views/sidebar/nav.js';
 import { newCategory } from './views/sidebar/categories.js';
 import { setSideWidth, bindResizer } from './views/sidebar/resizer.js';
 import { ensureHomeFolder } from './services/home-folder.js';
 import { loadHomeAssets, homeBgUrl } from './state/home-assets.js';
-import { renderHome } from './views/home/home.js';
+import { renderHome, renderUpNext } from './views/home/home.js';
 
 const $ = (s) => document.querySelector(s);
 const page = $('#page');
@@ -43,6 +44,7 @@ const LOADERS = {
 };
 const views = {};
 const loading = {};
+let day = '';
 
 function load(key) {
   loading[key] ||= LOADERS[key]().then((mod) => (views[key] = mod));
@@ -104,8 +106,12 @@ async function refresh() {
     setState({ settings: (await ensureHomeFolder(tree, state.settings)).settings });
     tree = await getTree();
   }
+  const secsOf = (root) => sections(root, state.settings.order, [state.settings.home.folderId]);
+  day = document.hidden ? '' : dayKey();
+  const swept = day ? await sweepDoneLinks(secsOf(resolveRoot(tree, state.settings))) : null;
+  if (swept) tree = await getTree();
   const root = resolveRoot(tree, state.settings);
-  setState({ tree, root, secs: sections(root, state.settings.order, [state.settings.home.folderId]) });
+  setState({ tree, root, secs: secsOf(root) });
   await pruneLinkMeta();
   await pruneMarks();
   renderBrand();
@@ -113,6 +119,8 @@ async function refresh() {
   setState({ current: current?.settings ? SETTINGS : findView(current?.id, PAGES, state.secs) || HOME });
   renderNav();
   renderPage();
+  renderTodayCount();
+  if (swept) toast(sweptText(swept.n), { label: 'Undo', run: swept.undo });
 }
 
 function bindHomeButtons() {
@@ -367,16 +375,22 @@ function bindGlobal() {
     if (ch.settings) setState({ settings: { ...state.settings, ...ch.settings.newValue } });
     if (ch.linkMeta) {
       setState({ linkMeta: ch.linkMeta.newValue || {} });
+      renderTodayCount();
       const { current } = state;
       if (!state.editingId && !document.hidden) {
         if (state.query || current?.schedule) renderPage();
+        else if (current?.home) renderUpNext();
         else if (current && !current.home && !current.settings && !current.board && views.folder) views.folder.renderBody(ctx);
       }
     }
     if (document.hidden) stale = true;
   });
   document.addEventListener('visibilitychange', async () => {
-    if (document.hidden || !stale) return;
+    if (document.hidden) return;
+    if (!stale) {
+      if (day !== dayKey()) await refresh();
+      return;
+    }
     stale = false;
     await loadHomeAssets();
     setSideWidth(state.settings.sideWidth);

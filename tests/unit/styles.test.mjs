@@ -58,3 +58,14 @@ test('every px font-size scales with --fs (except the popup)', () => {
     );
   assert.deepEqual(bad, []);
 });
+
+test('Up next and the Today count take their colors only from tokens', () => {
+  const rules = (f) => [...readFileSync(join(EXT, f), 'utf8').matchAll(/([^{}]+)\{([^{}]*)\}/g)].map((m) => [m[1].trim(), m[2]]);
+  const bad = [
+    ...rules('styles/views/home.css').filter(([sel]) => /\.up-/.test(sel)),
+    ...rules('styles/views/sidebar.css').filter(([sel]) => /\.today-cnt/.test(sel)),
+  ]
+    .filter(([, body]) => /rgba?\(|hsla?\(|#[0-9a-f]{3,8}\b/i.test(body))
+    .map(([sel]) => sel);
+  assert.deepEqual(bad, []);
+});

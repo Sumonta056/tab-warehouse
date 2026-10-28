@@ -307,6 +307,29 @@ export default [
   },
   {
     area,
+    name: 'board: Undo of a deleted card brings back note, priority and due date but never done',
+    page: 'newtab',
+    fixture: () => {
+      const today = new Date().toLocaleDateString('en-CA');
+      const f = base();
+      f.store.linkMeta = { 32: { note: 'n', pri: 'med', due: today, done: today } };
+      return f;
+    },
+    async run(t) {
+      const today = new Date().toLocaleDateString('en-CA');
+      await openBoard(t);
+      t.click(card(t, '32').querySelector('.bcard-del'));
+      await t.settle();
+      t.ok(!t.node('32') && !t.store.linkMeta['32'], 'deleted with its entry');
+      t.click(t.$('.toast button'));
+      await t.settle();
+      const back = t.node('30').children[1];
+      t.eq(back?.url, 'https://test.shop.example.com/api/x', 'restored at index 1');
+      t.eq(t.store.linkMeta[back.id], { note: 'n', pri: 'med', due: today }, 'no done');
+    },
+  },
+  {
+    area,
     name: 'board: Add link adds https:// and a host name; empty URL adds nothing; Escape cancels',
     page: 'newtab',
     fixture: () => base(),

@@ -1,7 +1,7 @@
 import { ENVS } from '../constants/envs.js';
 import { SORTS } from '../constants/sorts.js';
 import { markOf } from './marks.js';
-import { cleanMeta } from './meta.js';
+import { withoutDone } from './meta.js';
 import { cleanTags } from './tags.js';
 
 export const backupName = (ext) => `warehouse-${new Date().toISOString().slice(0, 10)}.${ext}`;
@@ -9,7 +9,7 @@ export const backupName = (ext) => `warehouse-${new Date().toISOString().slice(0
 const linkOut = (l) => ({ title: l.title, url: l.url, dateAdded: l.dateAdded });
 
 export function exportData(root, secs, settings, meta) {
-  const out = (l) => ({ ...linkOut(l), ...(meta[l.id] || {}) });
+  const out = (l) => ({ ...linkOut(l), ...withoutDone(meta[l.id]) });
   const byId = Object.fromEntries(secs.map((s) => [s.id, s.title]));
   return {
     format: 'sumonta-warehouse',
@@ -100,7 +100,7 @@ const list = (v) => (Array.isArray(v) ? v : []);
 const cleanLinks = (v) =>
   list(v)
     .filter((l) => isObj(l) && isStr(l.url) && l.url)
-    .map((l) => ({ title: isStr(l.title) ? l.title : '', url: l.url, ...cleanMeta(l) }));
+    .map((l) => ({ title: isStr(l.title) ? l.title : '', url: l.url, ...withoutDone(l) }));
 
 function cleanFolderPrefs(f) {
   if (!isObj(f)) return null;

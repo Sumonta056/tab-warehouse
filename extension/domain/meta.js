@@ -1,6 +1,6 @@
 import { NOTE_MAX } from '../constants/limits.js';
 import { PRIS } from '../constants/priority.js';
-import { isDue } from './due.js';
+import { isDay, isDue } from './due.js';
 
 export function cleanMeta(m) {
   if (!m || typeof m !== 'object') return null;
@@ -9,7 +9,12 @@ export function cleanMeta(m) {
   if (note) out.note = note;
   if (PRIS.includes(m.pri)) out.pri = m.pri;
   if (isDue(m.due)) out.due = m.due;
+  if (out.due && isDay(m.done)) out.done = m.done;
   return Object.keys(out).length ? out : null;
+}
+
+export function withoutDone(m) {
+  return cleanMeta({ ...m, done: undefined });
 }
 
 export function priGroups(sorted, meta) {

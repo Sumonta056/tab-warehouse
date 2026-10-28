@@ -37,6 +37,15 @@ describe('scheduleGroups', () => {
     const m = { 1: { due: '2026-10-25T08:00' }, 2: { due: '2026-10-25' }, 4: { due: '2026-10-25T07:00' } };
     assert.deepEqual(shape(scheduleGroups(secs, m, NOW)), [['soon', ['2', '4', '1']]]);
   });
+  test('a ticked link moves to Done today, after Today and before Next 7 days', () => {
+    const m = { ...meta, 4: { due: '2026-10-24', done: '2026-10-24' }, 5: { due: '2026-10-26T10:00', done: '2026-10-24' } };
+    assert.deepEqual(shape(scheduleGroups(secs, m, NOW)), [
+      ['overdue', ['3', '2']],
+      ['done', ['4', '5']],
+      ['later', ['1']],
+    ]);
+    assert.equal(scheduleGroups(secs, m, NOW)[1].name, 'Done today');
+  });
   test('each item keeps its folder crumb; empty groups are left out; no dates gives no groups', () => {
     const gs = scheduleGroups(secs, meta, NOW);
     assert.equal(gs[0].items[0].crumb, 'Shop › Old');

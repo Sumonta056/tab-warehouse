@@ -21,6 +21,8 @@
   --stage-fg: #c6a9ff;
   --local-bg: #143122;
   --local-fg: #6fd99a;
+  --done-bg: var(--local-bg);
+  --done-fg: var(--local-fg);
   --gh-bg: #2a2a2a;
   --gh-fg: #cfcfcf;
   --tag-teal-bg: #0f3b3a;
@@ -40,6 +42,9 @@
   --warn-bg: #36260c;
   --warn-fg: #ffc46b;
   --warn-line: #6e4b14;
+  --float-bg: rgba(20, 20, 20, 0.74);
+  --float-line: rgba(255, 255, 255, 0.1);
+  --float-hover: rgba(255, 255, 255, 0.06);
   --pri-high: var(--red-fg);
   --pri-med: var(--yellow-fg);
   --pri-low: var(--muted-2);

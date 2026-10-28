@@ -1,7 +1,7 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { NOTE_MAX } from '../../../extension/constants/limits.js';
-import { cleanMeta, priFirst, priGroups } from '../../../extension/domain/meta.js';
+import { cleanMeta, priFirst, priGroups, withoutDone } from '../../../extension/domain/meta.js';
 import { L } from '../fixtures.mjs';
 
 describe('link notes and priority', () => {
@@ -89,5 +89,18 @@ describe('due dates', () => {
     assert.deepEqual(cleanMeta({ note: 'read', due: '2026-04-10T10:00' }), { note: 'read', due: '2026-04-10T10:00' });
     assert.deepEqual(cleanMeta({ pri: 'high', due: 'tomorrow' }), { pri: 'high' });
     assert.equal(cleanMeta({ due: '' }), null);
+  });
+  test('cleanMeta keeps done only as a real date next to a valid due date', () => {
+    assert.deepEqual(cleanMeta({ due: '2026-10-27', done: '2026-10-27' }), { due: '2026-10-27', done: '2026-10-27' });
+    assert.deepEqual(cleanMeta({ pri: 'low', due: '2026-10-27', done: '2026-10-27T10:00' }), { pri: 'low', due: '2026-10-27' });
+    assert.deepEqual(cleanMeta({ pri: 'low', done: '2026-10-27' }), { pri: 'low' });
+    assert.deepEqual(cleanMeta({ pri: 'low', due: 'soon', done: '2026-10-27' }), { pri: 'low' });
+    assert.equal(cleanMeta({ done: '2026-10-27' }), null);
+    assert.deepEqual(cleanMeta({ due: '2026-10-27', done: '2026-02-30' }), { due: '2026-10-27' });
+  });
+  test('withoutDone keeps note, priority and due and never done', () => {
+    assert.deepEqual(withoutDone({ note: 'n', pri: 'high', due: '2026-10-27', done: '2026-10-27' }), { note: 'n', pri: 'high', due: '2026-10-27' });
+    assert.equal(withoutDone({ done: '2026-10-27' }), null);
+    assert.equal(withoutDone(undefined), null);
   });
 });

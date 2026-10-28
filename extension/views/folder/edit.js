@@ -49,7 +49,8 @@ export function startEdit(ctx, bm, row, focus = null) {
     setState({ editingId: null });
     try {
       await updateBookmark(bm.id, { title: titleIn.value.trim(), url });
-      await replaceLinkMeta(bm.id, { pri, note: noteIn.value, due: dueIn.value() });
+      const due = dueIn.value();
+      await replaceLinkMeta(bm.id, { pri, note: noteIn.value, due, done: due === meta.due ? meta.done : undefined });
       renderBody(ctx);
       toast('Saved');
       if (dueIn.calendar()) openCalendar({ title: titleIn.value.trim(), url }, state.linkMeta[bm.id]);

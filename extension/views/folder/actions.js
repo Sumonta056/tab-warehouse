@@ -2,7 +2,7 @@ import { gcalUrl } from '../../domain/due.js';
 import { displayUrl } from '../../domain/url.js';
 import { openTab } from '../../services/tabs.js';
 import { toast } from '../../ui/toast.js';
-import { deleteLinks, patchLinkMeta } from '../../state/links.js';
+import { addToToday, deleteLinks, patchLinkMeta, setDone } from '../../state/links.js';
 import { renderBody } from './body.js';
 
 export async function removeLinks(bms, msg) {
@@ -26,4 +26,15 @@ export async function setDue(ctx, id, due) {
 
 export function openCalendar(bm, meta) {
   openTab({ url: gcalUrl({ title: bm.title, url: bm.url, note: meta?.note, due: meta?.due }) });
+}
+
+export async function tickLink(ctx, id, on) {
+  await setDone(id, on);
+  ctx.renderPage();
+}
+
+export async function addLinkToToday(ctx, bm) {
+  await addToToday(bm.id);
+  renderBody(ctx);
+  toast(`Added “${bm.title || displayUrl(bm.url)}” to today`);
 }

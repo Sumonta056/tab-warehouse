@@ -1,6 +1,6 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { dueLabel, dueQuickDate, dueState, gcalUrl, isDue } from '../../../extension/domain/due.js';
+import { dueChip, dueLabel, dueQuickDate, dueState, gcalUrl, isDay, isDue, metaState } from '../../../extension/domain/due.js';
 
 describe('due dates', () => {
   const NOW = new Date(2026, 9, 24, 11, 30);
@@ -105,5 +105,23 @@ describe('due dates', () => {
 
   test('gcalUrl is empty without a valid date', () => {
     assert.equal(gcalUrl({ title: 'x', url: 'https://example.com', due: '' }), '');
+  });
+
+  test('isDay accepts only a real date without a time', () => {
+    assert.equal(isDay('2026-10-27'), true);
+    assert.equal(isDay('2026-10-27T10:00'), false);
+    assert.equal(isDay('2026-02-30'), false);
+    assert.equal(isDay(20261027), false);
+    assert.equal(isDay(undefined), false);
+  });
+
+  test('metaState and dueChip: a ticked link is done, else the due state and label', () => {
+    assert.equal(metaState({ due: '2026-10-20', done: '2026-10-24' }, NOW), 'done');
+    assert.equal(metaState({ due: '2026-10-20' }, NOW), 'overdue');
+    assert.equal(metaState({ done: '2026-10-24' }, NOW), null);
+    assert.equal(metaState(undefined, NOW), null);
+    assert.deepEqual(dueChip({ due: '2026-10-24', done: '2026-10-24' }, NOW), { state: 'done', label: 'Done · deleted tomorrow' });
+    assert.deepEqual(dueChip({ due: '2026-10-24' }, NOW), { state: 'today', label: 'Due today' });
+    assert.equal(dueChip({ note: 'x' }, NOW), null);
   });
 });

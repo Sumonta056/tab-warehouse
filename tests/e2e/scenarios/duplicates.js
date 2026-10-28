@@ -93,6 +93,29 @@ export default [
   },
   {
     area,
+    name: 'duplicates: Undo of Keep this brings back the due date but never done',
+    page: 'newtab',
+    fixture: () => {
+      const today = new Date().toLocaleDateString('en-CA');
+      const f = dupes();
+      f.store.linkMeta = { 81: { pri: 'low', due: today, done: today } };
+      return f;
+    },
+    async run(t) {
+      const today = new Date().toLocaleDateString('en-CA');
+      await openDup(t);
+      keep(t, '31');
+      await t.settle();
+      t.ok(!t.node('81') && !t.store.linkMeta['81'], 'copy deleted with its entry');
+      t.click(t.toast().querySelector('button'));
+      await t.settle();
+      const back = t.node('80').children[0];
+      t.eq(back?.url, 'https://shop.example.com/api/x/', 'restored at index 0');
+      t.eq(t.store.linkMeta[back.id], { pri: 'low', due: today }, 'no done');
+    },
+  },
+  {
+    area,
     name: 'duplicates: Keep the oldest in every group deletes all newer copies with one Undo',
     page: 'newtab',
     fixture: () => dupes(),

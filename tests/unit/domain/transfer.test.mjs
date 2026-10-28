@@ -140,7 +140,7 @@ describe('cleanImport: link notes and priority', () => {
     ]);
     assert.deepEqual(r.sections[0].parts[0].links, [{ title: 'z', url: 'https://z.com/', pri: 'low' }]);
   });
-  test('keeps a valid due date on each link, drops a bad one', () => {
+  test('keeps a valid due date on each link, drops a bad one and every done', () => {
     const r = cleanImport({
       sections: [
         {
@@ -148,6 +148,8 @@ describe('cleanImport: link notes and priority', () => {
           links: [
             { title: 'x', url: 'https://x.com/', due: '2026-04-10T10:00' },
             { title: 'y', url: 'https://y.com/', due: '2026-02-30' },
+            { title: 'z', url: 'https://z.com/', due: '2026-04-10', done: '2026-04-10' },
+            { title: 'w', url: 'https://w.com/', done: '2026-04-10' },
           ],
         },
       ],
@@ -155,6 +157,8 @@ describe('cleanImport: link notes and priority', () => {
     assert.deepEqual(r.sections[0].links, [
       { title: 'x', url: 'https://x.com/', due: '2026-04-10T10:00' },
       { title: 'y', url: 'https://y.com/' },
+      { title: 'z', url: 'https://z.com/', due: '2026-04-10' },
+      { title: 'w', url: 'https://w.com/' },
     ]);
   });
 });
@@ -205,6 +209,17 @@ describe('exportData', () => {
     assert.deepEqual(d.preferences.categories, [{ name: 'Work', closed: true, folders: ['Shop & <API>'] }]);
     assert.deepEqual(d.preferences.customTags, SETTINGS.customTags);
     assert.deepEqual(d.preferences.board, { group: 'flat' });
+  });
+
+  test('never writes the done day of a link', () => {
+    const d = exportData(ROOT, SECS, SETTINGS, { 31: { pri: 'high', due: '2026-10-26', done: '2026-10-26' } });
+    assert.deepEqual(d.sections[0].links[0], {
+      title: 'Shop "PROD"',
+      url: 'https://shop.example.com/?a=1&b=2',
+      dateAdded: 1700000000000,
+      pri: 'high',
+      due: '2026-10-26',
+    });
   });
 
   test('round-trips through parseJson', () => {

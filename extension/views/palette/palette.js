@@ -1,4 +1,4 @@
-import { SETTINGS_TABS } from '../../constants/pages.js';
+import { SCHEDULE, SETTINGS_TABS } from '../../constants/pages.js';
 import { PALETTE_LINK_MAX } from '../../constants/limits.js';
 import { detectEnv } from '../../domain/env.js';
 import { paletteResults } from '../../domain/palette.js';
@@ -15,7 +15,7 @@ export function openPalette(ctx) {
   const actions = [
     { title: 'Home', icon: 'home', run: () => ctx.go('home') },
     { title: 'Board', icon: 'board', run: () => ctx.go('board') },
-    { title: 'Schedule', icon: 'calendar', run: () => ctx.go('schedule') },
+    { title: SCHEDULE.title, icon: 'calendar', run: () => ctx.go('schedule') },
     ...SETTINGS_TABS.map(([key, label]) => ({ title: `Settings › ${label}`, icon: 'gear', run: () => ctx.openSettings(key) })),
   ];
   const input = h('input', {

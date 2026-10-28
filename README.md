@@ -112,7 +112,8 @@ Developers keep the same page open in many versions: live, test, staging and `lo
 
 - Give a link a due date, with a time if you want one. Set it in the popup when you save (press **Due**), in the edit form, or from the row menu.
 - Overdue links show a red chip. The **Overdue** and **Has due date** filter buttons find them.
-- **Schedule** (the third tab under the search box) lists every link with a due date from all folders: Overdue, Today, Next 7 days and Later, the oldest overdue link first. Each row shows its folder.
+- **Today's top list** (the row above your folders in the sidebar) is a checklist of every link due today or overdue, plus the upcoming ones. Tick a link (or open it from Today) to mark it done; done links are deleted the next day with Undo. The row shows how many are still open (`99+` above 99), and Home shows the next one as **Up next**.
+- A backup never carries a tick, and Undo of a deleted link brings back its note, priority and date but not its tick, so nothing is deleted by surprise. Only a visible tab deletes done links.
 - The due chip sits on the right of the row, so the dates line up.
 - Turn on **Also add to Google Calendar** to open a filled-in Google Calendar event after you save. Google sends the reminder. The extension asks for no extra permission.
 
@@ -215,21 +216,21 @@ The release ZIP is built: `npm install`, then `./tools/package.sh` (or `npm run 
 
 ## Keyboard shortcuts
 
-| Keys                              | Action                                          |
-| --------------------------------- | ----------------------------------------------- |
-| `⌘⇧B` / `Ctrl+Shift+B`            | Open the save popup                             |
-| `⌘K` / `Ctrl+K`                   | Quick save the tab without the popup            |
-| `⌘⇧K` / `Ctrl+Shift+K`            | Open the command palette (on Tab Warehouse)     |
-| `⌘Enter` (in the palette)         | Open the link in a background tab               |
-| `tw` + space (in the address bar) | Search all folders from the address bar         |
-| `/`                               | Search all folders                              |
-| `Enter` (in search)               | Open the first result                           |
-| `Esc`                             | Clear search or filter; close Settings          |
-| `j` / `k`                         | Next / previous: Home, Board, Schedule, folders |
-| `Alt+↑` / `Alt+↓`                 | Move the focused folder or section up / down    |
-| `←` / `→` (on the sidebar edge)   | Resize the sidebar by 16 px                     |
-| `←` / `→` (in Settings)           | Next / previous tab                             |
-| `↑` / `↓`, `Enter` (in the popup) | Pick a folder, save                             |
+| Keys                              | Action                                                  |
+| --------------------------------- | ------------------------------------------------------- |
+| `⌘⇧B` / `Ctrl+Shift+B`            | Open the save popup                                     |
+| `⌘K` / `Ctrl+K`                   | Quick save the tab without the popup                    |
+| `⌘⇧K` / `Ctrl+Shift+K`            | Open the command palette (on Tab Warehouse)             |
+| `⌘Enter` (in the palette)         | Open the link in a background tab                       |
+| `tw` + space (in the address bar) | Search all folders from the address bar                 |
+| `/`                               | Search all folders                                      |
+| `Enter` (in search)               | Open the first result                                   |
+| `Esc`                             | Clear search or filter; close Settings                  |
+| `j` / `k`                         | Next / previous: Home, Board, Today's top list, folders |
+| `Alt+↑` / `Alt+↓`                 | Move the focused folder or section up / down            |
+| `←` / `→` (on the sidebar edge)   | Resize the sidebar by 16 px                             |
+| `←` / `→` (in Settings)           | Next / previous tab                                     |
+| `↑` / `↓`, `Enter` (in the popup) | Pick a folder, save                                     |
 
 Settings › Shortcuts lists these keys. To change the Chrome keys, click **Change shortcuts** there (it opens `chrome://extensions/shortcuts`).
 
@@ -313,6 +314,7 @@ python3 -I tests/serve.py 8799
 
 ## Changelog
 
+- **Unreleased** — **Today's top list** checklist, a fixed sidebar row above the folders (tick links, done links are deleted the next day with Undo, count on the row, a wide **Up next** bar on Home with the title on up to 2 lines); the view tabs are Home and Board again. Backups never carry a tick; only a visible tab deletes done links; Undo never restores a tick.
 - **2.5.0** — Due dates on links with an optional Google Calendar event; quick save (`⌘K` / `Ctrl+K`) without the popup; the popup warns when a page is already saved and offers **Save again**; Settings › Shortcuts; the command palette moves to `⌘⇧K` / `Ctrl+Shift+K`. Details in [CHANGELOG.md](CHANGELOG.md).
 - **2.4.0** — Full history in [CHANGELOG.md](CHANGELOG.md).
   - Command palette (⌘K) and `tw` search from the address bar.

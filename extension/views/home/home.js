@@ -9,6 +9,9 @@ import { homeIconImg } from '../../ui/home-icon.js';
 import { resizeImage } from '../../ui/image.js';
 import { applyHomeVars } from '../../ui/theme.js';
 import { homeBgUrl, homeIconMap, setHomeIcon, removeHomeLink } from '../../state/home-assets.js';
+import { renderUpNext } from './up-next.js';
+
+export { renderUpNext };
 
 let clockTimer = null;
 let dragId = null;
@@ -57,6 +60,7 @@ export function renderHome(page, ctx) {
   );
   applyHomeVars(home, o);
   page.append(home);
+  renderUpNext();
   startClock(o);
 }
 

@@ -1,6 +1,6 @@
 import { PRI_NAMES } from '../../constants/priority.js';
 import { detectEnv } from '../../domain/env.js';
-import { dueState, dueLabel } from '../../domain/due.js';
+import { dueChip } from '../../domain/due.js';
 import { sameAsUrl, displayUrl } from '../../domain/url.js';
 import { moveBookmark } from '../../services/bookmarks.js';
 import { linkBadge } from '../../ui/badges.js';
@@ -8,17 +8,19 @@ import { h, svgIcon, highlight } from '../../ui/dom.js';
 import { clearMarks, markHalf } from '../../ui/dnd.js';
 import { iconEl } from '../../ui/icons.js';
 import { state } from '../../state/page-state.js';
-import { deleteLink, setPri } from './actions.js';
+import { deleteLink, setPri, tickLink } from './actions.js';
 import { startEdit } from './edit.js';
 import { linkMenu } from './menus.js';
 
-export function renderRow(ctx, bm, s, p, { crumb = null, q = state.filterQ } = {}) {
+export function renderRow(ctx, bm, s, p, { crumb = null, q = state.filterQ, check = false } = {}) {
   const { settings } = state;
   const env = detectEnv(bm, settings.envRules);
   const dup = sameAsUrl(bm.title, bm.url);
   const meta = state.linkMeta[bm.id];
+  const chip = dueChip(meta);
+  const done = chip?.state === 'done';
   const row = h('a', {
-    class: `row ${p.show === 'url' ? 'url-mode' : ''} ${meta?.pri ? `pri-${meta.pri}` : ''}`,
+    class: `row ${p.show === 'url' ? 'url-mode' : ''} ${meta?.pri ? `pri-${meta.pri}` : ''} ${done ? 'done' : ''}`,
     href: bm.url,
     target: '_blank',
     rel: 'noopener',
@@ -27,6 +29,25 @@ export function renderRow(ctx, bm, s, p, { crumb = null, q = state.filterQ } = {
   });
   if (meta?.pri)
     row.append(h('span', { class: 'pri-bar', title: `${PRI_NAMES[meta.pri]} priority` }, h('span', { class: 'sr' }, `${PRI_NAMES[meta.pri]} priority`)));
+  if (check)
+    row.append(
+      h(
+        'button',
+        {
+          class: 'chk',
+          role: 'checkbox',
+          'aria-checked': String(done),
+          'aria-label': `Done: ${bm.title || displayUrl(bm.url)}`,
+          title: done ? 'Mark as not done' : 'Mark as done',
+          onClick: (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            tickLink(ctx, bm.id, !done);
+          },
+        },
+        h('span', { class: 'box' }, svgIcon('check')),
+      ),
+    );
   row.append(h('span', { class: 'grip', 'aria-hidden': 'true' }, svgIcon('grip')));
   row.append(iconEl(bm, settings.showFavicons));
   const ttl = h('span', { class: 'ttl' });
@@ -48,8 +69,10 @@ export function renderRow(ctx, bm, s, p, { crumb = null, q = state.filterQ } = {
   row.append(txt);
   const badge = linkBadge(env, bm.url, settings.customTags);
   if (badge) row.append(badge);
-  const due = dueState(meta?.due);
-  if (due) row.append(h('span', { class: 'due-col' }, h('span', { class: `due-chip ${due}`, title: meta.due }, svgIcon('calendar'), dueLabel(meta.due))));
+  if (chip)
+    row.append(
+      h('span', { class: 'due-col' }, h('span', { class: `due-chip ${chip.state}`, title: meta.due }, svgIcon(done ? 'check' : 'calendar'), chip.label)),
+    );
   const act = (cls, label, title, icon, run) =>
     h(
       'button',
@@ -84,6 +107,7 @@ export function renderRow(ctx, bm, s, p, { crumb = null, q = state.filterQ } = {
   });
   row.addEventListener('click', (e) => {
     if (e.target.closest('.grip')) e.preventDefault();
+    else if (check && !done && !e.target.closest('button')) tickLink(ctx, bm.id, true);
   });
   bindRowDrag(ctx, row, bm, p);
   return row;
