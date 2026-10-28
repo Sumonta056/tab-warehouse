@@ -165,6 +165,7 @@
             <li>Open <b>Shop project</b> and switch to <b>Tag matrix</b></li>
             <li>Click <b>Board</b> and drag a card to another column</li>
             <li>Press <kbd>⌘⇧K</kbd> and type <b>checkout</b></li>
+            <li>Open <b>Today's top list</b> and tick a link</li>
             <li>Open ⚙ Settings and change the accent color</li>
             <li>Save the page in the <b>Popup</b> tab, then look in the folder</li>
           </ul>
@@ -209,14 +210,14 @@
               <li>Background photo with darkness, blur and opacity</li>
               <li>Clock size, 12 or 24 hours, seconds and date</li>
               <li>Drag tiles to reorder; right-click to change the icon</li>
-              <li>Official Gmail, Drive, Calendar, Keep and Docs icons</li>
+              <li><b>Up next</b> shows the next link of today's list</li>
             </ul>
             <a class="more" href="#demo" data-demo="newtab">Try it in the demo →</a>
           </div>
           <figure class="frame">
             <img
               src="screenshots/home-demo.png"
-              alt="Home page with a clock, the date and 18 site tiles over a darkened mountain photo; the sidebar uses the same photo, blurred"
+              alt="Home page with a clock, the date and 18 site tiles over a darkened mountain photo; at the bottom an Up next bar shows an overdue link"
               loading="lazy"
               width="1800"
               height="1100"
@@ -236,13 +237,13 @@
               <li>Sort: manual, name, URL, environment, date added or host</li>
               <li>Show the title first or the URL first</li>
               <li>Edit inline, delete with an 8-second undo</li>
-              <li>Open all, copy all URLs, filter the folder</li>
+              <li>An <b>Open</b> pill marks links that are open in a tab</li>
             </ul>
           </div>
           <figure class="frame">
             <img
               src="screenshots/sections.png"
-              alt="Shop project folder with a Checkout section and PROD, TEST, STAGE and LOCAL badges on each row"
+              alt="Shop project folder with a cart icon, a Checkout section and PROD, TEST, STAGE and LOCAL badges; the Checkout TEST row has an Open pill"
               loading="lazy"
               width="1800"
               height="1100"
@@ -301,20 +302,22 @@
 
         <div class="wrap feature">
           <div class="txt">
-            <h3>Schedule</h3>
-            <p>One list of every link with a due date, from all folders. The oldest overdue link is at the top, so nothing slips.</p>
+            <h3>Today's top list</h3>
+            <p>
+              A checklist of every link that is due today or overdue, from all folders. Tick a link when you are done; the next day it is deleted, with Undo.
+            </p>
             <ul>
-              <li>Groups: Overdue, Today, Next 7 days and Later</li>
-              <li>Each row shows its folder and section</li>
-              <li>The dates line up on the right of every row</li>
-              <li>Delete with undo; drag a row to a folder to move it</li>
+              <li>Opening a link from the list ticks it</li>
+              <li>The sidebar row shows how many links are still open</li>
+              <li>Upcoming links: Next 7 days and Later</li>
+              <li>Home shows the next open link as <b>Up next</b></li>
             </ul>
             <a class="more" href="#demo" data-demo="newtab">Try it in the demo →</a>
           </div>
           <figure class="frame">
             <img
               src="screenshots/schedule.png"
-              alt="Schedule view: links from several folders in Overdue, Today, Next 7 days and Later groups, each with its folder name and a due chip on the right"
+              alt="Today's top list: 1 of 4 done with a progress bar, Overdue and Done today groups with check boxes, then Upcoming links in Next 7 days and Later"
               loading="lazy"
               width="1800"
               height="1100"
@@ -379,12 +382,12 @@
           <div class="txt">
             <h3>Categories and drag and drop</h3>
             <p>
-              Group folders into colored categories such as <em>Work</em>, <em>Learning</em> and <em>Later</em>. Drag folders, headers, sections and links. The
-              sidebar order lives in the extension, so Chrome's own tree never changes.
+              Group folders into categories such as <em>Work</em>, <em>Learning</em> and <em>Later</em>. Give a category, a folder or a section any color and an
+              emoji icon. Drag folders, headers, sections and links. The sidebar order lives in the extension, so Chrome's own tree never changes.
             </p>
             <ul>
               <li>Drop a link on a folder to move it there</li>
-              <li>Home, Board and Schedule tabs sit under a full-width search</li>
+              <li>6 preset colors or any custom color, and one emoji each</li>
               <li>Alt+↑ / Alt+↓ moves a folder with the keyboard</li>
               <li>Resizable sidebar, 180–440 px</li>
             </ul>
@@ -392,7 +395,7 @@
           <figure class="frame">
             <img
               src="screenshots/sprint.png"
-              alt="Sprint board folder with In progress and Blocked sections, and the sidebar grouped into Work, Learning and Later"
+              alt="Sprint board folder in orange with a runner icon, In progress and Blocked sections, and the sidebar grouped into Work, Learning and Later with emoji icons"
               loading="lazy"
               width="1800"
               height="1100"
@@ -405,8 +408,8 @@
           <div class="txt">
             <h3>Command palette and search</h3>
             <p>
-              Press <kbd>⌘⇧K</kbd> and type. The palette finds links, folders and Settings tabs by title, address, folder, note or tag, and highlights the
-              match. <kbd>Enter</kbd> opens it, <kbd>⌘Enter</kbd> opens it in a background tab.
+              Press <kbd>⌘⇧K</kbd> on Tab Warehouse and type. The palette opens as a toolbar popup, so you can type at once. It finds links, folders and
+              Settings tabs by title, address, folder, note or tag. <kbd>Enter</kbd> opens it, <kbd>⌘Enter</kbd> opens it in a background tab.
             </p>
             <ul>
               <li><kbd>/</kbd> searches every folder in the sidebar</li>
@@ -416,7 +419,7 @@
           <figure class="frame">
             <img
               src="screenshots/palette.png"
-              alt="The command palette over Home with five Checkout links, the matching text highlighted and a tag badge on each"
+              alt="The command palette as a toolbar popup at the top right of Home, with five Checkout links, the matching text highlighted and a tag badge on each"
               loading="lazy"
               width="1800"
               height="1100"
@@ -691,6 +694,10 @@
                 <tr>
                   <td><code>activeTab</code></td>
                   <td>Read the current tab, only when you open the popup</td>
+                </tr>
+                <tr>
+                  <td><code>tabs</code></td>
+                  <td>Mark saved links that are open in a tab; kept only in memory</td>
                 </tr>
               </table>
             </div>

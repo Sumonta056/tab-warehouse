@@ -59,6 +59,7 @@
       text: 'Your data, in open formats.',
       items: [
         'Export JSON with links, sections, sidebar order, categories and preferences',
+        'Colors and icons of categories, folders and sections come back too',
         "Export HTML in Chrome's bookmark format",
         'Import merges and skips URLs you already have',
       ],

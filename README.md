@@ -75,11 +75,12 @@ Developers keep the same page open in many versions: live, test, staging and `lo
 - A full-width search box with **Home** and **Board** tabs under it.
 - One entry per folder under your root folder, with link counts.
 - Drag folders into your own order. The order is saved in the extension; Chrome's tree is never reordered.
-- **Categories** group folders (for example "Daily" and "Rarely used"), with colors, collapse and drag reorder.
+- **Categories** group folders (for example "Daily" and "Rarely used"), with collapse and drag reorder.
+- Give a category, a folder or a section a color (6 presets or any custom color) and one emoji icon from its menu. Backup › Export JSON keeps them.
 - Drop a link on a folder to move it there, or on the Home button to add it to Home.
 - Resizable (180–440 px) and themeable: a solid color or a blurred copy of your Home background.
 
-![Sidebar grouped into the Work, Learning and Later categories](site/screenshots/sprint.png)
+![Sidebar grouped into the Work, Learning and Later categories, with emoji icons and colors](site/screenshots/sprint.png)
 
 ### Board
 
@@ -96,6 +97,7 @@ Developers keep the same page open in many versions: live, test, staging and `lo
 - Sort per folder: manual, name, URL, tag, date added or host.
 - **Sections**: split a folder into groups such as "In progress" or "Blocked". Each section is a real subfolder, so it syncs too.
 - Inline edit, right-click menus, a folder filter, _Open all_ and _Copy all URLs_.
+- An **Open** pill marks a link that is open in a tab (also in search and in Today's top list).
 - Delete a link and undo it within 8 seconds.
 
 ![A folder with a Checkout section and PROD, TEST, STAGE and LOCAL badges](site/screenshots/sections.png)
@@ -119,7 +121,7 @@ Developers keep the same page open in many versions: live, test, staging and `lo
 
 ![Learning pending folder with a red Overdue chip, a highlighted chip for a date in 2 days and a plain chip for a later date](site/screenshots/due.png)
 
-![Schedule view: links from several folders in Overdue, Today, Next 7 days and Later groups, each with its folder name and a due chip on the right](site/screenshots/schedule.png)
+![Today's top list: Overdue and Done today groups with check boxes and a progress bar, then the upcoming links](site/screenshots/schedule.png)
 
 ![Docs folder with High, Medium and Other groups, a colored stripe and a note under the URL](site/screenshots/notes.png)
 
@@ -142,7 +144,7 @@ Developers keep the same page open in many versions: live, test, staging and `lo
 - `/` searches every folder from the sidebar box.
 - Type `tw` and a space in Chrome's address bar to search your links from any tab.
 
-![The command palette with Checkout links and their tags](site/screenshots/palette.png)
+![The command palette as a toolbar popup with Checkout links and their tags](site/screenshots/palette.png)
 
 ### Popup (`⌘⇧B` / `Ctrl+Shift+B`)
 
