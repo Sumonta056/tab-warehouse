@@ -352,12 +352,15 @@
         window.open(url, '_blank', 'noopener');
         return { id: 1 };
       },
-      async query() {
-        return [clone(S.activeTab)];
+      async query(q = {}) {
+        return q.active && S.activeTab ? [clone(S.activeTab)] : [];
       },
       async getCurrent() {
         return { id: 1 };
       },
+      onCreated: { addListener() {} },
+      onRemoved: { addListener() {} },
+      onUpdated: { addListener() {} },
     },
   };
   window.close = () => host.__twDemoClosePopup?.();
