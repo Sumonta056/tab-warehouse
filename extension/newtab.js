@@ -1,11 +1,12 @@
 import { loadSettings, saveSettings, loadLinkMeta, onStorageChange } from './services/storage.js';
 import { getTree, onBookmarksChanged } from './services/bookmarks.js';
-import { openTab, currentTabId } from './services/tabs.js';
+import { openTab, currentTabId, listTabs, onTabsChanged } from './services/tabs.js';
 import { onMessage } from './services/runtime.js';
 import { resolveRoot, sections, findById } from './domain/tree.js';
 import { navOrder, stepNav, findView } from './domain/folders.js';
 import { isPaletteRequest, isPaletteGo, paletteGoTarget } from './domain/palette.js';
 import { dayKey, sweptText } from './domain/today.js';
+import { openKeys } from './domain/open-tabs.js';
 import { HOME, SETTINGS, BOARD, SCHEDULE, PAGES } from './constants/pages.js';
 import { h } from './ui/dom.js';
 import { applyTheme, applySideLook, applyFontSize } from './ui/theme.js';
@@ -85,7 +86,7 @@ async function boot() {
   await loadHomeAssets();
   applySideLook(state.settings.sideLook, homeBgUrl());
   applyFontSize(state.settings);
-  setState({ linkMeta: await loadLinkMeta(), current: HOME });
+  setState({ linkMeta: await loadLinkMeta(), openKeys: openKeys(await listTabs()), current: HOME });
   await refresh();
   bindGlobal();
   bindPaletteCommand();
@@ -295,6 +296,13 @@ async function bindPaletteCommand() {
   });
 }
 
+function renderLinks() {
+  const { current } = state;
+  if (state.editingId || document.hidden) return;
+  if (state.query || current?.schedule) renderPage();
+  else if (current && !current.home && !current.settings && !current.board && views.folder) views.folder.renderBody(ctx);
+}
+
 function bindGlobal() {
   $('#settingsBtn').addEventListener('click', openSettings);
   $('#newFolderBtn').addEventListener('click', newFolder);
@@ -353,17 +361,28 @@ function bindGlobal() {
     if (ch.linkMeta) {
       setState({ linkMeta: ch.linkMeta.newValue || {} });
       renderTodayCount();
-      const { current } = state;
-      if (!state.editingId && !document.hidden) {
-        if (state.query || current?.schedule) renderPage();
-        else if (current?.home) renderUpNext();
-        else if (current && !current.home && !current.settings && !current.board && views.folder) views.folder.renderBody(ctx);
-      }
+      if (state.current?.home && !state.query && !state.editingId && !document.hidden) renderUpNext();
+      else renderLinks();
     }
     if (document.hidden) stale = true;
   });
+  let tabsTimer;
+  let tabsStale = false;
+  const readTabs = async () => {
+    setState({ openKeys: openKeys(await listTabs()) });
+    if (document.hidden) tabsStale = true;
+    else renderLinks();
+  };
+  onTabsChanged(() => {
+    clearTimeout(tabsTimer);
+    tabsTimer = setTimeout(readTabs, 100);
+  });
   document.addEventListener('visibilitychange', async () => {
     if (document.hidden) return;
+    if (tabsStale) {
+      tabsStale = false;
+      renderLinks();
+    }
     if (!stale) {
       if (day !== dayKey()) await refresh();
       return;

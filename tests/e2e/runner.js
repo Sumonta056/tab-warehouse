@@ -17,6 +17,7 @@ import quicksave from './scenarios/quicksave.js';
 import shortcuts from './scenarios/shortcuts.js';
 import schedule from './scenarios/schedule.js';
 import ui from './scenarios/ui.js';
+import opentabs from './scenarios/opentabs.js';
 
 const ALL = [
   ...newtab,
@@ -38,6 +39,7 @@ const ALL = [
   ...shortcuts,
   ...schedule,
   ...ui,
+  ...opentabs,
 ];
 const frame = document.getElementById('frame');
 const out = document.getElementById('results');
@@ -297,6 +299,7 @@ export async function run(filter) {
       answers: [],
       confirm: true,
       activeTab: state.activeTab || null,
+      openTabs: state.openTabs || [],
       commands: state.commands || null,
       currentTabId: state.currentTabId ?? 1,
       closed: false,

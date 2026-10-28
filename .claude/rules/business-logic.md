@@ -194,6 +194,12 @@ Every rule here has at least one test. If you change a rule, change its test in 
 - Delete link → undo toast for 8 s (recreated at the same parent and index). Delete folder → `confirm()`.
 - Global search (sidebar box) searches every folder and section (not Home), shows a crumb `Folder › Section`, Escape clears it. It also matches the link note and the link's env label (`searchLinks()`, shared with the command palette). `/` (when nothing is focused) focuses the box; the hint in the box shows `/`.
 
+## Open in a tab
+
+- A row on the folder page, in global search and in Today shows the pill **Open** (`.badge.tab-open`, accent tokens, never an env color, tooltip "Open in a tab") before its env/GH badge while a tab in any window has the same address. The match is `dupKey(url, true)` (`openKeys()`, `isOpen()`): a trailing `/`, the `#part` and tracking parameters do not matter. The pill is a label only; a click on it does what a click on the row does.
+- The page reads all tabs (`chrome.tabs.query({})`, needs the `tabs` permission) at boot and again 100 ms after the last tab created, closed or navigated (`onTabsChanged()`). It keeps only the set of keys in memory (`state.openKeys`), never in storage. A tab change re-renders only the list (as a `linkMeta` change does), not while a row is being edited; a hidden tab re-renders the list when it is shown again.
+- Board cards, the palette and Home tiles show no pill.
+
 ## Link notes and priority
 
 - `linkMeta = { [bookmarkId]: { note?, pri? } }` in `chrome.storage.local`. `cleanMeta()`: note trimmed and cut to 200 chars (`NOTE_MAX`); `pri` only `high`/`med`/`low` (`PRIS`, labels High/Medium/Low); an empty result removes the entry. Notes stay on this computer (bookmark ids differ per device); Backup JSON carries them.

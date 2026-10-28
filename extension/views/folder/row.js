@@ -1,9 +1,10 @@
 import { PRI_NAMES } from '../../constants/priority.js';
 import { detectEnv } from '../../domain/env.js';
 import { dueChip } from '../../domain/due.js';
+import { isOpen } from '../../domain/open-tabs.js';
 import { sameAsUrl, displayUrl } from '../../domain/url.js';
 import { moveBookmark } from '../../services/bookmarks.js';
-import { linkBadge } from '../../ui/badges.js';
+import { linkBadge, openBadge } from '../../ui/badges.js';
 import { h, svgIcon, highlight } from '../../ui/dom.js';
 import { clearMarks, markHalf } from '../../ui/dnd.js';
 import { iconEl } from '../../ui/icons.js';
@@ -67,6 +68,7 @@ export function renderRow(ctx, bm, s, p, { crumb = null, q = state.filterQ, chec
   }
   if (crumb) txt.append(h('span', { class: 'crumb' }, crumb));
   row.append(txt);
+  if (isOpen(state.openKeys, bm.url)) row.append(openBadge());
   const badge = linkBadge(env, bm.url, settings.customTags);
   if (badge) row.append(badge);
   if (chip)
