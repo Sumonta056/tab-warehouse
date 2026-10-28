@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { buildDist } from '../../tools/build.mjs';
 
 const EXT = resolve(dirname(fileURLToPath(import.meta.url)), '../../extension');
-const PAGES = ['newtab', 'popup'];
+const PAGES = ['newtab', 'popup', 'palette'];
 let dir;
 let out;
 let again;
@@ -92,8 +92,9 @@ describe('release build (tools/build.mjs)', () => {
     assert.deepEqual(references('background.js', src), []);
   });
 
-  test('the popup is one file; the new tab loads its views lazily from chunks', () => {
+  test('the popups are one file each; the new tab loads its views lazily from chunks', () => {
     assert.deepEqual(references('popup.js', read('popup.js')), []);
+    assert.deepEqual(references('palette.js', read('palette.js')), []);
     const lazy = [...read('newtab.js').matchAll(/\bimport\(\s*"(\.\/chunks\/[^"]+)"\s*\)/g)].map((m) => m[1]);
     assert.ok(lazy.length >= 6, `lazy chunks: ${lazy.join(', ')}`);
   });

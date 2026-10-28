@@ -9,22 +9,20 @@ async function command(t, tab) {
   await t.settle();
 }
 
+const POPUP = [['setPopup', { tabId: 5, popup: 'palette.html' }], ['openPopup'], ['setPopup', { tabId: 5, popup: 'popup.html' }]];
+
 export default [
   {
     area,
-    name: 'palette command: on the Tab Warehouse tab it opens the palette, also while the page has no focus',
+    name: 'palette command: on the Tab Warehouse tab the page answers, then the palette popup opens and the save popup comes back',
     page: 'newtab',
     fixture: own,
     async run(t) {
       await command(t, { id: 5, url: 'chrome://newtab/' });
-      t.ok(t.$('#palette'), 'palette open');
-      t.eq(t.d.activeElement?.id, 'palQ', 'focus in the palette box');
-      t.ok(!t.H.popupOpened, 'popup not opened');
-      t.eq(
-        t.H.log.filter((l) => l[0] === 'sendMessage').map((l) => l[1]),
-        [{ type: 'open-palette', tabId: 5 }],
-        'asked the page by tab id',
-      );
+      t.eq(t.sent('open-palette'), [{ type: 'open-palette', tabId: 5 }], 'asked the page by tab id');
+      t.eq(t.H.action, POPUP, 'palette.html set for the tab, opened, then popup.html again');
+      t.eq(t.H.popupOpened, 1, 'popup opened once');
+      t.ok(!t.$('#palette') && !t.$('.pal') && !t.$('.pal-shade'), 'no overlay on the page');
     },
   },
   {
@@ -34,7 +32,7 @@ export default [
     fixture: own,
     async run(t) {
       await command(t, { id: 9, url: 'https://github.com/' });
-      t.ok(!t.H.popupOpened, 'no popup');
+      t.ok(!t.H.action, 'popup not set or opened');
       t.ok(!t.$('#palette'), 'no palette on the warehouse page');
       t.ok(!t.H.badges, 'no badge');
     },
@@ -46,12 +44,12 @@ export default [
     fixture: () => ({ ...own(), activeTab: { id: 5, url: 'chrome://newtab/' } }),
     async run(t) {
       await command(t);
-      t.ok(t.$('#palette'), 'active tab is this page, palette open');
+      t.eq(t.H.action, POPUP, 'active tab is this page, palette popup opened');
     },
   },
   {
     area,
-    name: 'palette command: it closes an open menu like the page key',
+    name: 'palette command: it closes an open menu on the page',
     page: 'newtab',
     fixture: own,
     async run(t) {
@@ -61,7 +59,20 @@ export default [
       t.ok(t.$('.menu'), 'menu open');
       await command(t, { id: 5 });
       t.ok(!t.$('.menu'), 'menu closed');
-      t.ok(t.$('#palette'), 'palette open');
+      t.eq(t.H.action, POPUP, 'palette popup opened');
+    },
+  },
+  {
+    area,
+    name: 'palette command: when the popup cannot open, the save popup still comes back and nothing breaks',
+    page: 'newtab',
+    fixture: own,
+    async run(t) {
+      t.H.openPopupFails = true;
+      await command(t, { id: 5 });
+      t.eq(t.H.action, POPUP, 'popup.html set back');
+      t.ok(!t.H.popupOpened, 'nothing opened');
+      t.ok(!t.H.badges, 'no badge');
     },
   },
   {

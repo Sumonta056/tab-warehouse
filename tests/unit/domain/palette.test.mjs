@@ -1,7 +1,8 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { PALETTE_MSG } from '../../../extension/constants/commands.js';
-import { isPaletteRequest, paletteCommand, paletteResults } from '../../../extension/domain/palette.js';
+import { PALETTE_MSG, PALETTE_GO_MSG, PALETTE_POPUP, SAVE_POPUP } from '../../../extension/constants/commands.js';
+import { PAGES } from '../../../extension/constants/pages.js';
+import { isPaletteRequest, isPaletteGo, paletteGoMsg, paletteGoTarget, paletteCommand, paletteResults } from '../../../extension/domain/palette.js';
 
 describe('palette command', async () => {
   test('isPaletteRequest matches only the open-palette message for this tab', () => {
@@ -12,7 +13,11 @@ describe('palette command', async () => {
     assert.equal(isPaletteRequest({ type: 'open-palette' }, undefined), false);
     assert.equal(isPaletteRequest(null, 5), false);
   });
-  test('a page that answers true opens the palette', async () => {
+  test('the palette popup is palette.html and the save popup stays popup.html', () => {
+    assert.equal(PALETTE_POPUP, 'palette.html');
+    assert.equal(SAVE_POPUP, 'popup.html');
+  });
+  test('a page that answers true gets the palette popup', async () => {
     const sent = [];
     assert.equal(await paletteCommand(5, async (m) => (sent.push(m), true)), 'palette');
     assert.deepEqual(sent, [{ type: 'open-palette', tabId: 5 }]);
@@ -71,5 +76,28 @@ describe('paletteResults', () => {
   });
   test('links are capped at max', () => {
     assert.equal(paletteResults('example', secs, places, {}, [], 1).links.length, 1);
+  });
+});
+
+describe('palette go message', () => {
+  const secs = [{ id: '7', title: 'Work' }];
+  test('paletteGoMsg carries the type, the tab id and the target', () => {
+    assert.equal(PALETTE_GO_MSG, 'palette-go');
+    assert.deepEqual(paletteGoMsg(5, { view: 'board' }), { type: 'palette-go', tabId: 5, view: 'board' });
+    assert.deepEqual(paletteGoMsg(5, { settings: 'keys' }), { type: 'palette-go', tabId: 5, settings: 'keys' });
+  });
+  test('isPaletteGo matches only a go message for this tab', () => {
+    assert.equal(isPaletteGo({ type: 'palette-go', tabId: 5 }, 5), true);
+    assert.equal(isPaletteGo({ type: 'palette-go', tabId: 6 }, 5), false);
+    assert.equal(isPaletteGo({ type: 'open-palette', tabId: 5 }, 5), false);
+    assert.equal(isPaletteGo({ type: 'palette-go' }, undefined), false);
+    assert.equal(isPaletteRequest({ type: 'palette-go', tabId: 5 }, 5), false);
+  });
+  test('paletteGoTarget finds a place, a folder or a Settings tab', () => {
+    assert.equal(paletteGoTarget({ view: 'board' }, PAGES, secs).id, 'board');
+    assert.equal(paletteGoTarget({ view: 'schedule' }, PAGES, secs).id, 'schedule');
+    assert.equal(paletteGoTarget({ view: '7' }, PAGES, secs), secs[0]);
+    assert.deepEqual(paletteGoTarget({ settings: 'dupes' }, PAGES, secs), { settings: 'dupes' });
+    assert.equal(paletteGoTarget({ view: '99' }, PAGES, secs), null);
   });
 });

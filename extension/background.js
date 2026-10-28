@@ -4,12 +4,13 @@ import { activeTab, openTab, updateTab } from './services/tabs.js';
 import { extensionUrl, sendMessage } from './services/runtime.js';
 import { onCommand } from './services/commands.js';
 import { setDefaultSuggestion, onOmniboxInput, onOmniboxEnter } from './services/omnibox.js';
-import { setBadge, clearBadge, openPopup } from './services/action.js';
+import { setBadge, clearBadge, openPopup, openPopupWith } from './services/action.js';
 import { resolveRoot, sections } from './domain/tree.js';
 import { omniboxSuggestions, omniboxTarget } from './domain/omnibox.js';
 import { quickSave, quickSaveBadge } from './domain/quick-save.js';
 import { paletteCommand } from './domain/palette.js';
 import { QUICK_BADGE_MS } from './constants/limits.js';
+import { PALETTE_POPUP, SAVE_POPUP } from './constants/commands.js';
 
 setDefaultSuggestion('Search Tab Warehouse for <match>%s</match>');
 
@@ -61,7 +62,10 @@ async function quickSaveTab() {
 
 async function paletteTab(tab) {
   const id = tab?.id ?? (await activeTab())?.id;
-  return paletteCommand(id, (msg) => sendMessage(msg));
+  const r = await paletteCommand(id, (msg) => sendMessage(msg));
+  if (r !== 'palette') return r;
+  await openPopupWith(id, PALETTE_POPUP, SAVE_POPUP).catch(() => {});
+  return r;
 }
 
 onCommand((command, tab) => {

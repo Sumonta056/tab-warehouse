@@ -220,7 +220,9 @@ function makeT(scenario) {
       const ready =
         name === 'popup'
           ? (d) => d.querySelector('#folders')?.children.length || d.querySelector('#page .muted')
-          : (d) => d.querySelector('#page')?.children.length;
+          : name === 'palette'
+            ? (d) => d.querySelector('#palList')
+            : (d) => d.querySelector('#page')?.children.length;
       return mount(name, opts.ready || ready, !!scenario.motion, opts.search ?? scenario.search);
     },
     async reload(name = scenario.page) {
@@ -233,8 +235,22 @@ function makeT(scenario) {
       return t.$$('#nav .nav').map((n) => n.querySelector('.t').textContent);
     },
     async palette() {
-      await t.background();
-      await t.w.__command('palette', { id: t.H.currentTabId });
+      H().activeTab ||= { id: H().currentTabId, url: 'chrome://newtab/' };
+      await t.open('palette');
+    },
+    sent(type = 'palette-go') {
+      return H()
+        .log.filter((l) => l[0] === 'sendMessage' && l[1].type === type)
+        .map((l) => l[1]);
+    },
+    async relay() {
+      const msg = t.sent().at(-1);
+      if (!msg) {
+        fails.push('relay: the palette sent no message');
+        return;
+      }
+      await t.open('newtab');
+      await t.w.chrome.runtime.sendMessage(msg).catch((e) => fails.push(`relay: ${e.message}`));
       await t.settle();
     },
     async folder(title) {

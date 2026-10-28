@@ -8,9 +8,11 @@ describe('tabs service', () => {
     const ch = fakeChrome();
     await openTab({ url: 'https://a.com/', active: false });
     await updateTab({ url: 'https://b.com/' });
+    await updateTab({ url: 'https://c.com/' }, 5);
     assert.deepEqual(ch.calls, [
       ['tabs.create', { url: 'https://a.com/', active: false }],
       ['tabs.update', { url: 'https://b.com/' }],
+      ['tabs.update', 5, { url: 'https://c.com/' }],
     ]);
   });
 

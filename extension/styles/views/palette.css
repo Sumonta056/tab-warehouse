@@ -1,22 +1,17 @@
-.pal-shade {
-  position: fixed;
-  inset: 0;
-  z-index: 60;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding: 12vh 16px 16px;
-  background: rgba(0, 0, 0, 0.45);
+.pal-page {
+  width: 560px;
+  height: 520px;
+  overflow: hidden;
+  background: var(--surface);
+}
+.pal-page main {
+  height: 100%;
 }
 .pal {
-  width: min(640px, 100%);
-  max-height: 70vh;
+  height: 100%;
   display: flex;
   flex-direction: column;
   background: var(--surface);
-  border: 1px solid var(--line-2);
-  border-radius: 12px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
   overflow: hidden;
 }
 .pal-q {
@@ -32,6 +27,8 @@
   box-shadow: inset 0 -2px 0 var(--accent);
 }
 .pal-list {
+  flex: 1 1 auto;
+  min-height: 0;
   overflow: auto;
   padding: 4px;
 }

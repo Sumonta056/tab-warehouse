@@ -2,8 +2,8 @@ export function openTab(props) {
   return chrome.tabs.create(props);
 }
 
-export function updateTab(props) {
-  return chrome.tabs.update(props);
+export function updateTab(props, tabId) {
+  return tabId == null ? chrome.tabs.update(props) : chrome.tabs.update(tabId, props);
 }
 
 export async function currentTabId() {

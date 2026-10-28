@@ -126,9 +126,9 @@ export function fakeChrome({ tree, store = {}, manifest = {}, tabs = [], current
         calls.push(['tabs.create', props]);
         return { id: 99, ...props };
       },
-      update: async (props) => {
-        calls.push(['tabs.update', props]);
-        return props;
+      update: async (a, b) => {
+        calls.push(typeof a === 'number' ? ['tabs.update', a, b] : ['tabs.update', a]);
+        return b || a;
       },
       query: async (q) => {
         calls.push(['tabs.query', q]);
@@ -141,6 +141,7 @@ export function fakeChrome({ tree, store = {}, manifest = {}, tabs = [], current
       setBadgeText: async (o) => calls.push(['badgeText', o]),
       setTitle: async (o) => calls.push(['title', o]),
       openPopup: async () => calls.push(['openPopup']),
+      setPopup: async (o) => calls.push(['setPopup', o]),
     },
     commands: {
       onCommand: event(),

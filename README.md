@@ -137,8 +137,8 @@ Developers keep the same page open in many versions: live, test, staging and `lo
 
 ### Search and command palette
 
-- `⌘⇧K` / `Ctrl+Shift+K` on a Tab Warehouse tab opens the command palette (change the key at `chrome://extensions/shortcuts`). It finds links, folders and Settings tabs by title, address, folder, note or tag.
-- `Enter` opens the link in this tab, `⌘Enter` in a background tab.
+- `⌘⇧K` / `Ctrl+Shift+K` on a Tab Warehouse tab opens the command palette as a toolbar popup, so you can type at once even while the address bar has focus (change the key at `chrome://extensions/shortcuts`). It finds links, folders and Settings tabs by title, address, folder, note or tag.
+- `Enter` opens the link in the Tab Warehouse tab, `⌘Enter` in a background tab (the palette stays open). A folder, Home, Board, Today's top list or a Settings tab opens on the Tab Warehouse page.
 - `/` searches every folder from the sidebar box.
 - Type `tw` and a space in Chrome's address bar to search your links from any tab.
 
@@ -305,7 +305,7 @@ No test dependencies: Node's built-in test runner and headless Chrome.
 node tests/perf/memprobe.mjs   # RAM, leak and render-speed check on the real extension
 ```
 
-The e2e runner loads the real `extension/newtab.html` and `extension/popup.html` with a fake `chrome.*` API, so tests never touch your bookmarks. `./tests/run.sh` then runs the same scenarios on the release build (`runner.html?root=dist`). To watch a scenario run:
+The e2e runner loads the real `extension/newtab.html`, `extension/popup.html` and `extension/palette.html` with a fake `chrome.*` API, so tests never touch your bookmarks. `./tests/run.sh` then runs the same scenarios on the release build (`runner.html?root=dist`). To watch a scenario run:
 
 ```sh
 python3 -I tests/serve.py 8799
@@ -314,7 +314,7 @@ python3 -I tests/serve.py 8799
 
 ## Changelog
 
-- **Unreleased** — **Today's top list** checklist, a fixed sidebar row above the folders (tick links, done links are deleted the next day with Undo, count on the row, a wide **Up next** bar on Home with the title on up to 2 lines); the view tabs are Home and Board again. Backups never carry a tick; only a visible tab deletes done links; Undo never restores a tick.
+- **Unreleased** — The command palette opens as a toolbar popup, so its box has focus at once on a fresh new tab. **Today's top list** checklist, a fixed sidebar row above the folders (tick links, done links are deleted the next day with Undo, count on the row, a wide **Up next** bar on Home with the title on up to 2 lines); the view tabs are Home and Board again. Backups never carry a tick; only a visible tab deletes done links; Undo never restores a tick.
 - **2.5.0** — Due dates on links with an optional Google Calendar event; quick save (`⌘K` / `Ctrl+K`) without the popup; the popup warns when a page is already saved and offers **Save again**; Settings › Shortcuts; the command palette moves to `⌘⇧K` / `Ctrl+Shift+K`. Details in [CHANGELOG.md](CHANGELOG.md).
 - **2.4.0** — Full history in [CHANGELOG.md](CHANGELOG.md).
   - Command palette (⌘K) and `tw` search from the address bar.

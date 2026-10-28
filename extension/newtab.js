@@ -1,10 +1,10 @@
 import { loadSettings, saveSettings, loadLinkMeta, onStorageChange } from './services/storage.js';
 import { getTree, onBookmarksChanged } from './services/bookmarks.js';
-import { openTab, updateTab, currentTabId } from './services/tabs.js';
+import { openTab, currentTabId } from './services/tabs.js';
 import { onMessage } from './services/runtime.js';
 import { resolveRoot, sections, findById } from './domain/tree.js';
 import { navOrder, stepNav, findView } from './domain/folders.js';
-import { isPaletteRequest } from './domain/palette.js';
+import { isPaletteRequest, isPaletteGo, paletteGoTarget } from './domain/palette.js';
 import { dayKey, sweptText } from './domain/today.js';
 import { HOME, SETTINGS, BOARD, SCHEDULE, PAGES } from './constants/pages.js';
 import { h } from './ui/dom.js';
@@ -39,7 +39,6 @@ const LOADERS = {
   search: () => import('./views/search/search.js'),
   schedule: () => import('./views/schedule/schedule.js'),
   settings: () => import('./views/settings/index.js'),
-  palette: () => import('./views/palette/palette.js'),
   board: () => import('./views/board/board.js'),
 };
 const views = {};
@@ -219,35 +218,6 @@ const settingsCtx = {
   done: () => closeSettings(),
 };
 
-const paletteCtx = {
-  get secs() {
-    return state.secs;
-  },
-  get settings() {
-    return state.settings;
-  },
-  get linkMeta() {
-    return state.linkMeta;
-  },
-  openUrl(url, bg) {
-    if (bg) {
-      openTab({ url, active: false });
-      toast('Opened in a background tab');
-    } else updateTab({ url });
-  },
-  go(where) {
-    select(PAGES.find((v) => v.id === where) || HOME);
-  },
-  select(s) {
-    select(s);
-  },
-  async openSettings(key) {
-    (await load('settings')).setSettingsTab(key);
-    if (state.current?.settings && !state.query) renderPage();
-    else openSettings();
-  },
-};
-
 const boardCtx = {
   get settings() {
     return state.settings;
@@ -302,18 +272,25 @@ function closeSettings() {
   $('#settingsBtn').focus({ preventScroll: true });
 }
 
-async function showPalette() {
-  const { openPalette } = await load('palette');
-  closeMenu();
-  openPalette(paletteCtx);
+async function openSettingsTab(key) {
+  (await load('settings')).setSettingsTab(key);
+  if (state.current?.settings && !state.query) renderPage();
+  else openSettings();
+}
+
+function paletteGo(msg) {
+  const target = paletteGoTarget(msg, PAGES, state.secs);
+  if (target?.settings) return openSettingsTab(target.settings);
+  select(target || HOME);
 }
 
 async function bindPaletteCommand() {
   const tabId = await currentTabId();
   if (tabId == null) return;
   onMessage((msg, sender, respond) => {
-    if (!isPaletteRequest(msg, tabId)) return;
-    showPalette();
+    if (isPaletteRequest(msg, tabId)) closeMenu();
+    else if (isPaletteGo(msg, tabId)) paletteGo(msg);
+    else return;
     respond(true);
   });
 }

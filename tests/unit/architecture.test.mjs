@@ -127,4 +127,10 @@ describe('lazy views', () => {
       .map((f) => `${f} is imported statically; load its view with import() in newtab.js`);
     assert.deepEqual(eager, []);
   });
+
+  test('the palette view loads only in the palette popup, never in the new tab', () => {
+    const inNewtab = importsOf(join(EXT, 'newtab.js')).filter((s) => s.includes('views/palette/'));
+    assert.deepEqual(inNewtab, []);
+    assert.ok(eagerGraph('palette.js').includes('views/palette/palette.js'));
+  });
 });

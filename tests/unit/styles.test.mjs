@@ -16,14 +16,14 @@ function cssFiles(dir) {
 }
 
 const linksOf = (page) => [...readFileSync(join(EXT, page), 'utf8').matchAll(/<link rel="stylesheet" href="([^"]+)"/g)].map((m) => m[1]);
-const pages = { newtab: linksOf('newtab.html'), popup: linksOf('popup.html') };
+const pages = { newtab: linksOf('newtab.html'), popup: linksOf('popup.html'), palette: linksOf('palette.html') };
 
 test('every stylesheet a page links exists', () => {
   for (const [page, links] of Object.entries(pages)) for (const href of links) assert.ok(existsSync(join(EXT, href)), `${page}.html links missing ${href}`);
 });
 
 test('every file in styles/ is linked by a page', () => {
-  const linked = new Set([...pages.newtab, ...pages.popup]);
+  const linked = new Set(Object.values(pages).flat());
   assert.deepEqual(
     cssFiles(join(EXT, 'styles')).filter((f) => !linked.has(f)),
     [],
@@ -44,7 +44,7 @@ test('pages link tokens, then base, then ui pieces, then views', () => {
 });
 
 test('the pages carry no inline <style> blocks', () => {
-  for (const page of ['newtab.html', 'popup.html']) assert.ok(!/<style[\s>]/.test(readFileSync(join(EXT, page), 'utf8')), page);
+  for (const page of ['newtab.html', 'popup.html', 'palette.html']) assert.ok(!/<style[\s>]/.test(readFileSync(join(EXT, page), 'utf8')), page);
 });
 
 test('every px font-size scales with --fs (except the popup)', () => {

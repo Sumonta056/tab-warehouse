@@ -95,6 +95,7 @@ export default [
       );
       t.key(t.$('#palQ'), 'Enter');
       await t.settle();
+      await t.relay();
       t.ok(t.$('#settingsView .set-tab[data-tab="keys"].on'), 'Shortcuts tab open');
       t.eq(
         rows(t, '#pageKeys'),

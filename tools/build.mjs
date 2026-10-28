@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const SRC = join(ROOT, 'extension');
-const PAGES = ['newtab', 'popup'];
+const PAGES = ['newtab', 'popup', 'palette'];
 const COPY = ['manifest.json', 'icons', '_locales'];
 const STYLESHEET = /^[ \t]*<link rel="stylesheet" href="([^"]+)" \/>\n/gm;
 const MODULE = /<script type="module" src="([^"]+)"><\/script>/;

@@ -7,11 +7,7 @@ import { linkBadge } from '../../ui/badges.js';
 import { h, svgIcon, highlight } from '../../ui/dom.js';
 import { iconEl } from '../../ui/icons.js';
 
-let open = null;
-
-export function openPalette(ctx) {
-  if (open) return open.focus();
-  const back = document.activeElement;
+export function renderPalette(root, ctx) {
   const actions = [
     { title: 'Home', icon: 'home', run: () => ctx.go('home') },
     { title: 'Board', icon: 'board', run: () => ctx.go('board') },
@@ -33,16 +29,12 @@ export function openPalette(ctx) {
   });
   const list = h('div', { class: 'pal-list', id: 'palList', role: 'listbox', 'aria-label': 'Results' });
   const kbd = (k, label) => h('span', {}, h('span', { class: 'kbd' }, k), ` ${label}`);
-  const shade = h(
+  const pal = h(
     'div',
-    { class: 'pal-shade', id: 'palette' },
-    h(
-      'div',
-      { class: 'pal', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Command palette' },
-      input,
-      list,
-      h('div', { class: 'pal-foot' }, kbd('↑↓', 'move'), kbd('Enter', 'open'), kbd('⌘Enter', 'open in a background tab'), kbd('Esc', 'close')),
-    ),
+    { class: 'pal', id: 'palette', role: 'dialog', 'aria-label': 'Command palette' },
+    input,
+    list,
+    h('div', { class: 'pal-foot' }, kbd('↑↓', 'move'), kbd('Enter', 'open'), kbd('⌘Enter', 'open in a background tab'), kbd('Esc', 'close')),
   );
   let items = [];
   let sel = 0;
@@ -101,15 +93,9 @@ export function openPalette(ctx) {
     mark();
   };
 
-  const close = () => {
-    shade.remove();
-    open = null;
-    back?.focus?.({ preventScroll: true });
-  };
   const choose = (i, bg) => {
     const it = items[i];
     if (!it) return;
-    close();
     it.run(bg && it.kind === 'link');
   };
 
@@ -124,8 +110,7 @@ export function openPalette(ctx) {
       choose(sel, e.metaKey || e.ctrlKey || e.shiftKey);
     } else if (e.key === 'Escape') {
       e.preventDefault();
-      e.stopPropagation();
-      close();
+      ctx.close();
     } else if (e.key === 'Tab') e.preventDefault();
   });
   list.addEventListener('mousedown', (e) => e.preventDefault());
@@ -140,12 +125,8 @@ export function openPalette(ctx) {
     const o = e.target.closest('.pal-item');
     if (o) choose(+o.dataset.i, e.metaKey || e.ctrlKey || e.shiftKey);
   });
-  shade.addEventListener('mousedown', (e) => {
-    if (e.target === shade) close();
-  });
 
-  document.body.append(shade);
+  root.replaceChildren(pal);
   draw();
   input.focus();
-  open = { focus: () => input.focus() };
 }

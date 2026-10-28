@@ -1,8 +1,24 @@
-import { PALETTE_MSG } from '../constants/commands.js';
+import { PALETTE_MSG, PALETTE_GO_MSG } from '../constants/commands.js';
+import { findView } from './folders.js';
 import { searchLinks } from './search.js';
 
+const forTab = (msg, type, tabId) => msg?.type === type && tabId != null && msg.tabId === tabId;
+
 export function isPaletteRequest(msg, tabId) {
-  return msg?.type === PALETTE_MSG && tabId != null && msg.tabId === tabId;
+  return forTab(msg, PALETTE_MSG, tabId);
+}
+
+export function isPaletteGo(msg, tabId) {
+  return forTab(msg, PALETTE_GO_MSG, tabId);
+}
+
+export function paletteGoMsg(tabId, target) {
+  return { type: PALETTE_GO_MSG, tabId, ...target };
+}
+
+export function paletteGoTarget(msg, pages, secs) {
+  if (msg.settings) return { settings: msg.settings };
+  return findView(msg.view, pages, secs);
 }
 
 export async function paletteCommand(tabId, send) {

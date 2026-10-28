@@ -201,8 +201,12 @@
         ((H.badges ||= {})[tabId ?? 'all'] ||= {}).title = title;
       },
       async openPopup() {
+        (H.action ||= []).push(['openPopup']);
         if (H.openPopupFails) throw new Error('Could not find an active browser window.');
         H.popupOpened = (H.popupOpened || 0) + 1;
+      },
+      async setPopup(o) {
+        (H.action ||= []).push(['setPopup', clone(o)]);
       },
     },
     tabs: {
@@ -210,8 +214,9 @@
         H.tabs.push(o);
         return { id: H.tabs.length };
       },
-      async update(o) {
-        H.tabs.push({ ...o, update: true });
+      async update(a, b) {
+        if (typeof a === 'number') H.tabs.push({ ...b, tabId: a, update: true });
+        else H.tabs.push({ ...a, update: true });
         return { id: 0 };
       },
       async query() {

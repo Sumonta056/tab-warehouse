@@ -418,6 +418,8 @@ export default [
       );
       t.key(t.$('#palQ'), 'Escape');
       await t.settle();
+      t.ok(t.H.closed, 'palette closed');
+      await t.open('newtab');
       t.click(t.$('#settingsBtn'));
       await t.settle();
       t.click(t.$('.set-tab[data-tab="backup"]'));

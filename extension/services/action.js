@@ -1,4 +1,11 @@
 const quiet = (p) => p?.catch?.(() => {});
+let queue = Promise.resolve();
+
+function inQueue(fn) {
+  const run = queue.then(fn);
+  queue = run.catch(() => {});
+  return run;
+}
 
 export function setBadge(tabId, { text, color, title }) {
   const at = tabId == null ? {} : { tabId };
@@ -14,5 +21,17 @@ export function clearBadge(tabId) {
 }
 
 export function openPopup() {
-  return chrome.action.openPopup();
+  return inQueue(() => chrome.action.openPopup());
+}
+
+export function openPopupWith(tabId, popup, back) {
+  const at = tabId == null ? {} : { tabId };
+  return inQueue(async () => {
+    await chrome.action.setPopup({ ...at, popup });
+    try {
+      return await chrome.action.openPopup();
+    } finally {
+      await quiet(chrome.action.setPopup({ ...at, popup: back }));
+    }
+  });
 }

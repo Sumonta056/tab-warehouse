@@ -254,6 +254,7 @@ export default [
       t.ok(item, 'Today place in the palette');
       t.click(item);
       await t.settle();
+      await t.relay();
       t.ok(t.$('#scheduleBtn').classList.contains('on'), 'palette opens Today');
     },
   },

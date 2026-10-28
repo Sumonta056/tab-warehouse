@@ -5,3 +5,6 @@ export const COMMAND_LABELS = {
 };
 
 export const PALETTE_MSG = 'open-palette';
+export const PALETTE_GO_MSG = 'palette-go';
+export const PALETTE_POPUP = 'palette.html';
+export const SAVE_POPUP = 'popup.html';
