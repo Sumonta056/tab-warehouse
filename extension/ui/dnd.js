@@ -23,7 +23,7 @@ export function unmarkOnLeave(el, ...classes) {
   });
 }
 
-export function headerDrag(el, slot, kind, id, onDrop) {
+export function headerDrag(el, slot, kind, id, onDrop, accept = () => true) {
   el.addEventListener('dragstart', (e) => {
     if (e.target !== el) return;
     slot.drag = { kind, id };
@@ -37,11 +37,11 @@ export function headerDrag(el, slot, kind, id, onDrop) {
     slot.drag = null;
   });
   el.addEventListener('dragover', (e) => {
-    if (slot.drag?.kind !== kind || slot.drag.id === id) return;
+    if (slot.drag?.kind !== kind || slot.drag.id === id || !accept(slot.drag.id)) return;
     markHalf(el, e);
   });
   el.addEventListener('drop', async (e) => {
-    if (slot.drag?.kind !== kind || slot.drag.id === id) return;
+    if (slot.drag?.kind !== kind || slot.drag.id === id || !accept(slot.drag.id)) return;
     e.preventDefault();
     const after = el.classList.contains('drop-after');
     const from = slot.drag.id;

@@ -72,6 +72,18 @@
 .grp.part.NONE {
   color: var(--muted);
 }
+.grp.part[data-depth='1'],
+.row[data-depth='1'] {
+  margin-left: 18px;
+}
+.grp.part[data-depth='2'],
+.row[data-depth='2'] {
+  margin-left: 36px;
+}
+.grp.part[data-depth='3'],
+.row[data-depth='3'] {
+  margin-left: 54px;
+}
 .grp.part .part-toggle {
   display: inline-flex;
   align-items: center;

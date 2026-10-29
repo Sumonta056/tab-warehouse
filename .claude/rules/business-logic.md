@@ -250,12 +250,15 @@ Every rule here has at least one test. If you change a rule, change its test in 
 ## Sections (subfolders inside a folder)
 
 - Every folder inside a Folder, at any depth, is a Section. `sections()` builds them as a tree: each Section has `parts` (child Sections), `all` (links at every depth below it), `path` (titles from the first-level Section down) and `depth` (0 = direct child of the Folder). `allParts()` lists them in pre-order; `partSiblings()` gives the array that holds a Section.
-- The link menu's _Move to_ lists every Section by its path (`Clients › Acme › 2026`) plus _No section_, without the link's current parent.
-- Headers in Chrome order, then **No section** (direct links) last and always present as a drop target. A folder without subfolders renders the plain list.
-- Collapse is per folder: `folders[id].closed[sectionId]`.
-- Drop a link on a header → move into that subfolder. Drop a link before/after a row of another section (Manual sort) → move to that position.
-- Link menu: _Move to <section>_ for every section except the current one, including _No section_.
-- Header menu: color (saved in `settings.partColors[sectionId]`, see _Colors_), Rename (Chrome title), Move up/down (Chrome order), Delete (moves its children to the parent first, then removes the empty folder; asks `confirm()`). Drag a header onto another header to reorder.
+- The folder page shows every Section as a header under its Parent section, at any depth (test "nested Sections render under their parent with an indent"). Headers and their rows carry `data-depth` = `min(depth, 3)`; the indent grows 18 px per level and stops at depth 3 (54 px).
+- Order: the first-level Sections in Chrome order, then **No section** (direct links) last and always present as a drop target. Inside each Section its own links come first, sorted by the folder's sort with priority links first, then its child Sections in Chrome order. The header count is the links at every depth below it (`all`). A folder without subfolders renders the plain list.
+- Collapse is per folder: `folders[id].closed[sectionId]`. Collapsing a Section hides its links and all of its child Sections; each Section keeps its own state (test "collapse a parent Section hides its child Sections").
+- While the folder filter is on, a Section shows only when a link at any depth below it matches, so the Parent sections of a deep match show too (test "filter shows the parents of a deep match").
+- Drop a link on a header, at any depth → move into that subfolder (test "drop a link on a deep Section header moves it there"). Drop a link before/after a row of another section (Manual sort) → move to that position.
+- Link menu: _Move to <path>_ for every Section at any depth, labelled by its path (`Clients › Acme › 2026`), then _No section_, without the link's current parent (`sectionTargets()`; test "link menu lists every Section by its path").
+- Drag a header onto another header → the dragged Section moves before or after the target, under the target's parent (test "drag a Section header into another parent"). A Section cannot be dropped on itself or into one of its own child Sections: the drop is refused and no drop mark shows (`headerDrag(..., accept)`; test "a Section cannot be dropped into its own child Section").
+- Header menu: color (saved in `settings.partColors[sectionId]`, see _Colors_), icon, Rename (Chrome title), **New section inside** (a child folder of that Section; test "New section inside makes a child Section"), Move up/down among its own siblings only (Chrome order; test "Move up / Move down use the siblings of the Section"), Delete.
+- Delete asks `confirm()`: "Delete section "X"? Its N links move to <dest>.", or "Its N links and M sections move to <dest>." when it has child Sections; `<dest>` is _No section_ for a first-level Section, else the Parent section's title. Then its direct links and child Sections move into its parent (the Parent section, or the Folder), keeping their colors and icons, and the empty folder is removed (test "delete a Section moves its links and child Sections into its parent").
 - Folder count, Open all, Copy all URLs, Tag matrix and search include links in sections.
 
 ## Home

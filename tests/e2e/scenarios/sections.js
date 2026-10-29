@@ -10,6 +10,28 @@ const twoSections = () =>
       F('25', 'In progress', []),
     ]),
   });
+const nested = (settings = {}) =>
+  base({
+    settings,
+    tasks: F('20', 'Sprint tasks', [
+      L('21', 'Read title #160', 'https://tracker.example.com/issues/160'),
+      F('23', 'Blocked', [
+        L('24', 'Old #100', 'https://tracker.example.com/issues/100'),
+        F('26', 'Vendor', [
+          L('27', 'Vendor #9', 'https://tracker.example.com/issues/9'),
+          F('28', 'Waiting', [L('29', 'Reply #3', 'https://tracker.example.com/issues/3')]),
+        ]),
+      ]),
+      F('25', 'In progress', []),
+    ]),
+  });
+const headers = (t) =>
+  t.$$('#page .grp.part .part-toggle').map((b) =>
+    [...b.childNodes]
+      .filter((n) => n.nodeType === 3)
+      .map((n) => n.textContent)
+      .join(''),
+  );
 
 export default [
   {
@@ -301,6 +323,173 @@ export default [
       await t.settle();
       t.eq(t.rowIds(), ['27'], 'one hit');
       t.eq(t.row('27').querySelector('.crumb')?.textContent, 'Sprint tasks › Blocked › Vendor', 'crumb');
+    },
+  },
+  {
+    area,
+    name: 'nested Sections render under their parent with an indent',
+    page: 'newtab',
+    fixture: () => nested(),
+    async run(t) {
+      await t.folder('Sprint tasks');
+      t.eq(headers(t), ['Blocked', 'Vendor', 'Waiting', 'In progress', 'No section'], 'headers');
+      t.eq(
+        t.$$('#page .grp.part').map((g) => g.dataset.depth),
+        ['0', '1', '2', '0', '0'],
+        'depths',
+      );
+      t.eq(t.rowIds(), ['24', '27', '29', '21'], 'rows');
+      t.eq(t.row('29').dataset.depth, '2', 'row depth follows its Section');
+      t.eq(t.part('Blocked').children[2].textContent, '3', 'Blocked counts its child Sections');
+      const pad = (title) => parseFloat(getComputedStyle(t.part(title)).marginLeft);
+      t.ok(pad('Vendor') > pad('Blocked') && pad('Waiting') > pad('Vendor'), 'indent grows per level');
+    },
+  },
+  {
+    area,
+    name: 'collapse a parent Section hides its child Sections',
+    page: 'newtab',
+    fixture: () => nested(),
+    async run(t) {
+      await t.folder('Sprint tasks');
+      t.click(t.part('Blocked').querySelector('.part-toggle'));
+      await t.settle();
+      t.ok(!t.part('Vendor') && !t.part('Waiting'), 'child Sections hidden');
+      t.ok(!t.row('24') && !t.row('27') && !t.row('29'), 'rows hidden');
+      t.click(t.part('Blocked').querySelector('.part-toggle'));
+      await t.settle();
+      t.ok(t.part('Vendor'), 'Vendor back');
+    },
+  },
+  {
+    area,
+    name: 'drop a link on a deep Section header moves it there',
+    page: 'newtab',
+    fixture: () => nested(),
+    async run(t) {
+      await t.folder('Sprint tasks');
+      t.drag(t.row('21'), t.part('Waiting'));
+      await t.settle();
+      t.eq(t.node('21').parentId, '28', 'moved into Waiting');
+    },
+  },
+  {
+    area,
+    name: 'drag a Section header into another parent',
+    page: 'newtab',
+    fixture: () => nested(),
+    async run(t) {
+      await t.folder('Sprint tasks');
+      t.drag(t.part('In progress'), t.part('Vendor'), 'before');
+      await t.settle();
+      t.eq(t.node('25').parentId, '23', 'moved under Blocked');
+      t.eq(
+        t.kids('23').filter((id) => ['25', '26'].includes(id)),
+        ['25', '26'],
+        'before Vendor',
+      );
+    },
+  },
+  {
+    area,
+    name: 'a Section cannot be dropped into its own child Section',
+    page: 'newtab',
+    fixture: () => nested(),
+    async run(t) {
+      await t.folder('Sprint tasks');
+      const src = t.part('Blocked');
+      const tgt = t.part('Waiting');
+      const dt = new t.w.DataTransfer();
+      const r = tgt.getBoundingClientRect();
+      const fire = (el, type) =>
+        el.dispatchEvent(new t.w.DragEvent(type, { bubbles: true, cancelable: true, dataTransfer: dt, clientX: r.left + 10, clientY: r.top + 2 }));
+      fire(src, 'dragstart');
+      fire(tgt, 'dragenter');
+      const accepted = !fire(tgt, 'dragover');
+      t.ok(!accepted, 'dragover refused');
+      t.ok(!tgt.classList.contains('drop-before') && !tgt.classList.contains('drop-after'), 'no drop mark');
+      fire(tgt, 'drop');
+      fire(src, 'dragend');
+      t.ok(!t.drag(t.part('Blocked'), t.part('Blocked'), 'before'), 'refused on itself');
+      await t.settle();
+      t.eq(t.node('23').parentId, '20', 'Blocked stays');
+    },
+  },
+  {
+    area,
+    name: 'New section inside makes a child Section',
+    page: 'newtab',
+    fixture: () => nested(),
+    async run(t) {
+      await t.folder('Sprint tasks');
+      t.answer('Later');
+      t.click(t.part('Vendor').querySelector('.more'));
+      t.menu('New section inside');
+      await t.settle();
+      t.ok(
+        t.node('26').children.some((c) => c.title === 'Later' && !c.url),
+        'child folder created',
+      );
+      t.eq(t.part('Later')?.dataset.depth, '2', 'header under Vendor');
+    },
+  },
+  {
+    area,
+    name: 'delete a Section moves its links and child Sections into its parent',
+    page: 'newtab',
+    fixture: () => nested({ partColors: { 28: 'red' } }),
+    async run(t) {
+      await t.folder('Sprint tasks');
+      let asked = '';
+      t.w.confirm = (msg) => ((asked = msg), true);
+      t.click(t.part('Vendor').querySelector('.more'));
+      t.menu('Delete section…');
+      await t.settle();
+      t.eq(asked, 'Delete section "Vendor"? Its 1 link and 1 section move to Blocked.', 'confirm text');
+      t.ok(!t.node('26'), 'Vendor removed');
+      t.eq(t.node('27').parentId, '23', 'link in Blocked');
+      t.eq(t.node('28').parentId, '23', 'Waiting in Blocked');
+      t.eq(t.part('Waiting')?.dataset.color, 'red', 'Waiting keeps its color');
+    },
+  },
+  {
+    area,
+    name: 'Move up / Move down use the siblings of the Section',
+    page: 'newtab',
+    fixture: () => nested(),
+    async run(t) {
+      await t.folder('Sprint tasks');
+      t.click(t.part('Waiting').querySelector('.more'));
+      let labels = t.menuLabels();
+      t.ok(!labels.includes('Move up') && !labels.includes('Move down'), `Waiting: ${labels.join(', ')}`);
+      t.click(t.part('Blocked').querySelector('.more'));
+      labels = t.menuLabels();
+      t.ok(!labels.includes('Move up') && labels.includes('Move down'), `Blocked: ${labels.join(', ')}`);
+    },
+  },
+  {
+    area,
+    name: 'link menu lists every Section by its path',
+    page: 'newtab',
+    fixture: () => nested(),
+    async run(t) {
+      await t.folder('Sprint tasks');
+      t.context(t.row('21'));
+      const labels = t.menuLabels();
+      t.ok(labels.includes('Move to Blocked › Vendor › Waiting'), labels.join(', '));
+    },
+  },
+  {
+    area,
+    name: 'filter shows the parents of a deep match',
+    page: 'newtab',
+    fixture: () => nested(),
+    async run(t) {
+      await t.folder('Sprint tasks');
+      t.type(t.$('.toolbar input[type="search"]'), 'reply');
+      await t.settle();
+      t.eq(headers(t), ['Blocked', 'Vendor', 'Waiting'], 'headers');
+      t.eq(t.rowIds(), ['29'], 'rows');
     },
   },
 ];
