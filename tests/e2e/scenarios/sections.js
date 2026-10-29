@@ -284,4 +284,23 @@ export default [
       t.eq(t.$$('.matrix tbody tr').length, 1, 'matrix row from section links');
     },
   },
+  {
+    area,
+    name: 'a link 3 levels deep counts in the sidebar and is found by search',
+    page: 'newtab',
+    fixture: () =>
+      base({
+        tasks: F('20', 'Sprint tasks', [
+          L('21', 'Read title #160', 'https://tracker.example.com/issues/160'),
+          F('23', 'Blocked', [F('26', 'Vendor', [L('27', 'Vendor #9', 'https://tracker.example.com/issues/9')])]),
+        ]),
+      }),
+    async run(t) {
+      t.eq(t.nav('Sprint tasks').querySelector('.n').textContent, '2', 'sidebar count');
+      t.type(t.$('#q'), 'vendor');
+      await t.settle();
+      t.eq(t.rowIds(), ['27'], 'one hit');
+      t.eq(t.row('27').querySelector('.crumb')?.textContent, 'Sprint tasks › Blocked › Vendor', 'crumb');
+    },
+  },
 ];

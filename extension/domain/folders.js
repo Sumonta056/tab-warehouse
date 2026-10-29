@@ -1,3 +1,5 @@
+import { allParts } from './tree.js';
+
 export function folderPrefs(folders, id) {
   return { sort: 'manual', view: 'list', show: 'title', closed: {}, ...(folders[id] || {}) };
 }
@@ -73,7 +75,13 @@ export function reorderCategories(categories, fromId, toId, after) {
 
 export function sectionTargets(folder, bm) {
   if (!folder || folder.virtual || !folder.parts?.length || !folder.all.some((x) => x.id === bm.id)) return [];
-  return [...folder.parts, { title: 'No section', node: folder.node }].filter((g) => g.node.id !== bm.parentId);
+  return [...allParts(folder).map((p) => ({ title: p.path.join(' › '), node: p.node })), { title: 'No section', node: folder.node }].filter(
+    (g) => g.node.id !== bm.parentId,
+  );
+}
+
+export function partSiblings(folder, part) {
+  return part.depth === 0 ? folder.parts : allParts(folder).find((p) => p.id === part.node.parentId).parts;
 }
 
 export function findView(id, pages, secs) {

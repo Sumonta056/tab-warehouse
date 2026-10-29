@@ -30,7 +30,7 @@ Every rule here has at least one test. If you change a rule, change its test in 
 - There is no hint text under the sidebar buttons.
 - Sections of the sidebar = child folders of the root folder (`resolveRoot`: `rootId`, else folder named `rootName` (empty by default; older installs keep their saved name), else first top-level folder), **excluding the Home folder**.
 - `Unsorted` (id `unsorted:<rootId>`) exists only when the root has loose links; it is virtual: no rename, no drag, no New section, no category.
-- Folder count = direct links + links in its sections (`section.all`).
+- Folder count = every link in the Folder at any depth (`section.all`).
 - Folder order is `settings.order`; ids not in it are appended in Chrome order. Reordering never moves bookmarks in Chrome.
 - Alt+↑/↓ moves a folder one step **within its own category** (or within "No category").
 - Dropping a link on a sidebar folder moves the bookmark there; dropping a link on the Home button moves it into the Home folder.
@@ -192,7 +192,7 @@ Every rule here has at least one test. If you change a rule, change its test in 
 - Edit form: `novalidate`; a URL without a scheme gets `https://`; Chrome errors show as a toast and keep the old value; Cancel/Escape discard.
 - Each row has Edit (pencil), Delete (trash, `aria-label="Delete link"`) and the ⋯ menu. Delete does not open the link.
 - Delete link → undo toast for 8 s (recreated at the same parent and index). Delete folder → `confirm()`.
-- Global search (sidebar box) searches every folder and section (not Home), shows a crumb `Folder › Section`, Escape clears it. It also matches the link note and the link's env label (`searchLinks()`, shared with the command palette). `/` (when nothing is focused) focuses the box; the hint in the box shows `/`.
+- Global search (sidebar box) searches every folder and section (not Home), shows a crumb with the full path `Folder › Section › Sub-section` (`crumbText()`: up to 3 names in full; with more, the middle is cut: `Work › … › Acme › 2026`; the search matches the full path), Escape clears it. It also matches the link note and the link's env label (`searchLinks()`, shared with the command palette). `/` (when nothing is focused) focuses the box; the hint in the box shows `/`.
 
 ## Open in a tab
 
@@ -248,7 +248,8 @@ Every rule here has at least one test. If you change a rule, change its test in 
 
 ## Sections (subfolders inside a folder)
 
-- Direct subfolders of the open folder; deeper levels are not shown as sections.
+- Every folder inside a Folder, at any depth, is a Section. `sections()` builds them as a tree: each Section has `parts` (child Sections), `all` (links at every depth below it), `path` (titles from the first-level Section down) and `depth` (0 = direct child of the Folder). `allParts()` lists them in pre-order; `partSiblings()` gives the array that holds a Section.
+- The link menu's _Move to_ lists every Section by its path (`Clients › Acme › 2026`) plus _No section_, without the link's current parent.
 - Headers in Chrome order, then **No section** (direct links) last and always present as a drop target. A folder without subfolders renders the plain list.
 - Collapse is per folder: `folders[id].closed[sectionId]`.
 - Drop a link on a header → move into that subfolder. Drop a link before/after a row of another section (Manual sort) → move to that position.

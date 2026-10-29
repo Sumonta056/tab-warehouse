@@ -13,9 +13,13 @@ import {
   withCategory,
   reorderCategories,
   sectionTargets,
+  partSiblings,
   findView,
   boardLanes,
 } from '../../../extension/domain/folders.js';
+
+import { sections } from '../../../extension/domain/tree.js';
+import { L, F } from '../fixtures.mjs';
 
 const S = (id, extra = {}) => ({ id, title: id, all: [], parts: [], links: [], node: { id }, ...extra });
 const a = S('a'),
@@ -139,8 +143,8 @@ describe('reorderCategories', () => {
 });
 
 describe('sectionTargets', () => {
-  const p1 = { id: 'p1', title: 'Open', node: { id: 'p1' } };
-  const p2 = { id: 'p2', title: 'Done', node: { id: 'p2' } };
+  const p1 = { id: 'p1', title: 'Open', node: { id: 'p1' }, path: ['Open'], parts: [] };
+  const p2 = { id: 'p2', title: 'Done', node: { id: 'p2' }, path: ['Done'], parts: [] };
   const bm = { id: 'l1', parentId: 'p1' };
   const f = S('f', { parts: [p1, p2], all: [bm] });
   test('every section but the current one, then No section', () => {
@@ -158,6 +162,45 @@ describe('sectionTargets', () => {
     assert.deepEqual(sectionTargets({ ...f, virtual: true }, bm), []);
     assert.deepEqual(sectionTargets({ ...f, parts: [] }, bm), []);
     assert.deepEqual(sectionTargets(f, { id: 'other', parentId: 'x' }), []);
+  });
+});
+
+describe('nested Sections', () => {
+  const deep = F('10', 'Root', [
+    F('w', 'Work', [
+      L('w1', 'Jira', 'https://jira.example.com', { parentId: 'w' }),
+      F(
+        'c',
+        'Clients',
+        [
+          L('c1', 'Portal', 'https://portal.example.com', { parentId: 'c' }),
+          F(
+            'a',
+            'Acme',
+            [
+              L('a1', 'Admin', 'https://admin.example.com', { parentId: 'a' }),
+              F('y', '2026', [L('y1', 'Q4', 'https://q4.example.com', { parentId: 'y' })], { parentId: 'a' }),
+            ],
+            { parentId: 'c' },
+          ),
+        ],
+        { parentId: 'w' },
+      ),
+    ]),
+  ]);
+  const w = sections(deep, [])[0];
+  test('sectionTargets lists every Section by path, without the current parent', () => {
+    const a1 = w.all.find((b) => b.id === 'a1');
+    assert.deepEqual(
+      sectionTargets(w, a1).map((g) => g.title),
+      ['Clients', 'Clients › Acme › 2026', 'No section'],
+    );
+  });
+  test('partSiblings gives the array that holds the Section', () => {
+    const c = w.parts[0];
+    const a = c.parts[0];
+    assert.equal(partSiblings(w, a.parts[0]), a.parts);
+    assert.equal(partSiblings(w, c), w.parts);
   });
 });
 

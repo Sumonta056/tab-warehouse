@@ -137,3 +137,37 @@ describe("today's list", () => {
     assert.equal(sweptText(3), 'Deleted 3 done links');
   });
 });
+
+const deep = F('10', 'Root', [
+  F('w', 'Work', [
+    L('w1', 'Jira', 'https://jira.example.com', { parentId: 'w' }),
+    F(
+      'c',
+      'Clients',
+      [
+        L('c1', 'Portal', 'https://portal.example.com', { parentId: 'c' }),
+        F(
+          'a',
+          'Acme',
+          [
+            L('a1', 'Admin', 'https://admin.example.com', { parentId: 'a' }),
+            F('y', '2026', [L('y1', 'Q4', 'https://q4.example.com', { parentId: 'y' })], { parentId: 'a' }),
+          ],
+          { parentId: 'c' },
+        ),
+      ],
+      { parentId: 'w' },
+    ),
+  ]),
+]);
+
+describe('the sweep in nested Sections', () => {
+  test('the sweep deletes a ticked link 3 levels deep', () => {
+    const meta = { y1: { due: '2026-10-27', done: '2026-10-27' } };
+    const hit = sweepDone(sections(deep, []), meta, new Date(2026, 9, 28));
+    assert.deepEqual(
+      hit.map((b) => b.id),
+      ['y1'],
+    );
+  });
+});

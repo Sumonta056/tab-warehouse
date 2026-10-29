@@ -1,6 +1,6 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { findById, findFolderByTitle, flatten, folderList, resolveRoot, sections } from '../../../extension/domain/tree.js';
+import { findById, findFolderByTitle, allParts, flatten, folderList, resolveRoot, sections } from '../../../extension/domain/tree.js';
 import { loadSettings } from '../../../extension/services/storage.js';
 import { L, F } from '../fixtures.mjs';
 
@@ -68,6 +68,42 @@ describe('sections()', () => {
       ['c', 'a', 'b', 'unsorted:10'],
     );
     assert.equal(s.at(-1).virtual, true);
+  });
+  const deep = F('10', 'Root', [
+    F('w', 'Work', [
+      L('w1', 'Jira', 'https://jira.example.com', { parentId: 'w' }),
+      F(
+        'c',
+        'Clients',
+        [
+          L('c1', 'Portal', 'https://portal.example.com', { parentId: 'c' }),
+          F(
+            'a',
+            'Acme',
+            [
+              L('a1', 'Admin', 'https://admin.example.com', { parentId: 'a' }),
+              F('y', '2026', [L('y1', 'Q4', 'https://q4.example.com', { parentId: 'y' })], { parentId: 'a' }),
+            ],
+            { parentId: 'c' },
+          ),
+        ],
+        { parentId: 'w' },
+      ),
+    ]),
+  ]);
+  const ids = (xs) => xs.map((x) => x.id);
+  test('Sections nest at any depth; all holds every link', () => {
+    const w = sections(deep, [])[0];
+    assert.deepEqual(ids(w.all), ['w1', 'c1', 'a1', 'y1']);
+    assert.deepEqual(ids(w.parts), ['c']);
+    const y = w.parts[0].parts[0].parts[0];
+    assert.equal(y.id, 'y');
+    assert.deepEqual(y.path, ['Clients', 'Acme', '2026']);
+    assert.equal(y.depth, 2);
+    assert.deepEqual(ids(y.all), ['y1']);
+  });
+  test('allParts lists Sections in pre-order', () => {
+    assert.deepEqual(ids(allParts(sections(deep, [])[0])), ['c', 'a', 'y']);
   });
   test('no loose links means no Unsorted section', () => {
     const s = sections(F('r', 'R', [F('a', 'A', [])]), []);

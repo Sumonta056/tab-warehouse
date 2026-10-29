@@ -1,7 +1,7 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { omniboxSuggestions } from '../../../extension/domain/omnibox.js';
-import { matchLink, searchLinks, matchTitleUrl } from '../../../extension/domain/search.js';
+import { crumbText, matchLink, searchLinks, matchTitleUrl } from '../../../extension/domain/search.js';
 import { sections } from '../../../extension/domain/tree.js';
 import { L, F } from '../fixtures.mjs';
 
@@ -58,5 +58,43 @@ describe('matchTitleUrl', () => {
     assert.equal(matchTitleUrl(bm, 'prod d/abc'), true);
     assert.equal(matchTitleUrl(bm, 'prod  missing'), false);
     assert.equal(matchTitleUrl({ ...bm, note: 'deploy' }, 'deploy'), false);
+  });
+});
+
+const deep = F('10', 'Root', [
+  F('w', 'Work', [
+    L('w1', 'Jira', 'https://jira.example.com', { parentId: 'w' }),
+    F(
+      'c',
+      'Clients',
+      [
+        L('c1', 'Portal', 'https://portal.example.com', { parentId: 'c' }),
+        F(
+          'a',
+          'Acme',
+          [
+            L('a1', 'Admin', 'https://admin.example.com', { parentId: 'a' }),
+            F('y', '2026', [L('y1', 'Q4', 'https://q4.example.com', { parentId: 'y' })], { parentId: 'a' }),
+          ],
+          { parentId: 'c' },
+        ),
+      ],
+      { parentId: 'w' },
+    ),
+  ]),
+]);
+
+describe('crumbs in nested Sections', () => {
+  test('crumb shows the full path up to 3 names', () => {
+    assert.equal(crumbText(['Work', 'Clients', 'Acme']), 'Work › Clients › Acme');
+  });
+  test('crumb shortens the middle above 3 names', () => {
+    assert.equal(crumbText(['Work', 'Clients', 'Acme', '2026']), 'Work › … › Acme › 2026');
+  });
+  test('searchLinks finds a level-4 link by a middle path name', () => {
+    const hits = searchLinks(sections(deep, []), 'clients q4');
+    assert.equal(hits.length, 1);
+    assert.equal(hits[0].bm.id, 'y1');
+    assert.equal(hits[0].crumb, 'Work › … › Acme › 2026');
   });
 });
