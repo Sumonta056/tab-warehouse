@@ -201,7 +201,7 @@ function sectionHeader(g, count, ctx) {
     { class: `bsec ${g.none ? 'NONE' : ''}`, ...markAttrs(color, { part: g.id }) },
     color ? h('span', { class: 'dot' }) : null,
     g.none ? null : markIcon(ctx.settings.partIcons[g.id]),
-    h('span', { class: 't' }, g.none ? g.title : g.path.join(' › ')),
+    h('span', { class: 't', title: g.none ? null : g.path.join(' › ') }, g.none ? g.title : g.path.join(' › ')),
     h('span', { class: 'n' }, String(count)),
   );
   el.addEventListener('dragover', (e) => {

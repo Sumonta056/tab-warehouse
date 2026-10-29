@@ -97,7 +97,10 @@ function partHeader(ctx, g, s, p, closed, count, depth) {
       'part',
       g.id,
       (from, after) => moveBookmark(from, { parentId: g.node.parentId, index: g.node.index + (after ? 1 : 0) }),
-      (fromId) => !findById(allParts(s).find((x) => x.id === fromId)?.node, g.id),
+      (fromId) => {
+        const n = allParts(s).find((x) => x.id === fromId)?.node;
+        return !!n && !findById(n, g.id);
+      },
     );
   }
   el.addEventListener('dragover', (e) => {
@@ -156,7 +159,8 @@ function partMenu(ctx, e, g, s) {
       danger: true,
       run: async () => {
         if (!confirm(deleteText(g, s))) return;
-        for (const c of g.node.children || []) await moveBookmark(c.id, { parentId });
+        const kids = g.node.children || [];
+        for (let k = 0; k < kids.length; k++) await moveBookmark(kids[k].id, { parentId, index: g.node.index + k });
         await removeBookmark(g.id);
         toast(`Section "${g.title}" deleted`);
       },

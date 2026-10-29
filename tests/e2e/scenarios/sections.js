@@ -437,7 +437,7 @@ export default [
     area,
     name: 'delete a Section moves its links and child Sections into its parent',
     page: 'newtab',
-    fixture: () => nested({ partColors: { 28: 'red' } }),
+    fixture: () => nested({ partColors: { 28: 'red' }, partIcons: { 28: '🐞' } }),
     async run(t) {
       await t.folder('Sprint tasks');
       let asked = '';
@@ -450,6 +450,31 @@ export default [
       t.eq(t.node('27').parentId, '23', 'link in Blocked');
       t.eq(t.node('28').parentId, '23', 'Waiting in Blocked');
       t.eq(t.part('Waiting')?.dataset.color, 'red', 'Waiting keeps its color');
+      t.ok(t.part('Waiting')?.textContent.includes('🐞'), 'Waiting keeps its icon');
+      t.eq(t.kids('23'), ['24', '27', '28'], 'children take the deleted Section place');
+    },
+  },
+  {
+    area,
+    name: 'delete a Section puts its children where it was, before the next sibling',
+    page: 'newtab',
+    fixture: () =>
+      base({
+        tasks: F('20', 'Sprint tasks', [
+          F('23', 'Blocked', [
+            L('24', 'Old #100', 'https://tracker.example.com/issues/100'),
+            F('26', 'Vendor', [L('27', 'Vendor #9', 'https://tracker.example.com/issues/9'), L('28', 'Vendor #10', 'https://tracker.example.com/issues/10')]),
+            L('30', 'After #11', 'https://tracker.example.com/issues/11'),
+          ]),
+        ]),
+      }),
+    async run(t) {
+      await t.folder('Sprint tasks');
+      t.w.confirm = () => true;
+      t.click(t.part('Vendor').querySelector('.more'));
+      t.menu('Delete section…');
+      await t.settle();
+      t.eq(t.kids('23'), ['24', '27', '28', '30'], 'order');
     },
   },
   {
