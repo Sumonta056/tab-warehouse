@@ -14,6 +14,21 @@ const withCats = (board) =>
     },
   });
 
+const nested = () =>
+  base({
+    tasks: F('20', 'Sprint tasks', [
+      L('21', 'Read title #160', 'https://tracker.example.com/issues/160'),
+      F('23', 'Blocked', [
+        L('24', 'Old #100', 'https://tracker.example.com/issues/100'),
+        F('26', 'Vendor', [
+          L('27', 'Vendor #9', 'https://tracker.example.com/issues/9'),
+          F('28', 'Waiting', [L('29', 'Reply #3', 'https://tracker.example.com/issues/3')]),
+        ]),
+      ]),
+      F('25', 'In progress', []),
+    ]),
+  });
+
 const openBoard = async (t) => {
   t.click(t.$('#boardBtn'));
   await t.settle();
@@ -215,6 +230,30 @@ export default [
       t.drag(card(t, '31'), t.$('.bsec[data-part="23"]'));
       await t.settle();
       t.eq(t.node('31').parentId, '23', 'from another column into a section');
+    },
+  },
+  {
+    area,
+    name: 'board: a deep Section shows as a flat header with its path',
+    page: 'newtab',
+    fixture: () => nested(),
+    async run(t) {
+      await openBoard(t);
+      const heads = t.$$('.bsec', col(t, '20'));
+      t.eq(
+        heads.map((x) => x.querySelector('.t').textContent),
+        ['Blocked', 'Blocked › Vendor', 'Blocked › Vendor › Waiting', 'In progress', 'No section'],
+        'every Section is one flat header labelled by its path',
+      );
+      t.ok(
+        heads.every((x) => x.dataset.depth === undefined && !x.style.paddingLeft && !x.style.marginLeft),
+        'no indent',
+      );
+      t.eq(t.$('.bcol-n', col(t, '20')).textContent, '4', 'column count');
+      t.drag(card(t, '21'), t.$('.bsec[data-part="28"]'));
+      await t.settle();
+      t.eq(t.node('21').parentId, '28', 'dropped on the deep header');
+      t.ok(!t.drag(card(t, '29'), t.$('.bsec[data-part="28"]')), 'own deep section refuses the drop');
     },
   },
   {

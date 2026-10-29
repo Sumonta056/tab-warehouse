@@ -4,6 +4,7 @@ import { cleanMark, markAttrs } from '../../domain/marks.js';
 import { matchTitleUrl } from '../../domain/search.js';
 import { sortLinks } from '../../domain/sort.js';
 import { tagNames } from '../../domain/tags.js';
+import { allParts } from '../../domain/tree.js';
 import { sameAsUrl, displayUrl, hostOf, normalizeUrl } from '../../domain/url.js';
 import { createBookmark, moveBookmark } from '../../services/bookmarks.js';
 import { linkBadge } from '../../ui/badges.js';
@@ -98,7 +99,7 @@ function column(s, ctx) {
   const cards = h('div', { class: 'bcards' });
   let hits = 0;
   if (s.parts.length) {
-    for (const g of [...s.parts, { id: `none:${s.id}`, title: 'No section', node: s.node, links: s.links, none: true }]) {
+    for (const g of [...allParts(s), { id: `none:${s.id}`, title: 'No section', node: s.node, links: s.links, none: true }]) {
       const list = sort(g.links);
       hits += list.length;
       cards.append(sectionHeader(g, list.length, ctx));
@@ -200,7 +201,7 @@ function sectionHeader(g, count, ctx) {
     { class: `bsec ${g.none ? 'NONE' : ''}`, ...markAttrs(color, { part: g.id }) },
     color ? h('span', { class: 'dot' }) : null,
     g.none ? null : markIcon(ctx.settings.partIcons[g.id]),
-    h('span', { class: 't' }, g.title),
+    h('span', { class: 't' }, g.none ? g.title : g.path.join(' › ')),
     h('span', { class: 'n' }, String(count)),
   );
   el.addEventListener('dragover', (e) => {
