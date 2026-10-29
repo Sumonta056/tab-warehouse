@@ -11,3 +11,5 @@ export const PALETTE_LINK_MAX = 30;
 export const QUICK_BADGE_MS = 2500;
 
 export const ICON_MAX = 32;
+
+export const IMPORT_DEPTH = 20;

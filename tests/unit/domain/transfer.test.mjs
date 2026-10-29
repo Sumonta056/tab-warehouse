@@ -1,6 +1,8 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { detectEnv } from '../../../extension/domain/env.js';
+import { sections } from '../../../extension/domain/tree.js';
+import { L, F } from '../fixtures.mjs';
 import { cleanImport, exportData, netscapeHtml, parseJson, backupName, addTags } from '../../../extension/domain/transfer.js';
 
 describe('cleanImport', () => {
@@ -34,7 +36,7 @@ describe('cleanImport', () => {
     });
     assert.deepEqual(r.sections[0].icon, '🚀');
     assert.ok(!('color' in r.sections[0]));
-    assert.deepEqual(r.sections[0].parts[0], { title: 'P', color: '#abcdef', links: [] });
+    assert.deepEqual(r.sections[0].parts[0], { title: 'P', color: '#abcdef', links: [], parts: [] });
     assert.ok(!('color' in r.sections[1]) && !('icon' in r.sections[1]), 'Unsorted takes no mark');
     assert.deepEqual(r.preferences.categories, [{ name: 'Ops', closed: false, color: 'blue', folders: [] }]);
   });
@@ -70,7 +72,7 @@ describe('cleanImport', () => {
             { title: 'ok', url: 'https://a.com' },
             { title: '', url: 'https://b.com' },
           ],
-          parts: [{ title: 'P', links: [{ title: '', url: 'https://c.com' }] }],
+          parts: [{ title: 'P', links: [{ title: '', url: 'https://c.com' }], parts: [] }],
         },
       ],
       preferences: null,
@@ -169,7 +171,7 @@ const SECS = [
     id: '30',
     title: 'Shop & <API>',
     links: [{ id: '31', title: 'Shop "PROD"', url: 'https://shop.example.com/?a=1&b=2', dateAdded: 1700000000000 }],
-    parts: [{ id: '35', title: 'Blocked', links: [{ id: '36', title: 'Old', url: 'https://tracker.example.com/1', dateAdded: 1700000005000 }] }],
+    parts: [{ id: '35', title: 'Blocked', links: [{ id: '36', title: 'Old', url: 'https://tracker.example.com/1', dateAdded: 1700000005000 }], parts: [] }],
   },
   { id: '40', title: 'Docs', links: [], parts: [] },
   {
@@ -201,7 +203,7 @@ describe('exportData', () => {
       title: 'Shop & <API>',
       unsorted: false,
       links: [{ title: 'Shop "PROD"', url: 'https://shop.example.com/?a=1&b=2', dateAdded: 1700000000000, note: 'n', pri: 'high' }],
-      parts: [{ title: 'Blocked', links: [{ title: 'Old', url: 'https://tracker.example.com/1', dateAdded: 1700000005000, due: '2026-11-01' }] }],
+      parts: [{ title: 'Blocked', links: [{ title: 'Old', url: 'https://tracker.example.com/1', dateAdded: 1700000005000, due: '2026-11-01' }], parts: [] }],
     });
     assert.equal(d.sections[2].unsorted, true);
     assert.deepEqual(d.preferences.order, ['Docs', 'Shop & <API>'], 'ids become titles, unknown ids drop');
@@ -320,5 +322,85 @@ describe('backupName and addTags', () => {
       ],
     );
     assert.deepEqual(addTags(undefined, [{ name: 'QA' }]), [{ name: 'QA' }]);
+  });
+});
+
+describe('nested Sections in backups', () => {
+  const deep = F('10', 'Root', [
+    F('w', 'Work', [
+      L('w1', 'Jira', 'https://jira.example.com', { parentId: 'w' }),
+      F(
+        'c',
+        'Clients',
+        [
+          L('c1', 'Portal', 'https://portal.example.com', { parentId: 'c' }),
+          F(
+            'a',
+            'Acme',
+            [
+              L('a1', 'Admin', 'https://admin.example.com', { parentId: 'a' }),
+              F('y', '2026', [L('y1', 'Q4', 'https://q4.example.com', { parentId: 'y' })], { parentId: 'a' }),
+            ],
+            { parentId: 'c' },
+          ),
+        ],
+        { parentId: 'w' },
+      ),
+    ]),
+  ]);
+  const settings = { order: [], folders: {}, categories: [], folderCat: {}, envRules: [], hostMap: [], partColors: { a: 'red' } };
+  const depthOf = (parts) => {
+    let n = 0;
+    let cur = parts;
+    while (cur.length) {
+      n++;
+      cur = cur[0].parts;
+    }
+    return n;
+  };
+
+  test('export writes Sections as a tree', () => {
+    const d = exportData(deep, sections(deep, []), settings, {});
+    const acme = d.sections[0].parts[0].parts[0];
+    assert.equal(acme.title, 'Acme');
+    assert.equal(acme.color, 'red');
+    const y = acme.parts[0];
+    assert.equal(y.title, '2026');
+    assert.equal(y.links[0].url, 'https://q4.example.com');
+    assert.deepEqual(y.parts, []);
+  });
+
+  test('cleanImport keeps nested parts and an old 1-level file', () => {
+    const r = cleanImport({
+      sections: [
+        {
+          title: 'Work',
+          links: [],
+          parts: [
+            { title: 'Clients', parts: [{ title: 'Acme', parts: [{ title: '2026', links: [{ url: 'https://q4.example.com' }] }] }] },
+            { title: 'Old', links: [] },
+          ],
+        },
+      ],
+    });
+    assert.equal(depthOf(r.sections[0].parts), 3);
+    assert.equal(r.sections[0].parts[0].parts[0].parts[0].links[0].url, 'https://q4.example.com');
+    assert.deepEqual(r.sections[0].parts[1], { title: 'Old', links: [], parts: [] });
+  });
+
+  test('cleanImport stops at 20 levels', () => {
+    let parts = [];
+    for (let i = 0; i < 10000; i++) parts = [{ title: `p${i}`, parts }];
+    const r = cleanImport({ sections: [{ title: 'S', parts }] });
+    assert.equal(depthOf(r.sections[0].parts), 20);
+  });
+
+  test('HTML export nests Section folders', () => {
+    const html = netscapeHtml(deep, sections(deep, []));
+    assert.ok(html.includes('        <DT><H3>Work</H3>\n'));
+    assert.ok(html.includes('            <DT><H3>Clients</H3>\n'));
+    assert.ok(html.includes('                <DT><H3>Acme</H3>\n'));
+    assert.ok(html.includes('                    <DT><H3>2026</H3>\n'));
+    assert.ok(html.includes('                        <DT><A HREF="https://q4.example.com"'));
   });
 });

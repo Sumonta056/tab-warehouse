@@ -27,6 +27,33 @@ export async function importFile(file, root, settings) {
     if (m.icon) marks[`${kind}Icons`][id] ||= m.icon;
   };
 
+  const importParts = async (parent, parts) => {
+    for (const pt of parts || []) {
+      let sf = (parent.children ||= []).find((k) => !k.url && k.title === pt.title);
+      if (!sf) {
+        sf = await chrome.bookmarks.create({ parentId: parent.id, title: pt.title });
+        sf.children = [];
+        parent.children.push(sf);
+        folders++;
+      }
+      keepMark('part', sf.id, pt);
+      const have = new Map((sf.children || []).filter((k) => k.url).map((k) => [k.url, k.id]));
+      for (const l of pt.links || []) {
+        if (!l.url) continue;
+        if (have.has(l.url)) {
+          keepMeta(have.get(l.url), l);
+          skipped++;
+          continue;
+        }
+        const bm = await chrome.bookmarks.create({ parentId: sf.id, title: l.title || l.url, url: l.url });
+        keepMeta(bm.id, l);
+        have.set(l.url, bm.id);
+        links++;
+      }
+      await importParts(sf, pt.parts);
+    }
+  };
+
   for (const sec of parsed.sections) {
     let parentId;
     if (sec.unsorted) parentId = root.id;
@@ -58,29 +85,7 @@ export async function importFile(file, root, settings) {
     if (sec.unsorted) continue;
     const parent = kids.find((k) => k.id === parentId);
     parent.children ||= [];
-    for (const pt of sec.parts || []) {
-      let sf = parent.children.find((k) => !k.url && k.title === pt.title);
-      if (!sf) {
-        sf = await chrome.bookmarks.create({ parentId, title: pt.title });
-        sf.children = [];
-        parent.children.push(sf);
-        folders++;
-      }
-      keepMark('part', sf.id, pt);
-      const have = new Map((sf.children || []).filter((k) => k.url).map((k) => [k.url, k.id]));
-      for (const l of pt.links || []) {
-        if (!l.url) continue;
-        if (have.has(l.url)) {
-          keepMeta(have.get(l.url), l);
-          skipped++;
-          continue;
-        }
-        const bm = await chrome.bookmarks.create({ parentId: sf.id, title: l.title || l.url, url: l.url });
-        keepMeta(bm.id, l);
-        have.set(l.url, bm.id);
-        links++;
-      }
-    }
+    await importParts(parent, sec.parts);
   }
 
   if (parsed.preferences) {

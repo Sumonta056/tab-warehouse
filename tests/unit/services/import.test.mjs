@@ -204,4 +204,33 @@ describe('importFile (JSON backup)', () => {
     await assert.rejects(importFile(file('{oops'), ch.tree.children[0].children[0], await loadSettings()));
     assert.equal(JSON.stringify(ch.tree), before);
   });
+
+  test('import creates nested Sections and keeps their colors', async () => {
+    const ch = fakeChrome({ tree: TREE });
+    const root = ch.tree.children[0].children[0];
+    const data = {
+      format: 'sumonta-warehouse',
+      version: 1,
+      sections: [
+        {
+          title: 'Work',
+          links: [],
+          parts: [
+            {
+              title: 'Clients',
+              links: [],
+              parts: [{ title: 'Acme', color: 'red', links: [{ title: 'Admin', url: 'https://admin.example.com/' }], parts: [] }],
+            },
+          ],
+        },
+      ],
+    };
+    const r = await importFile(file(data), root, await loadSettings());
+    assert.deepEqual(r, { folders: 3, links: 1, skipped: 0 });
+    const acme = child(child(child(root, 'Work'), 'Clients'), 'Acme');
+    assert.deepEqual(titles(acme), ['Admin']);
+    assert.equal((await loadSettings()).partColors[acme.id], 'red');
+    const again = await importFile(file(data), root, await loadSettings());
+    assert.deepEqual(again, { folders: 0, links: 0, skipped: 1 });
+  });
 });

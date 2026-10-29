@@ -1,5 +1,6 @@
 import { ENVS } from '../constants/envs.js';
 import { SORTS } from '../constants/sorts.js';
+import { IMPORT_DEPTH } from '../constants/limits.js';
 import { markOf } from './marks.js';
 import { withoutDone } from './meta.js';
 import { cleanTags } from './tags.js';
@@ -11,6 +12,12 @@ const linkOut = (l) => ({ title: l.title, url: l.url, dateAdded: l.dateAdded });
 export function exportData(root, secs, settings, meta) {
   const out = (l) => ({ ...linkOut(l), ...withoutDone(meta[l.id]) });
   const byId = Object.fromEntries(secs.map((s) => [s.id, s.title]));
+  const partOut = (pt) => ({
+    title: pt.title,
+    ...markOf(settings.partColors?.[pt.id], settings.partIcons?.[pt.id]),
+    links: pt.links.map(out),
+    parts: pt.parts.map(partOut),
+  });
   return {
     format: 'sumonta-warehouse',
     version: 1,
@@ -42,11 +49,7 @@ export function exportData(root, secs, settings, meta) {
       unsorted: !!s.virtual,
       ...(s.virtual ? {} : markOf(settings.folderColors?.[s.id], settings.folderIcons?.[s.id])),
       links: s.links.map(out),
-      parts: s.parts.map((pt) => ({
-        title: pt.title,
-        ...markOf(settings.partColors?.[pt.id], settings.partIcons?.[pt.id]),
-        links: pt.links.map(out),
-      })),
+      parts: s.parts.map(partOut),
     })),
   };
 }
@@ -69,20 +72,17 @@ export function netscapeHtml(root, secs) {
     '    <DL><p>',
   ];
   const item = (l, pad) => `${pad}<DT><A HREF="${esc(l.url)}" ADD_DATE="${Math.floor((l.dateAdded || Date.now()) / 1000)}">${esc(l.title)}</A>`;
+  const folder = (s, pad) => {
+    lines.push(`${pad}<DT><H3>${esc(s.title)}</H3>`, `${pad}<DL><p>`);
+    for (const pt of s.parts) folder(pt, `${pad}    `);
+    lines.push(...s.links.map((l) => item(l, `${pad}    `)), `${pad}</DL><p>`);
+  };
   for (const s of secs) {
     if (s.virtual) {
       lines.push(...s.links.map((l) => item(l, '        ')));
       continue;
     }
-    lines.push(`        <DT><H3>${esc(s.title)}</H3>`, '        <DL><p>');
-    for (const pt of s.parts)
-      lines.push(
-        `            <DT><H3>${esc(pt.title)}</H3>`,
-        '            <DL><p>',
-        ...pt.links.map((l) => item(l, '                ')),
-        '            </DL><p>',
-      );
-    lines.push(...s.links.map((l) => item(l, '            ')), '        </DL><p>');
+    folder(s, '        ');
   }
   lines.push('    </DL><p>', '</DL><p>');
   return lines.join('\n');
@@ -114,6 +114,13 @@ function cleanFolderPrefs(f) {
 
 export const addTags = (have = [], add) => [...have, ...add.filter((t) => !have.some((x) => x.name === t.name))];
 
+function cleanParts(v, depth) {
+  if (depth >= IMPORT_DEPTH) return [];
+  return list(v)
+    .filter((pt) => isObj(pt) && isStr(pt.title))
+    .map((pt) => ({ title: pt.title, ...markOf(pt.color, pt.icon), links: cleanLinks(pt.links), parts: cleanParts(pt.parts, depth + 1) }));
+}
+
 export function cleanImport(d) {
   const sections = list(d.sections)
     .filter((s) => isObj(s) && isStr(s.title))
@@ -122,9 +129,7 @@ export function cleanImport(d) {
       unsorted: s.unsorted === true,
       ...(s.unsorted === true ? {} : markOf(s.color, s.icon)),
       links: cleanLinks(s.links),
-      parts: list(s.parts)
-        .filter((pt) => isObj(pt) && isStr(pt.title))
-        .map((pt) => ({ title: pt.title, ...markOf(pt.color, pt.icon), links: cleanLinks(pt.links) })),
+      parts: cleanParts(s.parts, 0),
     }));
   const p = d.preferences;
   if (!isObj(p)) return { sections, preferences: null };
