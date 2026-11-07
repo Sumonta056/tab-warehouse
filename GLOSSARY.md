@@ -14,3 +14,16 @@ _Avoid_: subfolder, sub-section, part, group
 **Unsorted**: The links that are directly inside the Root folder. Unsorted shows as a Folder, but it has no Sections.
 
 **Link**: One bookmark with an address. A Link belongs to exactly 1 Folder or Section, or to Unsorted.
+
+**Save popup**: The small window from the toolbar icon that saves the open page into a Folder or Section.
+_Avoid_: pop-up, extension window
+
+**Quick save**: Saving the open page to the last used Folder or Section with one key, without the Save popup.
+
+**Saved mark**: The ✓ on the toolbar icon that shows that the open page is already a Link.
+_Avoid_: tick, saved badge
+
+**Recent folders**: The Folders or Sections that the Save popup saved into last. The popup fills them by itself.
+
+**Pinned folder**: A Folder or Section that the user chose to keep as a chip in the Save popup. Pinned folders come before Recent folders.
+_Avoid_: tab, favourite, shortcut folder
