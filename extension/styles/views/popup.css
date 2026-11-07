@@ -314,6 +314,40 @@ body.due-open .folders {
 .chips[hidden] {
   display: none;
 }
+.save-chip {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: calc((100% - 8px) / 3);
+  min-height: 28px;
+  height: 28px;
+  padding: 0 9px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+}
+.save-chip.recent {
+  border-style: dashed;
+}
+.save-chip svg {
+  flex: 0 0 auto;
+  width: 11px;
+  height: 11px;
+  color: var(--accent);
+  fill: currentColor;
+}
+.save-chip .ct {
+  min-width: 0;
+  max-width: 110px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.save-chip .ck {
+  flex: 0 0 auto;
+  font-size: 10px;
+  color: var(--muted);
+}
 .folders {
   flex: 1 1 auto;
   min-height: 96px;
@@ -380,6 +414,39 @@ body.due-open .folders {
 }
 .fold:hover {
   color: var(--text);
+}
+.pin {
+  flex: 0 0 28px;
+  width: 28px;
+  height: 28px;
+  margin-right: -8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--muted-2);
+  opacity: 0;
+}
+.pin svg {
+  width: 13px;
+  height: 13px;
+}
+.folder:hover .pin,
+.folder.on .pin,
+.pin:focus,
+.pin.on {
+  opacity: 1;
+}
+.pin:hover {
+  color: var(--text);
+}
+.pin.on {
+  color: var(--accent);
+}
+.pin.on svg {
+  fill: currentColor;
 }
 .bar {
   display: flex;

@@ -13,6 +13,66 @@ const pickColor = (t, value) => {
 export default [
   {
     area,
+    name: 'folder menu: Pin in save popup / Unpin from save popup saves at once with a toast; Unsorted and Sections have no such item',
+    page: 'newtab',
+    fixture: () => base(),
+    async run(t) {
+      t.context(t.nav('Shop API'));
+      await t.menuShown();
+      t.ok(t.menuLabels().includes('Pin in save popup'), `menu has the item (${t.menuLabels().join(', ')})`);
+      t.menu('Pin in save popup');
+      await t.settle();
+      t.eq(t.settings().savePins, ['30'], 'pinned');
+      t.eq(t.toast()?.textContent, 'Pinned Shop API in the save popup', 'toast');
+      t.context(t.nav('Shop API'));
+      await t.menuShown();
+      t.ok(!t.menuLabels().includes('Pin in save popup'), 'no Pin item once pinned');
+      t.menu('Unpin from save popup');
+      await t.settle();
+      t.eq(t.settings().savePins, [], 'unpinned');
+      t.eq(t.toast()?.textContent, 'Unpinned Shop API', 'toast');
+      t.context(t.nav('Unsorted'));
+      await t.menuShown();
+      t.ok(!t.menuLabels().some((l) => l.includes('save popup')), 'Unsorted has no item');
+      await t.folder('Sprint tasks');
+      t.context(t.part('Blocked'));
+      await t.menuShown();
+      t.ok(!t.menuLabels().some((l) => l.includes('save popup')), 'a Section has no item');
+    },
+  },
+  {
+    area,
+    name: 'folder menu: a full pin list shows "You can pin up to 6 folders." and saves nothing',
+    page: 'newtab',
+    fixture: () => base({ extraRoot: [F('81', 'A'), F('82', 'B'), F('83', 'C'), F('84', 'D')], settings: { savePins: ['81', '82', '83', '84', '20', '40'] } }),
+    async run(t) {
+      t.context(t.nav('Shop API'));
+      await t.menuShown();
+      t.menu('Pin in save popup');
+      await t.settle();
+      t.eq(t.toast()?.textContent, 'You can pin up to 6 folders.', 'toast');
+      t.eq(t.settings().savePins, ['81', '82', '83', '84', '20', '40'], 'nothing saved');
+    },
+  },
+  {
+    area,
+    name: 'each refresh removes Pinned and Recent folder ids that are no longer folders',
+    page: 'newtab',
+    fixture: () => base({ settings: { savePins: ['40', '999', '23'], saveRecent: ['31', '50', '30'] } }),
+    async run(t) {
+      await t.settle();
+      t.eq(t.settings().savePins, ['40', '23'], 'pins pruned');
+      t.eq(t.settings().saveRecent, ['50', '30'], 'a link id is not a folder');
+      t.context(t.nav('Empty'));
+      await t.menuShown();
+      t.confirm(true);
+      t.menu('Delete folder…');
+      await t.until(() => !(t.settings().saveRecent || []).includes('50'), 'the deleted folder to be pruned');
+      t.eq(t.settings().saveRecent, ['30'], 'deleted folder removed');
+    },
+  },
+  {
+    area,
     name: 'folder color: the folder menu colors the sidebar row, the folder title and the Board column; Default clears it',
     page: 'newtab',
     fixture: () => base(),

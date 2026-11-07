@@ -31,6 +31,8 @@ export const DEFAULT_SETTINGS = {
   order: [],
   lastFolder: null,
   lastSaveFolder: null,
+  savePins: [],
+  saveRecent: [],
   categories: [],
   folderCat: {},
   partColors: {},

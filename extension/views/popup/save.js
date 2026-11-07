@@ -1,4 +1,5 @@
 import { gcalUrl } from '../../domain/due.js';
+import { pushRecent } from '../../domain/popup.js';
 import { createBookmark } from '../../services/bookmarks.js';
 import { saveSettings, setLinkMeta } from '../../services/storage.js';
 import { openTab } from '../../services/tabs.js';
@@ -18,7 +19,7 @@ export async function save() {
     const bm = await createBookmark({ parentId, title: titleEl.value.trim() || url, url });
     const due = dueEl.value();
     if (pri || noteEl.value.trim() || due) await setLinkMeta(bm.id, { pri, note: noteEl.value, due });
-    await saveSettings({ lastSaveFolder: parentId });
+    await saveSettings({ lastSaveFolder: parentId, saveRecent: pushRecent(popup.settings.saveRecent, parentId) });
     status(`Saved to ${x.create || x.f.title}`);
     if (dueEl.calendar()) await openTab({ url: gcalUrl({ title: bm.title, url, note: noteEl.value.trim(), due }), index: tab.index + 1 });
     setTimeout(() => window.close(), 900);

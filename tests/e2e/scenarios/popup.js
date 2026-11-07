@@ -6,6 +6,10 @@ const folders = (t) => t.$$('#folders .folder').map((b) => b.querySelector('.t')
 const selected = (t) => t.$('#folders .folder.on')?.querySelector('.t')?.textContent;
 const row = (t, title) => t.$$('#folders .folder').find((b) => b.querySelector('.t')?.textContent === title);
 const fold = (t, title) => row(t, title)?.querySelector('.fold');
+const chips = (t) => t.$$('#chips .save-chip').map((c) => c.querySelector('.ct').textContent);
+const chip = (t, title) => t.$$('#chips .save-chip').find((c) => c.querySelector('.ct').textContent === title);
+const pin = (t, title) => row(t, title)?.querySelector('.pin');
+const many = () => Array.from({ length: 8 }, (_, i) => F(String(900 + i), `Reading list number ${i + 1} with a long name`));
 const deep = () =>
   F('20', 'Work', [
     L('21', 'Plan', 'https://tracker.example.com/plan'),
@@ -576,6 +580,246 @@ export default [
       check('with the copy list too');
       const save = t.$('#save').getBoundingClientRect();
       t.ok(save.bottom <= t.d.body.getBoundingClientRect().bottom && save.height >= 44, 'Save still whole');
+    },
+  },
+  {
+    area,
+    name: 'chips: Pinned folders first with a solid border and a pin, then Recent folders dashed, numbered with tooltips',
+    page: 'popup',
+    fixture: () => base({ activeTab: tab, settings: { lastSaveFolder: '30', savePins: ['40', '23'], saveRecent: ['30', '40', 'gone', '50'] } }),
+    async run(t) {
+      const box = t.$('#chips');
+      t.ok(!box.hidden, 'chips row shown');
+      t.eq(chips(t), ['GITHUB - PIN', 'Blocked', 'Shop API', 'Empty'], 'pins in order, then recent not pinned; unknown ids left out');
+      const els = t.$$('#chips .save-chip');
+      t.eq(
+        els.map((c) => [c.classList.contains('pinned'), !!c.querySelector('svg'), t.w.getComputedStyle(c).borderTopStyle]),
+        [
+          [true, true, 'solid'],
+          [true, true, 'solid'],
+          [false, false, 'dashed'],
+          [false, false, 'dashed'],
+        ],
+        'pinned solid with a pin icon, recent dashed',
+      );
+      t.eq(
+        els.map((c) => c.querySelector('.ck').textContent),
+        ['1', '2', '3', '4'],
+        'numbers 1–4',
+      );
+      t.eq(
+        els.map((c) => c.title),
+        [
+          'My Links › GITHUB - PIN · pinned · Alt+1',
+          'My Links › Sprint tasks › Blocked · pinned · Alt+2',
+          'My Links › Shop API · recent · Alt+3',
+          'My Links › Empty · recent · Alt+4',
+        ],
+        'tooltips',
+      );
+      t.ok(
+        els.every((c) => Math.round(c.getBoundingClientRect().height) === 28),
+        'chips are 28 px',
+      );
+      t.eq(
+        els.map((c) => c.classList.contains('on')),
+        [false, false, true, false],
+        'the chip of the selected folder is on',
+      );
+      t.key(t.$('#q'), 'ArrowDown');
+      t.eq(selected(t), 'GITHUB - PIN', 'arrow moves the selection');
+      t.eq(
+        t.$$('#chips .save-chip').map((c) => c.classList.contains('on')),
+        [true, false, false, false],
+        'the on chip follows the selection',
+      );
+      t.type(t.$('#q'), 'Shop');
+      await t.settle();
+      t.ok(box.hidden, 'chips hidden while the search box has text');
+      t.key(t.$('#q'), 'Escape');
+      await t.settle();
+      t.ok(!box.hidden, 'chips back when the search is cleared');
+    },
+  },
+  {
+    area,
+    name: 'chips: at most 6, cut with … and on at most 2 rows',
+    page: 'popup',
+    fixture: () =>
+      base({
+        activeTab: tab,
+        extraRoot: many(),
+        settings: { savePins: ['900', '901', '902'], saveRecent: ['903', '904', '905', '906', '907'] },
+      }),
+    async run(t) {
+      const els = t.$$('#chips .save-chip');
+      t.eq(els.length, 6, '6 chips');
+      t.eq(
+        els.map((c) => c.querySelector('.ck').textContent),
+        ['1', '2', '3', '4', '5', '6'],
+        'numbered 1–6',
+      );
+      const ct = els[0].querySelector('.ct');
+      t.eq(t.w.getComputedStyle(ct).textOverflow, 'ellipsis', 'title cut with …');
+      t.ok(ct.scrollWidth > ct.clientWidth, 'long title is cut');
+      t.ok(ct.getBoundingClientRect().width <= 110, 'title at most 110 px');
+      const tops = [...new Set(els.map((c) => Math.round(c.getBoundingClientRect().top)))];
+      t.ok(tops.length <= 2, `at most 2 rows (${tops.length})`);
+      t.ok(t.d.body.getBoundingClientRect().height <= 600, 'popup fits 600 px');
+      t.click(t.$('#dueBtn'));
+      t.click(t.$$('#duePick .due-q')[1]);
+      t.click(t.$('#duePick .due-add-time'));
+      t.click(t.$('#noteBtn'));
+      const body = t.d.body.getBoundingClientRect();
+      const save = t.$('#save').getBoundingClientRect();
+      t.ok(body.height <= 600 && save.bottom <= body.bottom, `with note and due open the popup still fits 600 px (${Math.round(body.height)})`);
+      t.ok(t.$('#folders').getBoundingClientRect().height >= 44, 'at least one folder row visible');
+    },
+  },
+  {
+    area,
+    name: 'chips: a click selects the folder, opens its parents and puts focus back in the search box; Enter saves there',
+    page: 'popup',
+    fixture: () => base({ activeTab: tab, settings: { saveRecent: ['23'] } }),
+    async run(t) {
+      t.ok(!row(t, 'Blocked'), 'Blocked hidden under a closed parent');
+      t.click(chip(t, 'Blocked'));
+      await t.settle();
+      t.eq(selected(t), 'Blocked', 'selected');
+      t.ok(fold(t, 'Sprint tasks')?.getAttribute('aria-expanded') === 'true', 'parent opened');
+      t.eq(t.d.activeElement, t.$('#q'), 'focus back in the search box');
+      t.ok(chip(t, 'Blocked').classList.contains('on'), 'chip on');
+      t.key(t.$('#q'), 'Enter');
+      await t.settle();
+      t.eq(t.node('23').children.at(-1)?.url, tab.url, 'saved into Blocked');
+    },
+  },
+  {
+    area,
+    name: 'chips: Alt+1 … Alt+6 select chip N',
+    page: 'popup',
+    fixture: () => base({ activeTab: tab, settings: { savePins: ['40'], saveRecent: ['23', '30'] } }),
+    async run(t) {
+      const alt = (n) => {
+        const e = new t.w.KeyboardEvent('keydown', { key: '¡', code: `Digit${n}`, altKey: true, bubbles: true, cancelable: true });
+        t.$('#q').dispatchEvent(e);
+        return e.defaultPrevented;
+      };
+      t.ok(alt(2), 'Alt+2 handled');
+      t.eq(selected(t), 'Blocked', 'Alt+2 selects chip 2 and opens its parent');
+      t.eq(t.d.activeElement, t.$('#q'), 'focus in the search box');
+      alt(3);
+      t.eq(selected(t), 'Shop API', 'Alt+3');
+      alt(1);
+      t.eq(selected(t), 'GITHUB - PIN', 'Alt+1');
+      t.ok(!alt(5), 'no chip 5: nothing happens');
+      t.eq(selected(t), 'GITHUB - PIN', 'selection kept');
+      t.key(t.$('#q'), 'Enter');
+      await t.settle();
+      t.eq(t.node('40').children.at(-1)?.url, tab.url, 'Enter saves to the chip folder');
+    },
+  },
+  {
+    area,
+    name: 'chips: right-click on a Pinned folder chip offers Unpin; a Recent folder chip has no menu',
+    page: 'popup',
+    fixture: () => base({ activeTab: tab, settings: { savePins: ['40', '30'], saveRecent: ['50', '40'] } }),
+    async run(t) {
+      t.context(chip(t, 'Empty'));
+      t.ok(!t.$('.menu'), 'no menu on a recent chip');
+      t.context(chip(t, 'Shop API'));
+      await t.menuShown();
+      t.eq(t.menuLabels(), ['Unpin'], 'menu');
+      t.menu('Unpin');
+      await t.settle();
+      t.eq(t.settings().savePins, ['40'], 'unpinned and saved');
+      t.eq(chips(t), ['GITHUB - PIN', 'Empty'], 'chip gone');
+      t.context(chip(t, 'GITHUB - PIN'));
+      await t.menuShown();
+      t.menu('Unpin');
+      await t.settle();
+      t.eq(chips(t), ['Empty', 'GITHUB - PIN'], 'a recent folder stays as a recent chip');
+      t.ok(chip(t, 'GITHUB - PIN').classList.contains('recent'), 'now dashed');
+    },
+  },
+  {
+    area,
+    name: 'pin button: on every folder row, shown while pinned, toggles the pin and saves at once',
+    page: 'popup',
+    fixture: () => base({ activeTab: tab, settings: { savePins: ['40'] } }),
+    async run(t) {
+      t.ok(
+        t.$$('#folders .folder').every((r) => r.querySelector('.pin')),
+        'every folder row has a pin button',
+      );
+      const p = pin(t, 'GITHUB - PIN');
+      t.eq(
+        [p.getAttribute('aria-label'), p.getAttribute('aria-pressed'), p.title, p.tabIndex],
+        ['Unpin GITHUB - PIN', 'true', 'Unpin GITHUB - PIN', -1],
+        'pinned button',
+      );
+      t.eq(t.w.getComputedStyle(p).opacity, '1', 'always shown while pinned');
+      const r = p.getBoundingClientRect();
+      t.eq([Math.round(r.width), Math.round(r.height)], [28, 28], '28 px');
+      t.ok(
+        r.right <= row(t, 'GITHUB - PIN').getBoundingClientRect().right + 1 &&
+          r.left > row(t, 'GITHUB - PIN').querySelector('.n').getBoundingClientRect().right - 1,
+        'at the right of the row',
+      );
+      const q = pin(t, 'Shop API');
+      t.eq([q.getAttribute('aria-label'), q.getAttribute('aria-pressed')], ['Pin Shop API', 'false'], 'unpinned button');
+      t.eq(t.w.getComputedStyle(q).opacity, '0', 'hidden until hover or focus');
+      q.focus();
+      t.eq(t.w.getComputedStyle(q).opacity, '1', 'shown on focus');
+      t.click(q);
+      await t.settle();
+      t.eq(t.settings().savePins, ['40', '30'], 'saved at once');
+      t.eq(selected(t), 'My Links', 'the pin button does not change the selection');
+      t.eq(t.d.activeElement, t.$('#q'), 'focus back in the search box');
+      t.eq(pin(t, 'Shop API').getAttribute('aria-pressed'), 'true', 'pressed now');
+      t.eq(chips(t), ['GITHUB - PIN', 'Shop API'], 'chip added');
+      t.click(pin(t, 'GITHUB - PIN'));
+      await t.settle();
+      t.eq(t.settings().savePins, ['30'], 'unpinned');
+      t.eq(chips(t), ['Shop API'], 'chip removed');
+      t.type(t.$('#q'), 'Shop');
+      await t.settle();
+      t.ok(pin(t, 'My Links › Shop API'), 'search rows have the pin button too');
+      t.ok(!t.$('#folders .folder.create .pin'), 'the Create item has none');
+    },
+  },
+  {
+    area,
+    name: 'pin button: a full list shows "You can pin up to 6 folders." and saves nothing',
+    page: 'popup',
+    fixture: () => base({ activeTab: tab, extraRoot: many(), settings: { savePins: ['900', '901', '902', '903', '904', '905'] } }),
+    async run(t) {
+      t.click(pin(t, 'Shop API'));
+      await t.settle();
+      t.eq(t.toast()?.textContent, 'You can pin up to 6 folders.', 'toast');
+      t.eq(t.settings().savePins, ['900', '901', '902', '903', '904', '905'], 'nothing saved');
+      t.eq(pin(t, 'Shop API').getAttribute('aria-pressed'), 'false', 'not pinned');
+    },
+  },
+  {
+    area,
+    name: 'a save from the popup puts the folder first in Recent folders; Create uses the new folder id',
+    page: 'popup',
+    fixture: () => base({ activeTab: tab, settings: { saveRecent: ['40', '30', '50', '20', '23', '10'] } }),
+    async run(t) {
+      t.type(t.$('#q'), 'Shop');
+      await t.settle();
+      t.key(t.$('#q'), 'Enter');
+      await t.settle();
+      t.eq(t.settings().saveRecent, ['30', '40', '50', '20', '23', '10'], 'moved to the front');
+      t.eq(t.settings().lastSaveFolder, '30', 'last save folder too');
+      await t.reload();
+      t.type(t.$('#q'), 'Reading list');
+      await t.settle();
+      t.key(t.$('#q'), 'Enter');
+      await t.settle();
+      const f = t.node('10').children.find((c) => c.title === 'Reading list');
+      t.eq(t.settings().saveRecent, [f?.id, '30', '40', '50', '20', '23'], 'new folder first, cut to 6');
     },
   },
   {

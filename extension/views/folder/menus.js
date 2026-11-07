@@ -2,6 +2,7 @@ import { PRIS, PRI_NAMES } from '../../constants/priority.js';
 import { detectEnv } from '../../domain/env.js';
 import { otherVersions } from '../../domain/derive.js';
 import { catOf, orderToTop, sectionTargets } from '../../domain/folders.js';
+import { togglePin } from '../../domain/popup.js';
 import { tagNames } from '../../domain/tags.js';
 import { isDueToday } from '../../domain/today.js';
 import { moveBookmark, removeBookmarkTree } from '../../services/bookmarks.js';
@@ -10,7 +11,7 @@ import { showMenu } from '../../ui/menu.js';
 import { toast } from '../../ui/toast.js';
 import { state } from '../../state/page-state.js';
 import { cleanIcon } from '../../domain/marks.js';
-import { saveMark, saveOrder, moveToCategory } from '../../state/folders.js';
+import { saveMark, saveOrder, saveCats, moveToCategory } from '../../state/folders.js';
 import { addLinkToToday, deleteLink, openCalendar, setDue, setPri } from './actions.js';
 import { startEdit } from './edit.js';
 import { renameFolder } from './page.js';
@@ -57,6 +58,16 @@ export function folderMenu(ctx, e, s) {
     await moveToCategory(s, target);
     ctx.renderNav();
   };
+  const pin = async () => {
+    const pinned = state.settings.savePins.includes(s.id);
+    const r = togglePin(state.settings.savePins, s.id);
+    if (r.error) {
+      toast(r.error);
+      return;
+    }
+    await saveCats({ savePins: r.pins });
+    toast(pinned ? `Unpinned ${s.title}` : `Pinned ${s.title} in the save popup`);
+  };
   showMenu(e, [
     { label: `Open all (${s.all.length})`, icon: 'external', run: () => s.all.forEach((l) => openTab({ url: l.url, active: false })) },
     {
@@ -92,6 +103,7 @@ export function folderMenu(ctx, e, s) {
               ctx.renderNav();
             },
           },
+          { label: settings.savePins.includes(s.id) ? 'Unpin from save popup' : 'Pin in save popup', icon: 'pin', run: pin },
           ...(settings.categories.length
             ? [
                 '-',

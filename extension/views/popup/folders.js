@@ -2,6 +2,7 @@ import { visibleFolders, folderArrow, folderAncestors, saveLabel } from '../../d
 import { h, svgIcon } from '../../ui/dom.js';
 import { popup, target } from '../../state/popup-state.js';
 import { save } from './save.js';
+import { markChips, renderChips, togglePinned } from './chips.js';
 
 const list = () => document.querySelector('#folders');
 
@@ -23,17 +24,18 @@ export function renderFolders() {
       ? createRow(x, folders)
       : x.tree
         ? treeRow(x)
-        : h('div', { class: 'folder', role: 'option', title: x.f.path }, rowText(x.f.path, x.f.count));
+        : h('div', { class: 'folder', role: 'option', title: x.f.path }, rowText(x.f.path, x.f.count), pinBtn(x.f));
     el.addEventListener('click', (e) => {
-      if (e.target.closest('.fold')) return;
+      if (e.target.closest('.fold, .pin')) return;
       setCursor(i);
       document.querySelector('#q').focus();
     });
     el.addEventListener('dblclick', (e) => {
-      if (!e.target.closest('.fold')) save();
+      if (!e.target.closest('.fold, .pin')) save();
     });
     box.append(el);
   });
+  renderChips();
   setCursor(cursor);
 }
 
@@ -73,6 +75,28 @@ function treeRow(x) {
     { class: 'folder', role: 'option', title: f.path, style: { paddingLeft: `${f.depth ? (f.depth - 1) * 14 : 10}px` } },
     fold,
     ...rowText(f.title, f.count),
+    pinBtn(f),
+  );
+}
+
+function pinBtn(f) {
+  const on = popup.settings.savePins.includes(f.id);
+  const label = `${on ? 'Unpin' : 'Pin'} ${f.title}`;
+  return h(
+    'button',
+    {
+      type: 'button',
+      class: on ? 'pin on' : 'pin',
+      tabindex: '-1',
+      'aria-label': label,
+      'aria-pressed': String(on),
+      title: label,
+      onClick: () => {
+        togglePinned(f.id);
+        document.querySelector('#q').focus();
+      },
+    },
+    svgIcon('pin'),
   );
 }
 
@@ -104,6 +128,7 @@ export function setCursor(i) {
     el.setAttribute('aria-selected', String(k === popup.cursor));
   });
   box.querySelector('.folder.on')?.scrollIntoView({ block: 'nearest' });
+  markChips();
   updateSaveBtn();
 }
 

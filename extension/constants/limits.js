@@ -15,3 +15,5 @@ export const ICON_MAX = 32;
 export const IMPORT_DEPTH = 20;
 
 export const SAVED_MARK_MS = 100;
+
+export const CHIP_MAX = 6;

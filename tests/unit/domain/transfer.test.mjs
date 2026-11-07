@@ -404,3 +404,13 @@ describe('nested Sections in backups', () => {
     assert.ok(html.includes('                        <DT><A HREF="https://q4.example.com"'));
   });
 });
+
+describe('pinned and recent folders stay out of backups', () => {
+  test('exportData does not write savePins or saveRecent, and cleanImport drops them', () => {
+    const d = exportData(ROOT, SECS, { ...SETTINGS, savePins: ['30'], saveRecent: ['30'] }, {});
+    assert.ok(!('savePins' in d.preferences) && !('saveRecent' in d.preferences));
+    assert.ok(!JSON.stringify(d).includes('savePins') && !JSON.stringify(d).includes('saveRecent'));
+    const p = cleanImport({ sections: [], preferences: { savePins: ['1'], saveRecent: ['2'] } }).preferences;
+    assert.ok(!('savePins' in p) && !('saveRecent' in p));
+  });
+});

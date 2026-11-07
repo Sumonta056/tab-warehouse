@@ -150,6 +150,7 @@ Developers keep the same page open in many versions: live, test, staging and `lo
 
 - A compact popup: the title and tag on top, then one toolbar row (priority dots, Note, Due, Page / Site), the folder list and a wide **Save** button.
 - Save the current tab into any folder, or create a new folder by typing its name. Folders with subfolders open and close with their arrow or with → / ←; only the way to your last folder is open.
+- **Pinned and Recent folders**: up to 6 chips under the folder search, your pinned folders first, then the folders you saved to last. Click a chip or press `Alt+1` … `Alt+6` to pick that folder, then Enter saves. Pin a folder with the pin at the right of its row, or with **Pin in save popup** in the sidebar folder menu; right-click a pinned chip to unpin it.
 - Save the full page or the whole site (`origin/`).
 - Shows the tag and remembers the last folder.
 - Says “✓ Saved in <folder>” (and “+N more”) on the address line when the page is already saved, also when only `?utm_…`, `#part` or a trailing `/` differ; click it to see each copy and remove one. **Save again** still saves a second copy.
@@ -234,6 +235,7 @@ The release ZIP is built: `npm install`, then `./tools/package.sh` (or `npm run 
 | `←` / `→` (on the sidebar edge)   | Resize the sidebar by 16 px                             |
 | `←` / `→` (in Settings)           | Next / previous tab                                     |
 | `↑` / `↓`, `Enter` (in the popup) | Pick a folder, save                                     |
+| `Alt+1` … `Alt+6` (in the popup)  | Pick a Pinned or Recent folder chip                     |
 
 Settings › Shortcuts lists these keys. To change the Chrome keys, click **Change shortcuts** there (it opens `chrome://extensions/shortcuts`).
 
@@ -318,7 +320,7 @@ python3 -I tests/serve.py 8799
 
 ## Changelog
 
-- **Unreleased** — The command palette opens as a toolbar popup, so its box has focus at once on a fresh new tab. **Today's top list** checklist, a fixed sidebar row above the folders (tick links, done links are deleted the next day with Undo, count on the row, a wide **Up next** bar on Home with the title on up to 2 lines); the view tabs are Home and Board again. Backups never carry a tick; only a visible tab deletes done links; Undo never restores a tick. **Saved mark**: a green ✓ on the toolbar icon, with the tooltip "Saved in <folder>", while the open page is already bookmarked. A compact Save popup (380 px): one toolbar row, collapsible folders (→ / ←), and a one-line “Saved in <folder> +N more” in place of the warning box.
+- **Unreleased** — The command palette opens as a toolbar popup, so its box has focus at once on a fresh new tab. **Today's top list** checklist, a fixed sidebar row above the folders (tick links, done links are deleted the next day with Undo, count on the row, a wide **Up next** bar on Home with the title on up to 2 lines); the view tabs are Home and Board again. Backups never carry a tick; only a visible tab deletes done links; Undo never restores a tick. **Saved mark**: a green ✓ on the toolbar icon, with the tooltip "Saved in <folder>", while the open page is already bookmarked. A compact Save popup (380 px): one toolbar row, collapsible folders (→ / ←), and a one-line “Saved in <folder> +N more” in place of the warning box. **Pinned and Recent folders** as chips in the Save popup (up to 6, `Alt+1` … `Alt+6`), with a pin on each folder row and **Pin in save popup** in the sidebar folder menu.
 - **2.5.0** — Due dates on links with an optional Google Calendar event; quick save (`⌘K` / `Ctrl+K`) without the popup; the popup warns when a page is already saved and offers **Save again**; Settings › Shortcuts; the command palette moves to `⌘⇧K` / `Ctrl+Shift+K`. Details in [CHANGELOG.md](CHANGELOG.md).
 - **2.4.0** — Full history in [CHANGELOG.md](CHANGELOG.md).
   - Command palette (⌘K) and `tw` search from the address bar.

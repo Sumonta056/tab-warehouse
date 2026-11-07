@@ -1,3 +1,4 @@
+import { CHIP_MAX } from '../constants/limits.js';
 import { hostOf } from './url.js';
 
 const linkCount = (n) => (n.children || []).filter((c) => c.url).length;
@@ -99,4 +100,40 @@ export function folderArrow(items, i, key) {
   if (toggles && x.open) return { close: x.key };
   const at = items.findIndex((y) => y.key === x.parent);
   return at < 0 ? null : { cursor: at };
+}
+
+export function chipIds(pins, recent, validIds, max = CHIP_MAX) {
+  const pinned = (pins || []).filter((id) => validIds.has(id));
+  const rest = (recent || []).filter((id) => validIds.has(id) && !pinned.includes(id));
+  return [...new Set([...pinned, ...rest])].slice(0, max);
+}
+
+export function pushRecent(recent, id, max = CHIP_MAX) {
+  return [id, ...(recent || []).filter((x) => x !== id)].slice(0, max);
+}
+
+export function togglePin(pins, id, max = CHIP_MAX) {
+  const list = pins || [];
+  if (list.includes(id)) return { pins: list.filter((x) => x !== id) };
+  if (list.length >= max) return { pins: list, error: `You can pin up to ${max} folders.` };
+  return { pins: [...list, id] };
+}
+
+export function saveChips(folders, settings) {
+  const byId = new Map(folders.map((f) => [f.id, f]));
+  const pins = settings.savePins || [];
+  return chipIds(pins, settings.saveRecent, new Set(byId.keys())).map((id, i) => {
+    const f = byId.get(id);
+    const pinned = pins.includes(id);
+    return { id, title: f.title, pinned, n: i + 1, tip: `${f.path} · ${pinned ? 'pinned' : 'recent'} · Alt+${i + 1}` };
+  });
+}
+
+export function staleSaveFolders(settings, folderIds) {
+  const patch = {};
+  for (const key of ['savePins', 'saveRecent']) {
+    const list = settings[key] || [];
+    if (list.some((id) => !folderIds.has(id))) patch[key] = list.filter((id) => folderIds.has(id));
+  }
+  return Object.keys(patch).length ? patch : null;
 }

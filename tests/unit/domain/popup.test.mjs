@@ -12,6 +12,11 @@ import {
   folderAncestors,
   visibleFolders,
   folderArrow,
+  chipIds,
+  pushRecent,
+  togglePin,
+  saveChips,
+  staleSaveFolders,
 } from '../../../extension/domain/popup.js';
 import { F, L } from '../fixtures.mjs';
 
@@ -159,5 +164,68 @@ describe('folder collapse', () => {
     assert.equal(folderArrow(visibleFolders(folders, new Set(), 'css'), 0, 'ArrowLeft'), null);
     assert.equal(folderArrow(visibleFolders(folders, new Set(), ''), 1, 'Enter'), null);
     assert.equal(folderArrow([], 0, 'ArrowLeft'), null);
+  });
+});
+
+describe('chipIds', () => {
+  const valid = new Set(['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']);
+  test('valid pins in pin order, then valid recent ids that are not pinned', () => {
+    assert.deepEqual(chipIds(['c', 'a'], ['a', 'b', 'x', 'd'], valid), ['c', 'a', 'b', 'd']);
+  });
+  test('unknown ids are left out', () => {
+    assert.deepEqual(chipIds(['x', 'a'], ['y', 'b'], valid), ['a', 'b']);
+  });
+  test('at most 6 by default, or max', () => {
+    assert.deepEqual(chipIds(['a', 'b', 'c'], ['d', 'e', 'f', 'g', 'h'], valid), ['a', 'b', 'c', 'd', 'e', 'f']);
+    assert.deepEqual(chipIds(['a', 'b', 'c'], ['d'], valid, 2), ['a', 'b']);
+  });
+  test('missing lists give no chips', () => {
+    assert.deepEqual(chipIds(undefined, undefined, valid), []);
+  });
+});
+
+describe('pushRecent', () => {
+  test('puts the id first and removes its older place', () => {
+    assert.deepEqual(pushRecent(['a', 'b', 'c'], 'b'), ['b', 'a', 'c']);
+    assert.deepEqual(pushRecent(undefined, 'a'), ['a']);
+  });
+  test('keeps at most 6 by default, or max', () => {
+    assert.deepEqual(pushRecent(['a', 'b', 'c', 'd', 'e', 'f'], 'g'), ['g', 'a', 'b', 'c', 'd', 'e']);
+    assert.deepEqual(pushRecent(['a', 'b'], 'c', 2), ['c', 'a']);
+  });
+});
+
+describe('togglePin', () => {
+  test('adds at the end and removes a pinned id', () => {
+    assert.deepEqual(togglePin(['a'], 'b'), { pins: ['a', 'b'] });
+    assert.deepEqual(togglePin(['a', 'b'], 'a'), { pins: ['b'] });
+    assert.deepEqual(togglePin(undefined, 'a'), { pins: ['a'] });
+  });
+  test('a full list gives an error and keeps the pins', () => {
+    const full = ['a', 'b', 'c', 'd', 'e', 'f'];
+    assert.deepEqual(togglePin(full, 'g'), { pins: full, error: 'You can pin up to 6 folders.' });
+    assert.deepEqual(togglePin(full, 'f'), { pins: ['a', 'b', 'c', 'd', 'e'] });
+    assert.deepEqual(togglePin(['a'], 'b', 1), { pins: ['a'], error: 'You can pin up to 1 folders.' });
+  });
+});
+
+describe('saveChips', () => {
+  test('chips with title, pinned or recent, number and tooltip', () => {
+    const folders = folderChoices(root);
+    assert.deepEqual(saveChips(folders, { savePins: ['b'], saveRecent: ['a', 'b', 'gone'] }), [
+      { id: 'b', title: 'Reading', pinned: true, n: 1, tip: 'Warehouse › Reading · pinned · Alt+1' },
+      { id: 'a', title: 'Work', pinned: false, n: 2, tip: 'Warehouse › Work · recent · Alt+2' },
+    ]);
+    assert.deepEqual(saveChips(folders, {}), []);
+  });
+});
+
+describe('staleSaveFolders', () => {
+  test('drops ids that are no longer folders and returns null when nothing is stale', () => {
+    const ids = new Set(['a', 'b']);
+    assert.deepEqual(staleSaveFolders({ savePins: ['a', 'x'], saveRecent: ['b', 'a'] }, ids), { savePins: ['a'] });
+    assert.deepEqual(staleSaveFolders({ savePins: ['a'], saveRecent: ['y', 'b'] }, ids), { saveRecent: ['b'] });
+    assert.equal(staleSaveFolders({ savePins: ['a'], saveRecent: ['b'] }, ids), null);
+    assert.equal(staleSaveFolders({}, ids), null);
   });
 });

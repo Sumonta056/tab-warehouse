@@ -35,6 +35,17 @@ export default [
   },
   {
     area,
+    name: 'quick save never changes Recent folders',
+    page: 'popup',
+    fixture: () => base({ activeTab: fresh, settings: { lastSaveFolder: '40', saveRecent: ['30', '50'] } }),
+    async run(t) {
+      await command(t);
+      t.eq(added(t, '40').length, 1, 'saved');
+      t.eq(t.settings().saveRecent, ['30', '50'], 'Recent folders unchanged');
+    },
+  },
+  {
+    area,
     name: 'quick save: a deleted last save folder falls back to the root',
     page: 'popup',
     fixture: () => base({ activeTab: { ...fresh, title: '' }, settings: { lastSaveFolder: '999' } }),

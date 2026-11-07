@@ -9,6 +9,7 @@ import { renderMeta } from './views/popup/meta.js';
 import { renderFolders, setCursor, openTo, arrowKey } from './views/popup/folders.js';
 import { loadFolders, renderExists } from './views/popup/exists.js';
 import { save } from './views/popup/save.js';
+import { chipKey } from './views/popup/chips.js';
 
 const $ = (s) => document.querySelector(s);
 const q = $('#q');
@@ -60,6 +61,10 @@ q.addEventListener('keydown', (e) => {
   }
 });
 document.addEventListener('keydown', (e) => {
+  if (chipKey(e)) {
+    e.preventDefault();
+    return;
+  }
   if (e.key === 'Enter' && e.target.tagName === 'INPUT') {
     e.preventDefault();
     save();
