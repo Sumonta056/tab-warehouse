@@ -35,7 +35,7 @@ To test with your real bookmarks safely, use a separate Chrome profile.
 
 ```
 extension/             Everything Chrome loads (choose this folder in Load unpacked)
-  manifest.json        Manifest V3: new tab override, popup, omnibox, ⌘⇧B / ⌘K / ⌘⇧K commands
+  manifest.json        Manifest V3: new tab override, popup, omnibox, ⌘K / ⌘⇧S / ⌘⇧K commands
   newtab.html/.js      The main page: sidebar + folder page
   popup.html/.js       Toolbar popup: save the current tab
   constants/           Fixed values: envs, tags, sorts, themes, limits, defaults

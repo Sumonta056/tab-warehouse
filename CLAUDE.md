@@ -6,10 +6,10 @@ Bookmarks as a warehouse: a Home page (clock + link tiles), a resizable folder s
 
 ```
 extension/             The source and the Load unpacked folder for development. Paths below are relative to it.
-  manifest.json        MV3: newtab override + action popup + omnibox + ⌘⇧B / ⌘K / ⌘⇧K commands
+  manifest.json        MV3: newtab override + action popup + omnibox + ⌘K / ⌘⇧S / ⌘⇧K commands
   newtab.html/.js      The warehouse page. newtab.js is the entry point: boot, refresh, select, page dispatch, global keys, ctx objects
   popup.html/.js       Toolbar popup entry point: save the current tab into any folder, warns on duplicates
-  background.js        Service worker entry point: `tw` omnibox, quick save (⌘K), palette command (⌘⇧K)
+  background.js        Service worker entry point: `tw` omnibox, quick save (⌘⇧S), palette command (⌘⇧K)
   constants/           Fixed values only (envs, tags, sorts, themes, limits, defaults incl. DEFAULT_SETTINGS, pages, icons)
   domain/              Pure functions: no DOM, no chrome.* (env, tags, url, tree, folders, filter, sort, matrix, due, search, popup, transfer …)
   services/            The only modules that call chrome.* (storage, bookmarks, tabs, runtime, commands, omnibox, action, favicon, home-folder, import)

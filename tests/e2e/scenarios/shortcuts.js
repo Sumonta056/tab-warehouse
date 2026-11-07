@@ -68,7 +68,7 @@ export default [
     fixture: () => base(),
     async run(t) {
       await openKeys(t);
-      t.eq(t.$('#chromeKeys .keys-row[data-cmd="quick-save"] .keys-combo')?.textContent, 'CtrlK', 'default key');
+      t.eq(t.$('#chromeKeys .keys-row[data-cmd="quick-save"] .keys-combo')?.textContent, 'CtrlShiftS', 'default key');
       t.H.commands = [{ name: 'quick-save', description: 'Save current tab without the popup', shortcut: '' }];
       t.d.dispatchEvent(new t.w.Event('visibilitychange'));
       await t.settle();

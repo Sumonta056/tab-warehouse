@@ -6,11 +6,11 @@ Tab Warehouse has three entry points. All three use one shared module, and that 
 
 ## Entry points
 
-| Entry point        | File                      | What it does                                                                                                   |
-| ------------------ | ------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| New tab page       | `extension/newtab.js`     | The main page. Boots, refreshes and sends each screen to its folder in `views/`.                               |
-| Popup              | `extension/popup.js`      | Saves the current tab into a folder (⌘⇧B); warns when the page is already saved.                               |
-| Address bar worker | `extension/background.js` | Searches links from the address bar with the keyword `tw`; runs quick save (⌘K) and the palette command (⌘⇧K). |
+| Entry point        | File                      | What it does                                                                                                    |
+| ------------------ | ------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| New tab page       | `extension/newtab.js`     | The main page. Boots, refreshes and sends each screen to its folder in `views/`.                                |
+| Popup              | `extension/popup.js`      | Saves the current tab into a folder (⌘K); warns when the page is already saved.                                 |
+| Address bar worker | `extension/background.js` | Searches links from the address bar with the keyword `tw`; runs quick save (⌘⇧S) and the palette command (⌘⇧K). |
 
 ## Shared core
 

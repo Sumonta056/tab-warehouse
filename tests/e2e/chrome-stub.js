@@ -182,8 +182,8 @@
       async getAll() {
         return clone(
           H.commands || [
-            { name: '_execute_action', description: 'Save current tab', shortcut: 'Ctrl+Shift+B' },
-            { name: 'quick-save', description: 'Save current tab without the popup', shortcut: 'Ctrl+K' },
+            { name: '_execute_action', description: 'Save current tab', shortcut: 'Ctrl+K' },
+            { name: 'quick-save', description: 'Save current tab without the popup', shortcut: 'Ctrl+Shift+S' },
             { name: 'palette', description: 'Open the command palette on Tab Warehouse', shortcut: 'Ctrl+Shift+K' },
           ],
         );

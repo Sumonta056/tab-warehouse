@@ -134,3 +134,13 @@ describe('lazy views', () => {
     assert.ok(eagerGraph('palette.js').includes('views/palette/palette.js'));
   });
 });
+
+describe('manifest shortcuts', () => {
+  test('suggested keys: save popup Ctrl+K, quick save Ctrl+Shift+S, palette Ctrl+Shift+K', () => {
+    const { commands } = JSON.parse(readFileSync(join(EXT, 'manifest.json'), 'utf8'));
+    const keys = (name) => commands[name].suggested_key;
+    assert.deepEqual(keys('_execute_action'), { default: 'Ctrl+K', mac: 'Command+K' });
+    assert.deepEqual(keys('quick-save'), { default: 'Ctrl+Shift+S', mac: 'Command+Shift+S' });
+    assert.deepEqual(keys('palette'), { default: 'Ctrl+Shift+K', mac: 'Command+Shift+K' });
+  });
+});
