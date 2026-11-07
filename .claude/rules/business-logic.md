@@ -295,7 +295,7 @@ Every rule here has at least one test. If you change a rule, change its test in 
 - `background.js` reads the active tab, settings and the bookmark tree fresh and asks `quickSave(settings, tree, tab)`:
   - no tab, or not an `http(s):`/`file:` page → `skip`: grey badge `–`, nothing saved.
   - `findSaved()` finds a copy → `dup`: nothing is saved and `chrome.action.openPopup()` opens the popup with its _Already saved_ warning. If that throws, orange badge `!` with the title "Already in <full path>".
-  - else → `save`: a bookmark (title = tab title, else the URL) in `quickSaveTarget()`: `settings.lastSaveFolder` while it is still a folder under the root, else the root. Green badge `✓`, title "Saved to <folder>". A Chrome error gives the grey `–` with "Could not save: …".
+  - else → `save`: a bookmark (title = tab title, else the URL) in `quickSaveTarget()`: `settings.lastSaveFolder` while it is still a folder under the root, else the root. Green badge `NEW`, title "Saved to <folder>". A Chrome error gives the grey `–` with "Could not save: …".
 - Quick save never changes `settings.lastSaveFolder` (only the popup does) and stores no note or priority.
 - Badge (`quickSaveBadge()`): per tab, shown for 2.5 s (`QUICK_BADGE_MS`). A successful save shows the text `NEW` (green `#1e8e3e`, title "Saved to <folder>"); `skip`, `error` and `dup` keep `–` / `!`. When the time is up the worker updates the _Saved mark_ of that tab (a saved page then shows the ✓, any other page gets the default action title back).
 
