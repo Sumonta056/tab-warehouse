@@ -97,21 +97,36 @@ export default [
   },
   {
     area,
-    name: 'popup: a saved copy with tracking parameters shows the warning, its address and Save again',
+    name: 'popup: a saved copy with tracking parameters shows the Saved in line, its address and Save again',
     page: 'popup',
     fixture: () => base({ activeTab: loose }),
     async run(t) {
-      const box = t.$('#exists .dup-warn');
-      t.ok(box, 'warning box shown');
+      const sum = t.$('#saved .saved-in');
+      t.eq(sum?.querySelector('.saved-txt')?.textContent, 'Saved in Shop API', 'summary names the folder of the copy');
+      t.ok(!sum?.querySelector('.saved-more'), 'no +N more for one copy');
+      t.eq(sum?.getAttribute('aria-expanded'), 'false', 'collapsed');
+      t.ok(t.$('#exists').hidden, 'copy list hidden until the summary is pressed');
+      t.ok(sum?.getBoundingClientRect().height >= 28, 'summary at least 28 px');
+      t.eq(t.w.getComputedStyle(sum).color, 'rgb(255, 196, 107)', 'warn color');
+      const page = t.$('#page .target').getBoundingClientRect();
+      const box = sum.getBoundingClientRect();
+      t.ok(box.left >= page.right - 1 && Math.abs(box.top + box.height / 2 - (page.top + page.height / 2)) < 3, 'summary on the address line, at its right');
+      t.click(sum);
+      t.eq(t.$('#saved .saved-in')?.getAttribute('aria-expanded'), 'true', 'expanded');
+      t.ok(!t.$('#exists').hidden && t.$('#exists .dup-warn'), 'copy list shown');
+      t.eq(t.d.activeElement, t.$('#saved .saved-in'), 'focus stays on the summary');
       t.eq(
         t.$$('#exists .exists .path').map((p) => p.textContent),
-        ['Already saved in My Links › Shop API'],
+        ['My Links › Shop API'],
         'path',
       );
       const addr = t.$('#exists .exists .addr');
       t.eq(addr?.textContent, 'https://shop.example.com/api/x', 'own address shown');
       t.eq(addr?.title, 'https://shop.example.com/api/x', 'full address as tooltip');
+      t.eq(Math.round(t.$('#exists .exists').getBoundingClientRect().height), 28, 'copy row is 28 px');
       t.ok(t.$('#save').textContent.includes('Save again to My Links'), 'Save again label');
+      t.click(t.$('#saved .saved-in'));
+      t.ok(t.$('#exists').hidden, 'pressing again hides the list');
       t.key(t.$('#q'), 'Enter');
       await t.settle();
       t.eq(
@@ -123,16 +138,18 @@ export default [
   },
   {
     area,
-    name: 'popup: an exact copy hides the address; Remove brings Save back',
+    name: 'popup: an exact copy hides the address; Remove hides the Saved in line and brings Save back',
     page: 'popup',
     fixture: () => base({ activeTab: { id: 7, title: 'Shop PROD', url: 'https://shop.example.com/api/x' } }),
     async run(t) {
-      t.ok(t.$('#exists .dup-warn'), 'warning box shown');
+      t.click(t.$('#saved .saved-in'));
+      t.ok(t.$('#exists .dup-warn'), 'copy list shown');
       t.ok(!t.$('#exists .addr'), 'no address line for the same address');
       t.ok(t.$('#save').textContent.includes('Save again to'), 'Save again label');
-      t.click(t.$('#exists .exists button'));
+      t.click(t.$('#exists .exists .copy-rm'));
       await t.settle();
-      t.ok(!t.$('#exists .dup-warn'), 'warning gone');
+      t.ok(!t.$('#saved .saved-in'), 'summary gone');
+      t.ok(t.$('#exists').hidden && !t.$('#exists .dup-warn'), 'list gone');
       t.ok(t.$('#save').textContent.includes('Save to My Links') && !t.$('#save').textContent.includes('again'), 'plain Save label');
     },
   },
@@ -142,13 +159,14 @@ export default [
     page: 'popup',
     fixture: () => base({ activeTab: fresh }),
     async run(t) {
-      t.ok(!t.$('#exists .dup-warn'), 'no warning');
+      t.ok(!t.$('#saved .saved-in'), 'no Saved in line');
+      t.ok(t.$('#exists').hidden, 'no copy list');
       t.ok(!t.$('#save').textContent.includes('again'), 'plain Save label');
     },
   },
   {
     area,
-    name: 'popup: three copies and many folders still fit, Save visible',
+    name: 'popup: four copies say +3 more, the list shows three, and many folders still fit',
     page: 'popup',
     fixture: () =>
       base({
@@ -163,13 +181,16 @@ export default [
         ],
       }),
     async run(t) {
+      t.eq(t.$('#saved .saved-txt')?.textContent, 'Saved in Shop API', 'first copy');
+      t.eq(t.$('#saved .saved-more')?.textContent, ' +3 more', 'count of the other copies');
+      t.click(t.$('#saved .saved-in'));
       t.eq(t.$$('#exists .exists').length, 3, 'at most 3 copies');
       const body = t.d.body.getBoundingClientRect();
       const save = t.$('#save').getBoundingClientRect();
       t.ok(body.height <= 600, `popup fits Chrome's 600 px (${Math.round(body.height)})`);
       t.ok(save.bottom <= body.bottom && save.top >= 0, 'Save visible without scrolling');
       t.ok(
-        t.$$('#exists .btn').every((b) => b.getBoundingClientRect().height >= 28),
+        t.$$('#exists .copy-rm').every((b) => b.getBoundingClientRect().height >= 28),
         'Remove ≥ 28 px',
       );
     },

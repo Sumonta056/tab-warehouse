@@ -19,6 +19,8 @@ export const popup = {
   titleEdited: false,
   busy: false,
   dup: false,
+  open: new Set(),
+  copiesOpen: false,
 };
 
 export function target() {

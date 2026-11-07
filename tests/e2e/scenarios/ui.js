@@ -208,6 +208,38 @@ export default [
   },
   {
     area,
+    name: 'ui pickers: the priority picker with dots shows round dot buttons with labels and tooltips',
+    page: 'newtab',
+    fixture: () => base(),
+    async run(t) {
+      const { priPicker } = await mod(t, 'pickers');
+      const got = [];
+      const box = priPicker('low', (p) => got.push(p), { dots: true });
+      lab(t).append(box);
+      const buttons = () => [...box.querySelectorAll('button')];
+      t.ok(box.classList.contains('dots'), 'dots class');
+      t.eq(
+        buttons().map((b) => [b.textContent, b.getAttribute('aria-label'), b.title, !!b.querySelector('.pri-dot')]),
+        [
+          ['', 'No priority', 'No priority', true],
+          ['', 'High priority', 'High priority', true],
+          ['', 'Medium priority', 'Medium priority', true],
+          ['', 'Low priority', 'Low priority', true],
+        ],
+        'dot only, with label and tooltip',
+      );
+      t.ok(
+        buttons().every((b) => Math.round(b.getBoundingClientRect().height) === 28 && Math.round(b.getBoundingClientRect().width) === 28),
+        '28 px round buttons',
+      );
+      t.eq(pressed(buttons()), ['false', 'false', 'false', 'true'], 'Low pressed');
+      t.click(buttons()[2]);
+      t.eq(got, ['med'], 'reports med');
+      t.eq(pressed(buttons()), ['false', 'false', 'true', 'false'], 'Medium pressed');
+    },
+  },
+  {
+    area,
     name: 'ui pickers: due quick chips set the date and press their chip; ✕ clears; a saved date shows its boxes',
     page: 'newtab',
     fixture: () => base(),

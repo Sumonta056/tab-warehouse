@@ -61,16 +61,21 @@ export default [
   },
   {
     area,
-    name: 'env switch: a labelled page without a site row shows a hint; a plain page shows nothing',
+    name: 'env switch: a labelled page without a site row puts the hint on its badge; a plain page shows nothing',
     page: 'popup',
     fixture: () => at('https://deploy.prod.example.com/applications/x', 'Deploy app PROD'),
     async run(t) {
-      t.ok(!t.$('#switch').hidden, 'hint shown');
-      t.eq(t.$('#switch .switch-hint')?.textContent, 'To open this page in your other versions, add this site in Settings › Tags.', 'hint');
+      t.ok(t.$('#switch').hidden, 'no hint section');
+      t.ok(!t.$('.switch-hint'), 'no hint text');
+      t.eq(t.$('#page .badge')?.title, 'To open this page in your other versions, add this site in Settings › Tags.', 'hint is the badge tooltip');
       t.eq(rows(t), [], 'no rows');
       t.H.activeTab = { title: 'Example', url: 'https://example.com/', index: 0 };
       await t.reload();
       t.ok(t.$('#switch').hidden, 'nothing for a plain page');
+      t.ok(!t.$('#page .badge'), 'no badge for a plain page');
+      t.H.activeTab = { title: 'Shop', url: 'https://shop.example.com/api/x', index: 0 };
+      await t.reload();
+      t.ok(!t.$('#page .badge')?.title, 'no hint on the badge of a page with a site row');
     },
   },
 ];

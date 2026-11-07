@@ -25,6 +25,7 @@ export default [
     async run(t) {
       t.click(t.$('#meta .pri-pick [data-pri="high"]'));
       t.eq(t.$('#meta .pri-pick [data-pri="high"]').getAttribute('aria-pressed'), 'true', 'High pressed');
+      t.click(t.$('#noteBtn'));
       t.type(t.$('#note'), '  Run after QA  ');
       t.type(t.$('#q'), 'Shop');
       await t.settle();

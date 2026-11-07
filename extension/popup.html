@@ -19,24 +19,22 @@
   </head>
   <body>
     <div class="page" id="page"></div>
+    <div id="exists" hidden></div>
     <div class="sec switch" id="switch" hidden></div>
     <div class="sec" id="meta"></div>
-    <div id="exists"></div>
     <div class="sec pick">
       <label class="search">
         <span class="sr">Find or create folder</span>
         <span id="searchIcon"></span>
         <input type="search" id="q" placeholder="Find or create folder…" autocomplete="off" />
       </label>
+      <div class="chips" id="chips" hidden></div>
       <div class="folders" id="folders" role="listbox" aria-label="Folders"></div>
     </div>
     <div class="bar">
       <div class="status" id="status" role="status"></div>
       <div class="bar-row">
-        <div class="hints">
-          <span><span class="kbd">↑↓</span> folder · <span class="kbd">↵</span> save</span>
-          <button id="openBoard">Open Tab Warehouse</button>
-        </div>
+        <button class="btn icon" id="openBoard" aria-label="Open Tab Warehouse" title="Open Tab Warehouse"></button>
         <button class="btn primary" id="save"></button>
       </div>
     </div>

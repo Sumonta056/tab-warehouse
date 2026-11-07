@@ -50,3 +50,53 @@ export function saveLabel(x, dup) {
 export function savedPath(folders, hit) {
   return folders.find((f) => f.id === hit.parentId)?.path || hit.path || 'another folder';
 }
+
+export function savedSummary(folders, hits) {
+  if (!hits.length) return null;
+  const hit = hits[0];
+  const title = folders.find((f) => f.id === hit.parentId)?.title || hit.path?.split(' › ').at(-1) || 'another folder';
+  return { text: `Saved in ${title}`, more: hits.length > 1 ? ` +${hits.length - 1} more` : '' };
+}
+
+export function folderAncestors(folders, id) {
+  let i = folders.findIndex((f) => f.id === id);
+  if (i < 0) return [];
+  const out = [];
+  let depth = folders[i].depth;
+  for (i -= 1; i >= 0 && depth > 0; i -= 1) {
+    if (folders[i].depth !== depth - 1) continue;
+    out.unshift(folders[i].id);
+    depth -= 1;
+  }
+  return out;
+}
+
+export function visibleFolders(folders, open, query) {
+  if (query.trim()) return folderItems(folders, query.trim());
+  const items = [];
+  const parents = [];
+  let hideBelow = Infinity;
+  folders.forEach((f, i) => {
+    parents.length = f.depth;
+    const parent = parents[f.depth - 1] ?? null;
+    parents[f.depth] = f.id;
+    if (f.depth > hideBelow) return;
+    hideBelow = Infinity;
+    const kids = folders[i + 1]?.depth > f.depth;
+    const isOpen = f.depth === 0 || (kids && open.has(f.id));
+    items.push({ key: f.id, f, parent, kids, open: isOpen, tree: true });
+    if (kids && !isOpen) hideBelow = f.depth;
+  });
+  return items;
+}
+
+export function folderArrow(items, i, key) {
+  const x = items[i];
+  if (!x?.tree) return null;
+  const toggles = x.kids && x.f.depth > 0;
+  if (key === 'ArrowRight') return toggles && !x.open ? { open: x.key } : null;
+  if (key !== 'ArrowLeft') return null;
+  if (toggles && x.open) return { close: x.key };
+  const at = items.findIndex((y) => y.key === x.parent);
+  return at < 0 ? null : { cursor: at };
+}

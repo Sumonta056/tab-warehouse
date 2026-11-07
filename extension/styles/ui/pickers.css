@@ -31,6 +31,35 @@
   background: var(--pc);
   flex: 0 0 auto;
 }
+.pri-pick.dots {
+  display: flex;
+  gap: 2px;
+}
+.pri-pick.dots button {
+  width: 28px;
+  min-height: 28px;
+  height: 28px;
+  padding: 0;
+  border-radius: 50%;
+  border-color: transparent;
+  background: transparent;
+}
+.pri-pick.dots button:hover {
+  background: var(--surface-2);
+}
+.pri-pick.dots button.on {
+  border-color: var(--pc, var(--accent));
+  background: var(--surface-2);
+}
+.pri-pick.dots .pri-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+.pri-pick.dots [data-pri='none'] .pri-dot {
+  background: transparent;
+  border: 1.5px solid var(--muted);
+}
 .pri-high {
   --pc: var(--pri-high);
 }

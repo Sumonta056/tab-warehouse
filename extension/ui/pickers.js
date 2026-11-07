@@ -3,8 +3,10 @@ import { PRIS, PRI_NAMES } from '../constants/priority.js';
 import { dueLabel, dueQuickDate, dueState, isDue } from '../domain/due.js';
 import { h, svgIcon } from './dom.js';
 
-export function priPicker(value, onPick) {
-  const box = h('div', { class: 'pri-pick', role: 'group', 'aria-label': 'Priority' });
+export function priPicker(value, onPick, { dots = false } = {}) {
+  const box = h('div', { class: `pri-pick${dots ? ' dots' : ''}`, role: 'group', 'aria-label': 'Priority' });
+  const name = (p) => (p ? PRI_NAMES[p] : 'None');
+  const tip = (p) => (p ? `${PRI_NAMES[p]} priority` : 'No priority');
   const draw = (v) =>
     box.replaceChildren(
       ...[null, ...PRIS].map((p) =>
@@ -14,14 +16,16 @@ export function priPicker(value, onPick) {
             type: 'button',
             class: `${p ? `pri-${p}` : ''} ${v === p ? 'on' : ''}`,
             'aria-pressed': String(v === p),
+            'aria-label': dots ? tip(p) : null,
+            title: dots ? tip(p) : null,
             dataset: { pri: p || 'none' },
             onClick: () => {
               draw(p);
               onPick(p);
             },
           },
-          p ? h('span', { class: 'pri-dot' }) : null,
-          p ? PRI_NAMES[p] : 'None',
+          p || dots ? h('span', { class: 'pri-dot' }) : null,
+          dots ? null : name(p),
         ),
       ),
     );
