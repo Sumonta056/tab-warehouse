@@ -1,6 +1,6 @@
 import { loadSettings, loadLinkMeta } from './services/storage.js';
-import { getTree, createBookmark } from './services/bookmarks.js';
-import { activeTab, openTab, updateTab } from './services/tabs.js';
+import { getTree, createBookmark, onBookmarksChanged } from './services/bookmarks.js';
+import { activeTab, activeTabs, getTab, onTabActivated, onTabLoaded, openTab, updateTab } from './services/tabs.js';
 import { extensionUrl, sendMessage } from './services/runtime.js';
 import { onCommand } from './services/commands.js';
 import { setDefaultSuggestion, onOmniboxInput, onOmniboxEnter } from './services/omnibox.js';
@@ -9,7 +9,9 @@ import { resolveRoot, sections } from './domain/tree.js';
 import { omniboxSuggestions, omniboxTarget } from './domain/omnibox.js';
 import { quickSave, quickSaveBadge } from './domain/quick-save.js';
 import { paletteCommand } from './domain/palette.js';
-import { QUICK_BADGE_MS } from './constants/limits.js';
+import { savedMark, savedMarkBadge } from './domain/saved-mark.js';
+import { folderChoices } from './domain/popup.js';
+import { QUICK_BADGE_MS, SAVED_MARK_MS } from './constants/limits.js';
 import { PALETTE_POPUP, SAVE_POPUP } from './constants/commands.js';
 
 setDefaultSuggestion('Search Tab Warehouse for <match>%s</match>');
@@ -28,17 +30,49 @@ onOmniboxEnter((text, disposition) => {
 
 const badgeTimers = new Map();
 
+async function updateSavedMark(tab) {
+  if (tab?.id == null || badgeTimers.has(tab.id)) return;
+  const [settings, tree] = await Promise.all([loadSettings(), getTree()]);
+  const folders = folderChoices(resolveRoot(tree, settings));
+  const badge = savedMarkBadge(savedMark(tree, tab.url, folders));
+  if (badgeTimers.has(tab.id)) return;
+  if (badge) setBadge(tab.id, badge);
+  else clearBadge(tab.id);
+}
+
 function flashBadge(tabId, badge) {
   setBadge(tabId, badge);
   clearTimeout(badgeTimers.get(tabId));
   badgeTimers.set(
     tabId,
-    setTimeout(() => {
+    setTimeout(async () => {
       badgeTimers.delete(tabId);
-      clearBadge(tabId);
+      try {
+        await updateSavedMark(await getTab(tabId));
+      } catch {
+        clearBadge(tabId);
+      }
     }, QUICK_BADGE_MS),
   );
 }
+
+onTabActivated(async (tabId) => {
+  try {
+    await updateSavedMark(await getTab(tabId));
+  } catch {}
+});
+
+onTabLoaded((tab) => updateSavedMark(tab).catch(() => {}));
+
+let markTimer;
+onBookmarksChanged(() => {
+  clearTimeout(markTimer);
+  markTimer = setTimeout(async () => {
+    try {
+      for (const tab of await activeTabs()) await updateSavedMark(tab);
+    } catch {}
+  }, SAVED_MARK_MS);
+});
 
 async function quickSaveTab() {
   const tab = await activeTab();

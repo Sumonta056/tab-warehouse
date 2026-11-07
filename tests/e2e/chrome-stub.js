@@ -223,6 +223,12 @@
         if (!q.active) return clone(H.openTabs || []);
         return H.activeTab ? [clone(H.activeTab)] : [];
       },
+      async get(id) {
+        const tab = [H.activeTab, ...(H.openTabs || [])].find((x) => x?.id === id);
+        if (!tab) throw new Error(`No tab with id: ${id}.`);
+        return clone(tab);
+      },
+      onActivated: on('tabs.onActivated'),
       onCreated: on('tabs.onCreated'),
       onRemoved: on('tabs.onRemoved'),
       onUpdated: on('tabs.onUpdated'),
@@ -231,6 +237,7 @@
       },
     },
   };
+  window.__emit = (name, ...args) => emit(name, ...args);
   window.__tabs = (list) => {
     H.openTabs = clone(list);
     emit('tabs.onCreated', {});

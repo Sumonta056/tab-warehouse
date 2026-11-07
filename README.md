@@ -152,7 +152,7 @@ Developers keep the same page open in many versions: live, test, staging and `lo
 - Save the full page or the whole site (`origin/`).
 - Shows the tag and remembers the last folder.
 - Warns in orange when the page is already saved, also when only `?utm_…`, `#part` or a trailing `/` differ, and shows where. **Save again** still saves a second copy.
-- **Quick save** (`⌘K` / `Ctrl+K`): saves the tab into the last folder you saved to (or the root) without opening the popup. The toolbar icon shows a green ✓ for 2.5 s. If the page is already saved, nothing is saved and the popup opens with the warning.
+- **Quick save** (`⌘K` / `Ctrl+K`): saves the tab into the last folder you saved to (or the root) without opening the popup. The toolbar icon shows a green NEW for 2.5 s. If the page is already saved, nothing is saved and the popup opens with the warning.
 - **Open this page in**: opens the same page in your other versions (from _Same site in each version_).
 - Add a priority and a short note before you save.
 
@@ -248,13 +248,13 @@ Tab Warehouse has no server, no account, no analytics and no tracking. It does n
 - Preferences (sidebar order, categories, env rules, Home look) and link notes stay in **`chrome.storage.local`** on your machine. Chrome sync does not copy them.
 - The only images loaded from the network are the official Google app icons (from `ssl.gstatic.com`), any icon URL you add yourself, and the icon of a Home link that Chrome has no icon for. For that last case the extension asks Google's favicon service (`www.google.com/s2/favicons`) and sends it only the host name of that link. Local addresses (localhost, IP addresses) are never sent.
 
-| Permission  | Why it is needed                                                                              |
-| ----------- | --------------------------------------------------------------------------------------------- |
-| `bookmarks` | Read and edit your bookmarks — the core of the extension                                      |
-| `storage`   | Save sidebar order, per-folder preferences, env rules, link notes and the Home look           |
-| `favicon`   | Show site icons from Chrome's own favicon cache                                               |
-| `activeTab` | Read the current tab's title and URL, only when you open the popup or quick save              |
-| `tabs`      | See which saved links are open in a tab, to mark them "Open" in the list; kept only in memory |
+| Permission  | Why it is needed                                                                                                                               |
+| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `bookmarks` | Read and edit your bookmarks — the core of the extension                                                                                       |
+| `storage`   | Save sidebar order, per-folder preferences, env rules, link notes and the Home look                                                            |
+| `favicon`   | Show site icons from Chrome's own favicon cache                                                                                                |
+| `activeTab` | Read the current tab's title and URL, only when you open the popup or quick save                                                               |
+| `tabs`      | See which saved links are open in a tab, to mark them "Open" in the list (kept only in memory), and to show the Saved mark on the toolbar icon |
 
 The extension has a background service worker (`background.js`) only for the address bar search (`tw`), quick save (`⌘K`) and the palette key (`⌘⇧K`, so it also works while the address bar has focus). It reads your bookmarks on each keystroke or key press and keeps nothing. The `omnibox` key is not a permission and shows no install warning.
 
@@ -317,7 +317,7 @@ python3 -I tests/serve.py 8799
 
 ## Changelog
 
-- **Unreleased** — The command palette opens as a toolbar popup, so its box has focus at once on a fresh new tab. **Today's top list** checklist, a fixed sidebar row above the folders (tick links, done links are deleted the next day with Undo, count on the row, a wide **Up next** bar on Home with the title on up to 2 lines); the view tabs are Home and Board again. Backups never carry a tick; only a visible tab deletes done links; Undo never restores a tick.
+- **Unreleased** — The command palette opens as a toolbar popup, so its box has focus at once on a fresh new tab. **Today's top list** checklist, a fixed sidebar row above the folders (tick links, done links are deleted the next day with Undo, count on the row, a wide **Up next** bar on Home with the title on up to 2 lines); the view tabs are Home and Board again. Backups never carry a tick; only a visible tab deletes done links; Undo never restores a tick. **Saved mark**: a green ✓ on the toolbar icon, with the tooltip "Saved in <folder>", while the open page is already bookmarked.
 - **2.5.0** — Due dates on links with an optional Google Calendar event; quick save (`⌘K` / `Ctrl+K`) without the popup; the popup warns when a page is already saved and offers **Save again**; Settings › Shortcuts; the command palette moves to `⌘⇧K` / `Ctrl+Shift+K`. Details in [CHANGELOG.md](CHANGELOG.md).
 - **2.4.0** — Full history in [CHANGELOG.md](CHANGELOG.md).
   - Command palette (⌘K) and `tw` search from the address bar.

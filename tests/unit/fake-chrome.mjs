@@ -134,6 +134,12 @@ export function fakeChrome({ tree, store = {}, manifest = {}, tabs = [], current
         calls.push(['tabs.query', q]);
         return tabs;
       },
+      get: async (id) => {
+        calls.push(['tabs.get', id]);
+        const tab = tabs.find((t) => t.id === id);
+        return tab || Promise.reject(new Error(`No tab with id: ${id}.`));
+      },
+      onActivated: event(),
       getCurrent: async () => current,
       onCreated: event(),
       onRemoved: event(),

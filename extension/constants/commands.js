@@ -8,3 +8,7 @@ export const PALETTE_MSG = 'open-palette';
 export const PALETTE_GO_MSG = 'palette-go';
 export const PALETTE_POPUP = 'palette.html';
 export const SAVE_POPUP = 'popup.html';
+
+export const SAVED_MARK_COLOR = '#2e9d63';
+export const SAVED_MARK_TEXT = '✓';
+export const SAVED_MARK_PAGE = /^(https?|file):/i;

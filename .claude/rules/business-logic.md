@@ -297,7 +297,15 @@ Every rule here has at least one test. If you change a rule, change its test in 
   - `findSaved()` finds a copy → `dup`: nothing is saved and `chrome.action.openPopup()` opens the popup with its _Already saved_ warning. If that throws, orange badge `!` with the title "Already in <full path>".
   - else → `save`: a bookmark (title = tab title, else the URL) in `quickSaveTarget()`: `settings.lastSaveFolder` while it is still a folder under the root, else the root. Green badge `✓`, title "Saved to <folder>". A Chrome error gives the grey `–` with "Could not save: …".
 - Quick save never changes `settings.lastSaveFolder` (only the popup does) and stores no note or priority.
-- Badge (`quickSaveBadge()`): per tab, cleared after 2.5 s (`QUICK_BADGE_MS`), then the default action title comes back.
+- Badge (`quickSaveBadge()`): per tab, shown for 2.5 s (`QUICK_BADGE_MS`). A successful save shows the text `NEW` (green `#1e8e3e`, title "Saved to <folder>"); `skip`, `error` and `dup` keep `–` / `!`. When the time is up the worker updates the _Saved mark_ of that tab (a saved page then shows the ✓, any other page gets the default action title back).
+
+## Saved mark
+
+- While the active tab's address is already a Link, the toolbar icon shows a green `✓` badge (`SAVED_MARK_COLOR` `#2e9d63`, the green of LOCAL; badge colors cannot use CSS tokens) with the tooltip "Saved in <path>". Other tabs show nothing.
+- `savedMark(tree, url, folders)` (`domain/saved-mark.js`): only `http:`, `https:` and `file:` pages can have the mark. The match is `findSaved()` over the whole bookmark tree (also outside the root folder and in the Home folder; `dupKey(url, true)`: a trailing `/`, the `#part` and tracking parameters do not matter). The path is `savedPath()` of the first copy, the same text the popup's _Already saved_ warning shows.
+- `background.js` registers its listeners at the top level and updates the mark of a tab when the active tab changes (`onTabActivated`), when a tab's URL changes or it finishes loading (`onTabLoaded`), and 100 ms (`SAVED_MARK_MS`) after the last bookmark created, removed, changed, moved or reordered, for the active tab of every window (`activeTabs()`). It reads the tree fresh each time (no cache) and sets the badge per tab or clears it (default title back).
+- While a quick-save badge shows on a tab, saved-mark updates for that tab wait; the end of the quick-save badge updates it.
+- No new permission (`tabs` is already granted).
 
 ## Performance rules
 

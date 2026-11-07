@@ -1,6 +1,6 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { folderChoices, siteUrl, targetUrl, defaultTitle, folderItems, saveLabel } from '../../../extension/domain/popup.js';
+import { folderChoices, siteUrl, targetUrl, defaultTitle, folderItems, saveLabel, savedPath } from '../../../extension/domain/popup.js';
 import { F, L } from '../fixtures.mjs';
 
 const root = F('r', 'Warehouse', [L('l0', 'x', 'https://x.com'), F('a', 'Work', [L('l1', 'y', 'https://y.com'), F('a1', '', [])]), F('b', 'Reading')]);
@@ -64,5 +64,14 @@ describe('saveLabel', () => {
     assert.equal(saveLabel({ f: { title: 'Work' } }, false), 'Save to Work');
     assert.equal(saveLabel({ f: { title: 'Work' } }, true), 'Save again to Work');
     assert.equal(saveLabel({ create: 'New' }, true), 'Create "New" and save');
+  });
+});
+
+describe('savedPath', () => {
+  const folders = folderChoices(root);
+  test('uses the folder path of the parent, else the hit path, else a fallback', () => {
+    assert.equal(savedPath(folders, { parentId: 'a', path: 'x' }), 'Warehouse › Work');
+    assert.equal(savedPath(folders, { parentId: 'zz', path: 'Bar › Old' }), 'Bar › Old');
+    assert.equal(savedPath(folders, { parentId: 'zz' }), 'another folder');
   });
 });

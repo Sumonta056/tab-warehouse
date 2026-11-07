@@ -165,8 +165,8 @@ describe('quick save', () => {
   });
   const settings = { rootName: 'My Links', lastSaveFolder: null };
 
-  test('quickSaveBadge: ✓ green, ! orange with the path, – grey', () => {
-    assert.deepEqual(quickSaveBadge({ kind: 'save', folder: 'Empty' }), { text: '✓', color: '#1e8e3e', title: 'Saved to Empty' });
+  test('quickSaveBadge: NEW green, ! orange with the path, – grey', () => {
+    assert.deepEqual(quickSaveBadge({ kind: 'save', folder: 'Empty' }), { text: 'NEW', color: '#1e8e3e', title: 'Saved to Empty' });
     assert.deepEqual(quickSaveBadge({ kind: 'dup', hits: [{ path: 'A › B' }] }), { text: '!', color: '#e8710a', title: 'Already in A › B' });
     assert.equal(quickSaveBadge({ kind: 'skip' }).text, '–');
     assert.equal(quickSaveBadge({ kind: 'error', message: 'x' }).title, 'Could not save: x');

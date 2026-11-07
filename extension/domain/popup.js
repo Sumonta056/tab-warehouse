@@ -46,3 +46,7 @@ export function saveLabel(x, dup) {
   if (!x) return 'Save';
   return x.create ? `Create "${x.create}" and save` : `${dup ? 'Save again' : 'Save'} to ${x.f.title}`;
 }
+
+export function savedPath(folders, hit) {
+  return folders.find((f) => f.id === hit.parentId)?.path || hit.path || 'another folder';
+}

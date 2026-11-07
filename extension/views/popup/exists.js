@@ -1,4 +1,4 @@
-import { folderChoices } from '../../domain/popup.js';
+import { folderChoices, savedPath } from '../../domain/popup.js';
 import { resolveRoot } from '../../domain/tree.js';
 import { findSaved } from '../../domain/duplicates.js';
 import { withoutDone } from '../../domain/meta.js';
@@ -42,12 +42,7 @@ export async function renderExists() {
             h(
               'span',
               { class: 'where' },
-              h(
-                'span',
-                { class: 'path' },
-                'Already saved in ',
-                h('strong', {}, popup.folders.find((f) => f.id === b.parentId)?.path || b.path || 'another folder'),
-              ),
+              h('span', { class: 'path' }, 'Already saved in ', h('strong', {}, savedPath(popup.folders, b))),
               b.url !== url && h('span', { class: 'addr', title: b.url }, b.url),
             ),
             h('button', { class: 'btn sm', onClick: () => remove(b) }, 'Remove'),

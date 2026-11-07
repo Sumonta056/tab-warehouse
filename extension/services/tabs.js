@@ -26,3 +26,21 @@ export function onTabsChanged(fn) {
     if (info.url) fn();
   });
 }
+
+export async function activeTabs() {
+  return chrome.tabs.query({ active: true });
+}
+
+export function getTab(id) {
+  return chrome.tabs.get(id);
+}
+
+export function onTabActivated(fn) {
+  chrome.tabs.onActivated.addListener((info) => fn(info.tabId));
+}
+
+export function onTabLoaded(fn) {
+  chrome.tabs.onUpdated.addListener((id, info, tab) => {
+    if (info.url || info.status === 'complete') fn(tab);
+  });
+}

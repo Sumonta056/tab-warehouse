@@ -17,7 +17,7 @@ export function quickSave(settings, tree, tab) {
 }
 
 export function quickSaveBadge(r) {
-  if (r.kind === 'save') return { text: '✓', color: '#1e8e3e', title: `Saved to ${r.folder}` };
+  if (r.kind === 'save') return { text: 'NEW', color: '#1e8e3e', title: `Saved to ${r.folder}` };
   if (r.kind === 'dup') return { text: '!', color: '#e8710a', title: `Already in ${r.hits[0].path}` };
   if (r.kind === 'error') return { text: '–', color: '#5f6368', title: `Could not save: ${r.message}` };
   return { text: '–', color: '#5f6368', title: 'This page cannot be saved' };

@@ -14,7 +14,7 @@ const added = (t, id) => (t.node(id)?.children || []).filter((c) => c.url && Num
 export default [
   {
     area,
-    name: 'quick save: the shortcut saves the tab into the last save folder and shows a green ✓',
+    name: 'quick save: the shortcut saves the tab into the last save folder and shows a green NEW',
     page: 'popup',
     fixture: () => base({ activeTab: fresh, settings: { lastSaveFolder: '40' } }),
     async run(t) {
@@ -24,12 +24,13 @@ export default [
         [['Fresh page', fresh.url]],
         'saved into GITHUB - PIN',
       );
-      t.eq(t.H.badges?.[7], { color: '#1e8e3e', text: '✓', title: 'Saved to GITHUB - PIN' }, 'green badge on that tab');
+      t.eq(t.H.badges?.[7], { color: '#1e8e3e', text: 'NEW', title: 'Saved to GITHUB - PIN' }, 'green NEW badge on that tab');
       t.eq(t.settings().lastSaveFolder, '40', 'last save folder unchanged');
       t.ok(!t.H.popupOpened, 'popup not opened');
       await t.sleep(2700);
-      t.eq(t.H.badges?.[7]?.text, '', 'badge cleared after 2.5 s');
-      t.eq(t.H.badges?.[7]?.title, 'Save current tab to Tab Warehouse', 'default title back');
+      t.eq(t.H.badges?.[7]?.text, '✓', 'the saved mark replaces NEW after 2.5 s');
+      t.eq(t.H.badges?.[7]?.color, '#2e9d63', 'saved green');
+      t.ok(t.H.badges?.[7]?.title.startsWith('Saved in '), 'saved title');
     },
   },
   {
@@ -171,6 +172,63 @@ export default [
         t.$$('#exists .btn').every((b) => b.getBoundingClientRect().height >= 28),
         'Remove ≥ 28 px',
       );
+    },
+  },
+  {
+    area: 'saved mark',
+    name: 'saved mark: a saved page shows a green check with its path, an unsaved page none',
+    page: 'popup',
+    fixture: () => base({ activeTab: loose }),
+    async run(t) {
+      await t.background();
+      t.w.__emit('tabs.onUpdated', 7, { status: 'complete' }, loose);
+      await t.settle();
+      t.eq(t.H.badges?.[7]?.text, '✓', 'check');
+      t.eq(t.H.badges?.[7]?.color, '#2e9d63', 'saved green');
+      t.ok(t.H.badges?.[7]?.title.startsWith('Saved in '), 'title names the path');
+      t.w.__emit('tabs.onUpdated', 7, { url: fresh.url }, fresh);
+      await t.settle();
+      t.eq(t.H.badges?.[7]?.text, '', 'cleared on an unsaved page');
+      t.eq(t.H.badges?.[7]?.title, 'Save current tab to Tab Warehouse', 'default title');
+    },
+  },
+  {
+    area: 'saved mark',
+    name: 'saved mark: a page that cannot be saved gets no check',
+    page: 'popup',
+    fixture: () => base({ activeTab: { id: 7, title: 'Extensions', url: 'chrome://extensions/' } }),
+    async run(t) {
+      await t.background();
+      t.w.__emit('tabs.onUpdated', 7, { status: 'complete' }, { id: 7, url: 'chrome://extensions/' });
+      await t.settle();
+      t.eq(t.H.badges?.[7]?.text, '', 'no check');
+    },
+  },
+  {
+    area: 'saved mark',
+    name: 'saved mark: switching to a saved tab marks it',
+    page: 'popup',
+    fixture: () => base({ activeTab: loose }),
+    async run(t) {
+      await t.background();
+      t.w.__emit('tabs.onActivated', { tabId: 7, windowId: 1 });
+      await t.settle();
+      t.eq(t.H.badges?.[7]?.text, '✓', 'check');
+    },
+  },
+  {
+    area: 'saved mark',
+    name: 'saved mark: deleting the bookmark removes the check after 100 ms',
+    page: 'popup',
+    fixture: () => base({ activeTab: { ...loose, url: 'https://shop.example.com/api/x' } }),
+    async run(t) {
+      await t.background();
+      t.w.__emit('tabs.onActivated', { tabId: 7, windowId: 1 });
+      await t.settle();
+      t.eq(t.H.badges?.[7]?.text, '✓', 'check first');
+      await t.w.chrome.bookmarks.remove('31');
+      await t.settle();
+      t.eq(t.H.badges?.[7]?.text, '', 'check removed');
     },
   },
 ];
