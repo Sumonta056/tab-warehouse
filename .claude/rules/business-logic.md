@@ -29,6 +29,7 @@ Every rule here has at least one test. If you change a rule, change its test in 
 - Opening any page clears the global search first (`select()`): a sidebar folder, Home, Board, Today's top list, the floating Home button, j/k, the palette, a Board column name and _Rename folder_.
 - Order of `#nav`: (categories, or a flat list) → Unsorted.
 - There is no hint text under the sidebar buttons.
+- The sidebar scrolls (wheel, trackpad, keys) but shows no scroll bar (`scrollbar-width: none`; test "the sidebar scrolls without a visible scroll bar").
 - Folders of the sidebar = child folders of the root folder (`resolveRoot`: `rootId`, else folder named `rootName` (empty by default; older installs keep their saved name), else first top-level folder), **excluding the Home folder**.
 - `Unsorted` (id `unsorted:<rootId>`) exists only when the root has loose links; it is virtual: no rename, no drag, no New section, no category.
 - Folder count = every link in the Folder at any depth (`section.all`).

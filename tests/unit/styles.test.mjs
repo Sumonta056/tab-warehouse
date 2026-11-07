@@ -69,3 +69,11 @@ test('Up next and the Today count take their colors only from tokens', () => {
     .map(([sel]) => sel);
   assert.deepEqual(bad, []);
 });
+
+test('the sidebar scrolls without a visible scroll bar', () => {
+  const css = readFileSync(join(EXT, 'styles/views/sidebar.css'), 'utf8');
+  const side = css.match(/(?:^|\n)\.side \{([^}]*)\}/)[1];
+  assert.match(side, /overflow-y: auto/);
+  assert.match(side, /scrollbar-width: none/);
+  assert.match(css, /\.side::-webkit-scrollbar \{\s*display: none;/);
+});
