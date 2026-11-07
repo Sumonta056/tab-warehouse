@@ -39,6 +39,8 @@ const proc = spawn(
   CHROME,
   [
     '--headless=new',
+    '--use-mock-keychain',
+    '--password-store=basic',
     '--no-first-run',
     '--no-default-browser-check',
     `--user-data-dir=${profile}`,

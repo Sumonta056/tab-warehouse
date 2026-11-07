@@ -128,3 +128,12 @@ describe('release build (tools/build.mjs)', () => {
     for (const f of list(out)) assert.ok(readFileSync(join(out, f)).equals(readFileSync(join(again, f))), f);
   });
 });
+
+test('test Chrome launches use a mock keychain', () => {
+  const root = resolve(EXT, '..');
+  for (const f of ['tests/perf/loadtime.mjs', 'tests/perf/memprobe.mjs', 'tests/run.sh']) {
+    const text = readFileSync(join(root, f), 'utf8');
+    assert.ok(text.includes('--use-mock-keychain'), f);
+    assert.ok(text.includes('--password-store=basic'), f);
+  }
+});

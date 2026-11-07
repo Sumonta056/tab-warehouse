@@ -30,7 +30,7 @@ e2e() {
   local root="$1" profile out line
   echo "== e2e on $root/ (headless Chrome) =="
   profile="$(mktemp -d)"
-  out="$("$CHROME" --headless=new --disable-gpu --host-resolver-rules="MAP * ~NOTFOUND, EXCLUDE 127.0.0.1, EXCLUDE ssl.gstatic.com" --no-first-run --no-default-browser-check --user-data-dir="$profile" \
+  out="$("$CHROME" --headless=new --use-mock-keychain --password-store=basic --disable-gpu --host-resolver-rules="MAP * ~NOTFOUND, EXCLUDE 127.0.0.1, EXCLUDE ssl.gstatic.com" --no-first-run --no-default-browser-check --user-data-dir="$profile" \
     --window-size=1920,1000 --virtual-time-budget=300000 --run-all-compositor-stages-before-draw --dump-dom "http://127.0.0.1:$PORT/tests/e2e/runner.html?root=$root${ONLY:+&only=$ONLY}" 2>/dev/null)"
   rm -rf "$profile"
   line="$(printf '%s' "$out" | grep -o 'E2E_RESULT {.*}' | head -1 | sed 's/&quot;/"/g; s/&gt;/>/g; s/&lt;/</g; s/&amp;/\&/g')"
