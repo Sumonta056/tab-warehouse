@@ -56,6 +56,20 @@ export default [
   },
   {
     area,
+    name: 'folder menu: a pin outside the root does not count toward the 6',
+    page: 'newtab',
+    fixture: () => base({ extraRoot: [F('81', 'A'), F('82', 'B'), F('83', 'C'), F('84', 'D')], settings: { savePins: ['81', '82', '83', '84', '20', '70'] } }),
+    async run(t) {
+      t.context(t.nav('Shop API'));
+      await t.menuShown();
+      t.menu('Pin in save popup');
+      await t.settle();
+      t.eq(t.toast()?.textContent, 'Pinned Shop API in the save popup', 'toast');
+      t.eq(t.settings().savePins, ['81', '82', '83', '84', '20', '30'], 'the Home folder pin (outside the root) is dropped');
+    },
+  },
+  {
+    area,
     name: 'each refresh removes Pinned and Recent folder ids that are no longer folders',
     page: 'newtab',
     fixture: () => base({ settings: { savePins: ['40', '999', '23'], saveRecent: ['31', '50', '30'] } }),

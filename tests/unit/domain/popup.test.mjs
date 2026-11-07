@@ -15,6 +15,7 @@ import {
   chipIds,
   pushRecent,
   togglePin,
+  togglePinIn,
   saveChips,
   staleSaveFolders,
 } from '../../../extension/domain/popup.js';
@@ -206,6 +207,16 @@ describe('togglePin', () => {
     assert.deepEqual(togglePin(full, 'g'), { pins: full, error: 'You can pin up to 6 folders.' });
     assert.deepEqual(togglePin(full, 'f'), { pins: ['a', 'b', 'c', 'd', 'e'] });
     assert.deepEqual(togglePin(['a'], 'b', 1), { pins: ['a'], error: 'You can pin up to 1 folders.' });
+  });
+});
+
+describe('togglePinIn', () => {
+  test('drops pins that are not valid folders before toggling, so they do not count toward the limit', () => {
+    const valid = new Set(['a', 'b', 'c', 'd', 'e', 'g', 'h']);
+    assert.deepEqual(togglePinIn(['a', 'b', 'gone', 'c', 'd', 'e'], 'g', valid), { pins: ['a', 'b', 'c', 'd', 'e', 'g'] });
+    assert.deepEqual(togglePinIn(['a', 'gone'], 'a', valid), { pins: [] });
+    assert.deepEqual(togglePinIn(['a', 'b', 'c', 'd', 'e', 'g'], 'h', valid), { pins: ['a', 'b', 'c', 'd', 'e', 'g'], error: 'You can pin up to 6 folders.' });
+    assert.deepEqual(togglePinIn(undefined, 'a', valid), { pins: ['a'] });
   });
 });
 

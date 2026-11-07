@@ -119,6 +119,14 @@ export function togglePin(pins, id, max = CHIP_MAX) {
   return { pins: [...list, id] };
 }
 
+export function togglePinIn(pins, id, validIds, max = CHIP_MAX) {
+  return togglePin(
+    (pins || []).filter((x) => validIds.has(x)),
+    id,
+    max,
+  );
+}
+
 export function saveChips(folders, settings) {
   const byId = new Map(folders.map((f) => [f.id, f]));
   const pins = settings.savePins || [];

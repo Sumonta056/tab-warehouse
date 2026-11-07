@@ -1,4 +1,4 @@
-import { saveChips, togglePin } from '../../domain/popup.js';
+import { saveChips, togglePinIn } from '../../domain/popup.js';
 import { saveSettings } from '../../services/storage.js';
 import { h, svgIcon } from '../../ui/dom.js';
 import { showMenu } from '../../ui/menu.js';
@@ -49,7 +49,7 @@ function pickChip(id) {
 }
 
 export function chipKey(e) {
-  if (!e.altKey || e.ctrlKey || e.metaKey) return false;
+  if (!e.altKey || e.shiftKey || e.ctrlKey || e.metaKey || e.target?.id !== 'q') return false;
   const m = /^Digit(\d)$/.exec(e.code || '');
   const c = m && chips[Number(m[1]) - 1];
   if (!c) return false;
@@ -58,7 +58,7 @@ export function chipKey(e) {
 }
 
 export async function togglePinned(id) {
-  const r = togglePin(popup.settings.savePins, id);
+  const r = togglePinIn(popup.settings.savePins, id, new Set(popup.folders.map((f) => f.id)));
   if (r.error) {
     toast(r.error);
     return;

@@ -2,7 +2,7 @@ import { PRIS, PRI_NAMES } from '../../constants/priority.js';
 import { detectEnv } from '../../domain/env.js';
 import { otherVersions } from '../../domain/derive.js';
 import { catOf, orderToTop, sectionTargets } from '../../domain/folders.js';
-import { togglePin } from '../../domain/popup.js';
+import { folderChoices, togglePinIn } from '../../domain/popup.js';
 import { tagNames } from '../../domain/tags.js';
 import { isDueToday } from '../../domain/today.js';
 import { moveBookmark, removeBookmarkTree } from '../../services/bookmarks.js';
@@ -60,7 +60,7 @@ export function folderMenu(ctx, e, s) {
   };
   const pin = async () => {
     const pinned = state.settings.savePins.includes(s.id);
-    const r = togglePin(state.settings.savePins, s.id);
+    const r = togglePinIn(state.settings.savePins, s.id, new Set(folderChoices(state.root).map((f) => f.id)));
     if (r.error) {
       toast(r.error);
       return;

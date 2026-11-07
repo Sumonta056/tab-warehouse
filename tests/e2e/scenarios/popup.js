@@ -713,6 +713,19 @@ export default [
       alt(1);
       t.eq(selected(t), 'GITHUB - PIN', 'Alt+1');
       t.ok(!alt(5), 'no chip 5: nothing happens');
+      const altIn = (el, opts = {}) => {
+        const e = new t.w.KeyboardEvent('keydown', { key: '£', code: 'Digit3', altKey: true, bubbles: true, cancelable: true, ...opts });
+        el.dispatchEvent(e);
+        return e.defaultPrevented;
+      };
+      t.click(t.$('#noteBtn'));
+      t.ok(!altIn(t.$('#note')), 'Alt+3 in the note box is not taken');
+      t.eq(selected(t), 'GITHUB - PIN', 'Alt+3 in the note box keeps the folder');
+      t.ok(!altIn(t.$('#page .field')), 'Alt+3 in the title field is not taken');
+      t.eq(selected(t), 'GITHUB - PIN', 'Alt+3 in the title field keeps the folder');
+      t.ok(!altIn(t.$('#q'), { shiftKey: true, key: '€' }), 'Alt+Shift+3 in the search box is not taken');
+      t.eq(selected(t), 'GITHUB - PIN', 'Alt+Shift+3 keeps the folder');
+      t.$('#q').focus();
       t.eq(selected(t), 'GITHUB - PIN', 'selection kept');
       t.key(t.$('#q'), 'Enter');
       await t.settle();
@@ -799,6 +812,20 @@ export default [
       t.eq(t.toast()?.textContent, 'You can pin up to 6 folders.', 'toast');
       t.eq(t.settings().savePins, ['900', '901', '902', '903', '904', '905'], 'nothing saved');
       t.eq(pin(t, 'Shop API').getAttribute('aria-pressed'), 'false', 'not pinned');
+    },
+  },
+  {
+    area,
+    name: 'pin button: a pin that is not a folder under the root does not count toward the 6',
+    page: 'popup',
+    fixture: () => base({ activeTab: tab, extraRoot: many(), settings: { savePins: ['900', '901', 'gone', '902', '903', '904'] } }),
+    async run(t) {
+      t.eq(t.$$('#chips .save-chip').length, 5, '5 chips show');
+      t.click(pin(t, 'Shop API'));
+      await t.settle();
+      t.ok(!t.toast(), 'no full-list toast');
+      t.eq(t.settings().savePins, ['900', '901', '902', '903', '904', '30'], 'pinned; the unknown id is dropped');
+      t.eq(t.$$('#chips .save-chip').length, 6, '6 chips');
     },
   },
   {
