@@ -30,14 +30,14 @@ onOmniboxEnter((text, disposition) => {
 
 const badgeTimers = new Map();
 
-async function updateSavedMark(tab) {
+async function updateSavedMark(tab, onlySet = false) {
   if (tab?.id == null || badgeTimers.has(tab.id)) return;
   const [settings, tree] = await Promise.all([loadSettings(), getTree()]);
   const folders = folderChoices(resolveRoot(tree, settings));
   const badge = savedMarkBadge(savedMark(tree, tab.url, folders));
   if (badgeTimers.has(tab.id)) return;
   if (badge) setBadge(tab.id, badge);
-  else clearBadge(tab.id);
+  else if (!onlySet) clearBadge(tab.id);
 }
 
 function flashBadge(tabId, badge) {
@@ -73,6 +73,10 @@ onBookmarksChanged(() => {
     } catch {}
   }, SAVED_MARK_MS);
 });
+
+activeTabs()
+  .then((tabs) => Promise.all(tabs.map((tab) => updateSavedMark(tab, true))))
+  .catch(() => {});
 
 async function quickSaveTab() {
   const tab = await activeTab();

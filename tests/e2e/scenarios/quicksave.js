@@ -68,7 +68,7 @@ export default [
       await command(t);
       t.eq(t.H.popupOpened, 1, 'popup opened');
       t.eq(t.kids('30'), ['31', '32', '33', '34'], 'nothing saved');
-      t.ok(!t.H.badges?.[7], 'no badge');
+      t.eq(t.H.badges?.[7]?.text, '✓', 'only the saved mark, no quick-save badge');
     },
   },
   {
@@ -222,6 +222,18 @@ export default [
       await t.settle();
       t.eq(t.H.badges?.[7]?.text, '', 'cleared on an unsaved page');
       t.eq(t.H.badges?.[7]?.title, 'Save current tab to Tab Warehouse', 'default title');
+    },
+  },
+  {
+    area: 'saved mark',
+    name: 'saved mark: the worker shows the check at start without a tab event',
+    page: 'popup',
+    fixture: () => base({ activeTab: loose }),
+    async run(t) {
+      await t.background();
+      await t.settle();
+      t.eq(t.H.badges?.[7]?.text, '✓', 'check without any tab event');
+      t.ok(t.H.badges?.[7]?.title.startsWith('Saved in '), 'title names the path');
     },
   },
   {

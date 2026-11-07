@@ -146,7 +146,7 @@ Developers keep the same page open in many versions: live, test, staging and `lo
 
 ![The command palette as a toolbar popup with Checkout links and their tags](site/screenshots/palette.png)
 
-### Popup (`⌘⇧B` / `Ctrl+Shift+B`)
+### Popup (`⌘K` / `Ctrl+K`)
 
 - A compact popup: the title and tag on top, then one toolbar row (priority dots, Note, Due, Page / Site), the folder list and a wide **Save** button.
 - Save the current tab into any folder, or create a new folder by typing its name. Folders with subfolders open and close with their arrow or with → / ←; only the way to your last folder is open.
@@ -154,7 +154,7 @@ Developers keep the same page open in many versions: live, test, staging and `lo
 - Save the full page or the whole site (`origin/`).
 - Shows the tag and remembers the last folder.
 - Says “✓ Saved in <folder>” (and “+N more”) on the address line when the page is already saved, also when only `?utm_…`, `#part` or a trailing `/` differ; click it to see each copy and remove one. **Save again** still saves a second copy.
-- **Quick save** (`⌘K` / `Ctrl+K`): saves the tab into the last folder you saved to (or the root) without opening the popup. The toolbar icon shows a green NEW for 2.5 s. If the page is already saved, nothing is saved and the popup opens with the “Saved in” line.
+- **Quick save** (`⌘⇧S` / `Ctrl+Shift+S`): saves the tab into the last folder you saved to (or the root) without opening the popup. The toolbar icon shows a green NEW for 2.5 s. If the page is already saved, nothing is saved and the popup opens with the “Saved in” line.
 - **Open this page in**: opens the same page in your other versions (from _Same site in each version_).
 - Add a priority, a short note (press the note icon) and a due date before you save.
 
@@ -215,15 +215,15 @@ The release ZIP is built: `npm install`, then `./tools/package.sh` (or `npm run 
 1. **Pick your root folder.** Open ⚙ Settings → Bookmarks. Its subfolders become the sidebar. By default it uses your bookmarks bar.
 2. **Add tags by address.** Settings → Tags → Tags by address. For example: `localhost` → LOCAL, `-test.` → TEST, `-stage.` → STAGE.
 3. **Link your versions.** Settings → Tags → Same site in each version. Add one row per site with its PROD, TEST, STAGE and LOCAL hosts.
-4. **Save a page.** On any site, press `⌘⇧B` (macOS) or `Ctrl+Shift+B` (Windows/Linux), pick a folder and press Enter.
+4. **Save a page.** On any site, press `⌘K` (macOS) or `Ctrl+K` (Windows/Linux), pick a folder and press Enter.
 5. **Open the tag matrix.** Open a folder and choose View → **Tag matrix**.
 
 ## Keyboard shortcuts
 
 | Keys                              | Action                                                  |
 | --------------------------------- | ------------------------------------------------------- |
-| `⌘⇧B` / `Ctrl+Shift+B`            | Open the save popup                                     |
-| `⌘K` / `Ctrl+K`                   | Quick save the tab without the popup                    |
+| `⌘K` / `Ctrl+K`                   | Open the save popup                                     |
+| `⌘⇧S` / `Ctrl+Shift+S`            | Quick save the tab without the popup                    |
 | `⌘⇧K` / `Ctrl+Shift+K`            | Open the command palette (on Tab Warehouse)             |
 | `⌘Enter` (in the palette)         | Open the link in a background tab                       |
 | `tw` + space (in the address bar) | Search all folders from the address bar                 |
@@ -239,9 +239,9 @@ The release ZIP is built: `npm install`, then `./tools/package.sh` (or `npm run 
 
 Settings › Shortcuts lists these keys. To change the Chrome keys, click **Change shortcuts** there (it opens `chrome://extensions/shortcuts`).
 
-Change `⌘⇧B`, `⌘K` and `⌘⇧K` at `chrome://extensions/shortcuts`. An install that is already there keeps its old keys after an update: set them there, or paste `tools/set-shortcuts.js` into the Console of that page. Chrome skips a suggested key that another extension already uses; then the shortcut shows as not set until you pick one there.
+Change `⌘K`, `⌘⇧S` and `⌘⇧K` at `chrome://extensions/shortcuts`. An install that is already there keeps its old keys after an update: set them there, or paste `tools/set-shortcuts.js` into the Console of that page. Chrome skips a suggested key that another extension already uses; then the shortcut shows as not set until you pick one there.
 
-`⌘K` / `Ctrl+K` quick saves on any page. Many sites (GitHub, Slack, Notion) use `⌘K` themselves and lose it while the extension has it; if you want it back there, set another key or none. On Windows Chrome may keep `Ctrl+K` for itself; then the shortcut shows as not set and you can pick a key at `chrome://extensions/shortcuts`.
+`⌘K` / `Ctrl+K` opens the save popup on any page. Many sites (GitHub, Slack, Notion) use `⌘K` themselves and lose it while the extension has it; if you want it back there, set another key or none. On Windows Chrome may keep `Ctrl+K` for itself; then the shortcut shows as not set and you can pick a key at `chrome://extensions/shortcuts`.
 
 ## Privacy and permissions
 
@@ -259,7 +259,7 @@ Tab Warehouse has no server, no account, no analytics and no tracking. It does n
 | `activeTab` | Read the current tab's title and URL, only when you open the popup or quick save                                                               |
 | `tabs`      | See which saved links are open in a tab, to mark them "Open" in the list (kept only in memory), and to show the Saved mark on the toolbar icon |
 
-The extension has a background service worker (`background.js`) only for the address bar search (`tw`), quick save (`⌘K`) and the palette key (`⌘⇧K`, so it also works while the address bar has focus). It reads your bookmarks on each keystroke or key press and keeps nothing. The `omnibox` key is not a permission and shows no install warning.
+The extension has a background service worker (`background.js`) only for the address bar search (`tw`), quick save (`⌘⇧S`) and the palette key (`⌘⇧K`, so it also works while the address bar has focus). It reads your bookmarks on each keystroke or key press and keeps nothing. The `omnibox` key is not a permission and shows no install warning.
 
 ## How it works
 
@@ -271,7 +271,7 @@ Tab Warehouse is plain JavaScript with ES modules. There is no framework and no 
 
 ```
 extension/             Everything Chrome loads (choose this folder in Load unpacked)
-  manifest.json        Manifest V3: new tab override, popup, ⌘⇧B, ⌘K and ⌘⇧K commands
+  manifest.json        Manifest V3: new tab override, popup, ⌘K, ⌘⇧S and ⌘⇧K commands
   newtab.html/.js      The main page: sidebar + folder page
   popup.html/.js       Toolbar popup: save the current tab
   constants/           Fixed values: envs, tags, sorts, themes, limits, defaults

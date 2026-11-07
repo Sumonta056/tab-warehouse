@@ -3,6 +3,7 @@
   const mac = navigator.platform.includes('Mac');
   const want = {
     'quick-save': { set: mac ? 'Command+Shift+S' : 'Ctrl+Shift+S', shown: mac ? '⇧⌘S' : 'Ctrl+Shift+S' },
+    _execute_action: { set: mac ? 'Command+K' : 'Ctrl+K', shown: mac ? '⌘K' : 'Ctrl+K' },
     palette: { set: mac ? 'Command+Shift+K' : 'Ctrl+Shift+K', shown: mac ? '⇧⌘K' : 'Ctrl+Shift+K' },
   };
   const all = await dp.getExtensionsInfo();
