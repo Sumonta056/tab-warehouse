@@ -109,6 +109,9 @@
       { PROD: 'shop.example.com', TEST: 'test.shop.example.com', STAGE: 'staging.shop.example.com', LOCAL: 'localhost:3000', QA: 'qa.shop.example.com' },
     ],
     lastFolder: ids['Shop project'],
+    lastSaveFolder: ids['Checkout'],
+    savePins: [ids['Shop project'], ids['Sprint board']],
+    saveRecent: [ids['Checkout'], ids['Docs']],
     home: { folderId: ids['Home'], seeded: true, newTab: true, dark: 70, blur: 2 },
     sideLook: { mode: 'image', color: '#141414', dark: 85, blur: 14 },
   });

@@ -167,7 +167,7 @@ Developers keep the same page open in many versions: live, test, staging and `lo
 - **Duplicates** lists links saved more than once. Keep one copy; the others are deleted with Undo.
 - Every change saves at once. There is no Save button.
 - Text size for the sidebar, the page and the Board (80–140 %).
-- Export to JSON (links, sections, sidebar order, categories and preferences) or to HTML (Chrome's bookmark format). Import merges and skips URLs you already have.
+- Export to JSON or to HTML (Chrome's bookmark format). JSON is a full backup: links, notes, due dates, sections, sidebar order, categories, colors, tags, Home links, icons and background, the look, text sizes and pinned folders. Import merges and skips URLs you already have; the backup's look and Home settings replace the local ones.
 
 ![Settings › Appearance: name, text size, accent color and sidebar background](site/screenshots/settings-appearance.png)
 
