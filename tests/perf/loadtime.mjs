@@ -144,8 +144,8 @@ async function measure(b, url, seeded) {
   return { ready: Math.max(t?.home || 0, seeded ? t?.nav || 0 : 0), dcl, requests };
 }
 
-async function seed(b, id) {
-  const { targetId } = await b.send('Target.createTarget', { url: `chrome-extension://${id}/newtab.html` });
+async function seed(b) {
+  const { targetId } = await b.send('Target.createTarget', { url: 'chrome://newtab/' });
   const { sessionId: s } = await b.send('Target.attachToTarget', { targetId, flatten: true });
   const ev = evaluator(b.send, s);
   for (let i = 0; i < 100 && !(await ev(`!!(window.chrome && chrome.bookmarks)`).catch(() => false)); i++) await sleep(100);
@@ -176,7 +176,7 @@ for (let i = 0; i < COLD; i++) {
     const b = await launch(join(ROOT, f));
     const id = await extId(b);
     await sleep(500);
-    runs[f].cold.push(await measure(b, `chrome-extension://${id}/newtab.html`, false));
+    runs[f].cold.push(await measure(b, 'chrome://newtab/', false));
     await b.close();
   }
 }
@@ -184,8 +184,8 @@ for (let i = 0; i < COLD; i++) {
 for (const f of FOLDERS) {
   const b = await launch(join(ROOT, f));
   const id = await extId(b);
-  await seed(b, id);
-  for (let i = 0; i < WARM; i++) runs[f].warm.push(await measure(b, `chrome-extension://${id}/newtab.html`, true));
+  await seed(b);
+  for (let i = 0; i < WARM; i++) runs[f].warm.push(await measure(b, 'chrome://newtab/', true));
   await b.close();
 }
 
