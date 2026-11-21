@@ -102,7 +102,7 @@ const CYCLE = (n, heavy) => `(async () => {
   const [tree] = await chrome.bookmarks.getTree();
   const root = tree.children[0].children.find(c => c.title === 'My Links');
   for (let i = 0; i < ${n}; i++) {
-    const navs = [...document.querySelectorAll('.nav')];
+    const navs = [...document.querySelectorAll('#nav .nav')];
     navs[i % navs.length].click();
     await wait(5);
     document.querySelector('.row')?.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, clientX: 300, clientY: 300 }));
@@ -121,7 +121,7 @@ const CYCLE = (n, heavy) => `(async () => {
     await wait(40);
   }
   document.body.click();
-  document.querySelector('.nav')?.click();
+  document.querySelector('#nav .nav')?.click();
   return true;
 })()`;
 
@@ -172,7 +172,7 @@ try {
     return true;
   })()`);
   await sleep(1500);
-  await ev(`document.querySelector('.nav')?.click()`);
+  await ev(`document.querySelector('#nav .nav')?.click()`);
   await sleep(500);
   const shown = await ev(`document.querySelectorAll('.row').length`);
   if (!shown) throw new Error('seeded bookmarks did not render');
@@ -187,7 +187,7 @@ try {
   const end = await measure(`after ${CYCLES} cycles`);
 
   const renderMs = await ev(`(() => {
-    const navs = [...document.querySelectorAll('.nav')];
+    const navs = [...document.querySelectorAll('#nav .nav')];
     const t = performance.now();
     for (const n of navs) n.click();
     return +((performance.now() - t) / navs.length).toFixed(2);
