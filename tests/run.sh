@@ -26,20 +26,29 @@ if ! kill -0 "$SERVER" 2>/dev/null; then
   echo "e2e: the test server could not start on port $PORT."
   exit 1
 fi
-e2e() {
-  local root="$1" profile out line
-  echo "== e2e on $root/ (headless Chrome) =="
+PARTS="${E2E_PARTS:-4}"
+e2e_part() {
+  local root="$1" part="$2" profile
   profile="$(mktemp -d)"
-  out="$("$CHROME" --headless=new --use-mock-keychain --password-store=basic --disable-gpu --host-resolver-rules="MAP * ~NOTFOUND, EXCLUDE 127.0.0.1, EXCLUDE ssl.gstatic.com" --no-first-run --no-default-browser-check --user-data-dir="$profile" \
-    --window-size=1920,1000 --virtual-time-budget=300000 --run-all-compositor-stages-before-draw --dump-dom "http://127.0.0.1:$PORT/tests/e2e/runner.html?root=$root${ONLY:+&only=$ONLY}" 2>/dev/null)"
+  "$CHROME" --headless=new --use-mock-keychain --password-store=basic --disable-gpu --host-resolver-rules="MAP * ~NOTFOUND, EXCLUDE 127.0.0.1, EXCLUDE ssl.gstatic.com" --no-first-run --no-default-browser-check --user-data-dir="$profile" \
+    --window-size=1920,1000 --virtual-time-budget=300000 --run-all-compositor-stages-before-draw --dump-dom "http://127.0.0.1:$PORT/tests/e2e/runner.html?root=$root&part=$part/$PARTS${ONLY:+&only=$ONLY}" 2>/dev/null |
+    grep -o 'E2E_RESULT {.*}' | head -1 | sed 's/&quot;/"/g; s/&gt;/>/g; s/&lt;/</g; s/&amp;/\&/g; s/^E2E_RESULT //'
   rm -rf "$profile"
-  line="$(printf '%s' "$out" | grep -o 'E2E_RESULT {.*}' | head -1 | sed 's/&quot;/"/g; s/&gt;/>/g; s/&lt;/</g; s/&amp;/\&/g')"
-  if [ -z "$line" ]; then
-    echo "e2e: no result (runner did not finish). Open http://127.0.0.1:$PORT/tests/e2e/runner.html?root=$root in Chrome to debug."
-    status=1
-  else
-    printf '%s\n' "${line#E2E_RESULT }" | python3 -I tests/e2e/report.py || status=1
-  fi
+}
+e2e() {
+  local root="$1" dir i lines
+  echo "== e2e on $root/ (headless Chrome, $PARTS parts) =="
+  dir="$(mktemp -d)"
+  for i in $(seq 0 $((PARTS - 1))); do e2e_part "$root" "$i" >"$dir/$i"; done
+  for i in $(seq 0 $((PARTS - 1))); do
+    if [ ! -s "$dir/$i" ]; then
+      echo "e2e: no result for part $i of $PARTS (runner did not finish). Open http://127.0.0.1:$PORT/tests/e2e/runner.html?root=$root&part=$i/$PARTS in Chrome to debug."
+      status=1
+    fi
+  done
+  lines="$(cat "$dir"/*)"
+  rm -rf "$dir"
+  [ -n "$lines" ] && { printf '%s\n' "$lines" | python3 -I tests/e2e/report.py || status=1; }
 }
 
 e2e extension

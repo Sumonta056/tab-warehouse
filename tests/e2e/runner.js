@@ -284,8 +284,9 @@ function makeT(scenario) {
   return t;
 }
 
-export async function run(filter) {
-  const list = ALL.filter((s) => !filter || s.name.toLowerCase().includes(filter.toLowerCase()));
+export async function run(filter, part) {
+  const [k, n] = (part || '0/1').split('/').map(Number);
+  const list = ALL.filter((s) => !filter || s.name.toLowerCase().includes(filter.toLowerCase())).filter((_, i) => i % n === k);
   const results = [];
   for (const s of list) {
     const state = s.fixture();
@@ -331,4 +332,4 @@ export async function run(filter) {
 
 export { clone };
 const params = new URLSearchParams(location.search);
-if (params.get('auto') !== '0') run(params.get('only'));
+if (params.get('auto') !== '0') run(params.get('only'), params.get('part'));
