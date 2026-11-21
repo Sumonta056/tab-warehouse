@@ -7,14 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.6.0] - 2026-11-21
+
+Tab Warehouse 2.6.0 adds a daily checklist, a faster save popup and a full backup.
+
 ### Added
 
-- **Schedule**: a third view tab under the search box lists every link with a due date from all folders. Groups: Overdue, Today, Next 7 days and Later; the oldest overdue link comes first. Each row shows its folder and section. Open it also with `j`/`k` or from the command palette.
+- **Today's top list**: a fixed row above the folders lists the links that are due today or overdue. Tick a link when you are done; done links are deleted the next day, with Undo. The row shows how many are still open. **Up next** on Home shows the next open link.
+- **Full backup**: Backup › Export JSON now also keeps the Home links, Home icons and background, the Home look, the accent color, your name, the sidebar look and width, the text sizes, and the pinned and recent folders of the save popup. Import restores them.
+- **Open** pill on a row while the link is open in a tab.
+- **Saved mark**: a green ✓ on the toolbar icon while the open page is already bookmarked.
+- **Pinned and Recent folders** as chips in the save popup (up to 6, `Alt+1` … `Alt+6`), with a pin on each folder row and **Pin in save popup** in the sidebar folder menu.
+- Emoji icons and any custom color for categories, sections and folders. Backups keep them.
+- Sections inside sections, at any depth, on the folder page and the Board.
+- Quick due date chips (Today, Tomorrow, Next week) in the due picker.
 
 ### Changed
 
-- The due chip sits on the right of each row, so the dates of all rows line up. In a narrow window it moves under the link.
-- The view tabs show only their names at the default sidebar width, icons and names in a wide sidebar, and only icons in a narrow sidebar.
+- The command palette opens as a toolbar popup, so its box has focus at once on a new tab.
+- `⌘K` / `Ctrl+K` opens the save popup; quick save moves to `⌘⇧S` / `Ctrl+Shift+S`.
+- A compact save popup (380 px) with collapsible folders and a one-line "Saved in <folder>".
+- The due chip sits on the right of each row, so the dates of all rows line up.
+- The sidebar scrolls without a visible scroll bar.
+
+### Permissions
+
+- New `tabs` permission: to mark links that are open in a tab and to show the Saved mark. Chrome asks you to accept it after the update.
 
 ## [2.5.0] - 2026-10-24
 

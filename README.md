@@ -320,7 +320,7 @@ python3 -I tests/serve.py 8799
 
 ## Changelog
 
-- **Unreleased** — The command palette opens as a toolbar popup, so its box has focus at once on a fresh new tab. **Today's top list** checklist, a fixed sidebar row above the folders (tick links, done links are deleted the next day with Undo, count on the row, a wide **Up next** bar on Home with the title on up to 2 lines); the view tabs are Home and Board again. Backups never carry a tick; only a visible tab deletes done links; Undo never restores a tick. **Saved mark**: a green ✓ on the toolbar icon, with the tooltip "Saved in <folder>", while the open page is already bookmarked. A compact Save popup (380 px): one toolbar row, collapsible folders (→ / ←), and a one-line “Saved in <folder> +N more” in place of the warning box. **Pinned and Recent folders** as chips in the Save popup (up to 6, `Alt+1` … `Alt+6`), with a pin on each folder row and **Pin in save popup** in the sidebar folder menu.
+- **2.6.0** — Today's top list with done ticks and Up next on Home; a full backup (Home links, icons and background, look, text sizes, pinned folders); the Open pill and the Saved mark; pinned and recent folders in the save popup; emoji icons and custom colors; nested sections. Details in [CHANGELOG.md](CHANGELOG.md).
 - **2.5.0** — Due dates on links with an optional Google Calendar event; quick save (`⌘K` / `Ctrl+K`) without the popup; the popup warns when a page is already saved and offers **Save again**; Settings › Shortcuts; the command palette moves to `⌘⇧K` / `Ctrl+Shift+K`. Details in [CHANGELOG.md](CHANGELOG.md).
 - **2.4.0** — Full history in [CHANGELOG.md](CHANGELOG.md).
   - Command palette (⌘K) and `tw` search from the address bar.
