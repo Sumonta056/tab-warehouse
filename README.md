@@ -158,7 +158,7 @@ Developers keep the same page open in many versions: live, test, staging and `lo
 - **Open this page in**: opens the same page in your other versions (from _Same site in each version_).
 - Add a priority, a short note (press the note icon) and a due date before you save.
 
-<img src="site/screenshots/popup.png" alt="The save popup with a TEST badge, links to the same page in the other versions, a priority picker, a note box and the folder list" width="360">
+<img src="site/screenshots/popup.png" alt="The save popup with a TEST badge, links to the same page in the other versions, the priority, note and due buttons, pinned and recent folder chips and the folder list" width="360">
 
 ### Settings and backup
 
