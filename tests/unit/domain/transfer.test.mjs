@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { detectEnv } from '../../../extension/domain/env.js';
 import { sections } from '../../../extension/domain/tree.js';
 import { L, F } from '../fixtures.mjs';
-import { cleanImport, exportData, netscapeHtml, parseJson, backupName, addTags } from '../../../extension/domain/transfer.js';
+import { cleanImport, exportData, netscapeHtml, parseJson, backupName, addTags, folderPath, folderAt, importText } from '../../../extension/domain/transfer.js';
 
 describe('cleanImport', () => {
   test('drops bad env rules, host rows and folder prefs that would break rendering', () => {
@@ -405,12 +405,165 @@ describe('nested Sections in backups', () => {
   });
 });
 
-describe('pinned and recent folders stay out of backups', () => {
-  test('exportData does not write savePins or saveRecent, and cleanImport drops them', () => {
-    const d = exportData(ROOT, SECS, { ...SETTINGS, savePins: ['30'], saveRecent: ['30'] }, {});
-    assert.ok(!('savePins' in d.preferences) && !('saveRecent' in d.preferences));
-    assert.ok(!JSON.stringify(d).includes('savePins') && !JSON.stringify(d).includes('saveRecent'));
-    const p = cleanImport({ sections: [], preferences: { savePins: ['1'], saveRecent: ['2'] } }).preferences;
-    assert.ok(!('savePins' in p) && !('saveRecent' in p));
+const TREE_ROOT = {
+  id: '10',
+  title: 'My Links',
+  children: [
+    {
+      id: '30',
+      title: 'Work',
+      children: [
+        { id: '31', title: 'Clients', children: [] },
+        { id: '32', title: 'a', url: 'https://a.example.com/' },
+      ],
+    },
+    { id: '40', title: 'Read', children: [] },
+  ],
+};
+const PNG = 'data:image/png;base64,iVBORw0KGgo=';
+const JPG = 'data:image/jpeg;base64,/9j/4AAQ';
+const FULL = {
+  ...SETTINGS,
+  theme: '#AA3366',
+  userName: 'Sam',
+  sideLook: { mode: 'image', color: '#222222', dark: 50, blur: 6 },
+  sideWidth: 300,
+  fontSide: 90,
+  fontPage: 110,
+  fontBoard: 120,
+  home: {
+    folderId: '99',
+    color: '#185a63',
+    imgOpacity: 80,
+    dark: 40,
+    blur: 3,
+    clockSize: 200,
+    h24: true,
+    seconds: false,
+    date: true,
+    labels: false,
+    newTab: true,
+    tileSize: 64,
+    perRow: 8,
+    tilesGap: 120,
+  },
+  lastFolder: '30',
+  lastSaveFolder: '31',
+  savePins: ['31', '40', 'gone'],
+  saveRecent: ['40', '10'],
+};
+const HOME = {
+  homeLinks: [
+    { id: '91', title: 'Mail', url: 'https://mail.example.com/' },
+    { id: '92', title: 'Docs', url: 'https://docs.example.com/' },
+  ],
+  homeIcons: { 91: PNG },
+  homeBg: JPG,
+};
+
+describe('full backup: Home, look and folder paths', () => {
+  test('folderPath gives the titles from the root, folderAt finds the folder again', () => {
+    assert.deepEqual(folderPath(TREE_ROOT, '31'), ['Work', 'Clients']);
+    assert.deepEqual(folderPath(TREE_ROOT, '10'), []);
+    assert.equal(folderPath(TREE_ROOT, '32'), null, 'a link is not a folder');
+    assert.equal(folderPath(TREE_ROOT, 'gone'), null);
+    assert.equal(folderPath(TREE_ROOT, null), null);
+    assert.equal(folderAt(TREE_ROOT, ['Work', 'Clients']).id, '31');
+    assert.equal(folderAt(TREE_ROOT, []).id, '10');
+    assert.equal(folderAt(TREE_ROOT, ['Work', 'a']), null);
+  });
+
+  test('exportData writes Home links with icons, the Home look without folderId, the background, the look and folder paths', () => {
+    const d = exportData(TREE_ROOT, SECS, FULL, {}, HOME);
+    assert.deepEqual(d.home.links, [
+      { title: 'Mail', url: 'https://mail.example.com/', icon: PNG },
+      { title: 'Docs', url: 'https://docs.example.com/' },
+    ]);
+    assert.ok(!('folderId' in d.home.look));
+    assert.equal(d.home.look.clockSize, 200);
+    assert.equal(d.home.bg, JPG);
+    assert.deepEqual(d.look, { theme: '#AA3366', userName: 'Sam', sideLook: FULL.sideLook, sideWidth: 300, fontSide: 90, fontPage: 110, fontBoard: 120 });
+    assert.deepEqual(d.folderPaths, {
+      lastFolder: ['Work'],
+      lastSaveFolder: ['Work', 'Clients'],
+      savePins: [['Work', 'Clients'], ['Read']],
+      saveRecent: [['Read'], []],
+    });
+  });
+
+  test('exportData without Home data writes an empty Home block and no background', () => {
+    const d = exportData(ROOT, SECS, SETTINGS, {});
+    assert.deepEqual(d.home.links, []);
+    assert.ok(!('bg' in d.home));
+  });
+
+  test('round-trips through parseJson', () => {
+    const back = parseJson(JSON.stringify(exportData(TREE_ROOT, SECS, FULL, {}, HOME)));
+    const { folderId, ...look } = FULL.home;
+    assert.equal(folderId, '99');
+    assert.deepEqual(back.home, {
+      links: [
+        { title: 'Mail', url: 'https://mail.example.com/', icon: PNG },
+        { title: 'Docs', url: 'https://docs.example.com/' },
+      ],
+      look,
+      bg: JPG,
+    });
+    assert.deepEqual(back.look, { theme: '#aa3366', userName: 'Sam', sideLook: FULL.sideLook, sideWidth: 300, fontSide: 90, fontPage: 110, fontBoard: 120 });
+    assert.deepEqual(back.folderPaths.savePins, [['Work', 'Clients'], ['Read']]);
+  });
+
+  test('cleanImport clamps numbers and drops bad values, so a bad file cannot break the page', () => {
+    const r = cleanImport({
+      sections: [],
+      home: {
+        links: [
+          { url: 'https://a.example.com/', icon: 'javascript:alert(1)' },
+          { url: 'https://b.example.com/', icon: 'https://b.example.com/i.png' },
+          { title: 'x' },
+          'bad',
+        ],
+        look: { color: 'red', clockSize: 999, perRow: 1, blur: 'x', h24: 'yes', seconds: false, folderId: '5' },
+        bg: 'https://evil.example.com/bg.jpg',
+      },
+      look: {
+        theme: 'neon',
+        userName: `  ${'n'.repeat(60)}  `,
+        sideLook: { mode: 'video', color: '#FFFFFF', dark: 5, blur: 99 },
+        sideWidth: 9999,
+        fontSide: 10,
+        fontPage: '120',
+        fontBoard: 140,
+      },
+      folderPaths: { lastFolder: 'Work', lastSaveFolder: ['Work', 3], savePins: [['A'], 'B', [1]], saveRecent: 'x' },
+    });
+    assert.deepEqual(r.home, {
+      links: [
+        { title: '', url: 'https://a.example.com/' },
+        { title: '', url: 'https://b.example.com/', icon: 'https://b.example.com/i.png' },
+      ],
+      look: { clockSize: 260, perRow: 4, seconds: false },
+    });
+    assert.deepEqual(r.look, { userName: 'n'.repeat(40), sideLook: { color: '#ffffff', dark: 30, blur: 24 }, sideWidth: 440, fontSide: 80, fontBoard: 140 });
+    assert.deepEqual(r.folderPaths, { lastFolder: null, lastSaveFolder: null, savePins: [['A']], saveRecent: [] });
+    assert.equal(cleanImport({ sections: [], look: { theme: 'teal' } }).look.theme, 'teal');
+  });
+
+  test('an old backup without home, look or folder paths has none of them', () => {
+    const r = cleanImport({ sections: [], preferences: {} });
+    assert.ok(!('home' in r) && !('look' in r) && !('folderPaths' in r));
+  });
+
+  test('exportData never writes the root id or bookmark ids of pinned folders', () => {
+    const text = JSON.stringify(exportData(TREE_ROOT, SECS, { ...FULL, rootId: '10' }, {}, HOME));
+    assert.ok(!text.includes('"savePins":["') && !text.includes('rootId') && !text.includes('"folderId"'));
+  });
+
+  test('importText names folders, links, Home links, skipped links and a skipped background', () => {
+    assert.equal(importText({ folders: 1, links: 2, skipped: 0 }), 'Imported: 1 folder, 2 new links');
+    assert.equal(
+      importText({ folders: 0, links: 1, skipped: 3, homeLinks: 2, bgSkipped: true }),
+      'Imported: 0 folders, 1 new link, 2 Home links, 3 already there. The background was skipped: not enough storage space.',
+    );
   });
 });

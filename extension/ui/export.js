@@ -1,5 +1,6 @@
 import { exportData, netscapeHtml, backupName } from '../domain/transfer.js';
-import { loadLinkMeta } from '../services/storage.js';
+import { loadLinkMeta, loadHomeStore } from '../services/storage.js';
+import { getChildren } from '../services/bookmarks.js';
 
 function download(name, text, type) {
   const url = URL.createObjectURL(new Blob([text], { type }));
@@ -13,8 +14,13 @@ function download(name, text, type) {
 }
 
 export async function exportJson(root, secs, settings) {
-  const meta = await loadLinkMeta();
-  download(backupName('json'), JSON.stringify(exportData(root, secs, settings, meta), null, 2), 'application/json');
+  const [meta, { icons, bg }, kids] = await Promise.all([
+    loadLinkMeta(),
+    loadHomeStore(),
+    settings.home?.folderId ? getChildren(settings.home.folderId).catch(() => []) : [],
+  ]);
+  const data = exportData(root, secs, settings, meta, { homeLinks: kids.filter((k) => k.url), homeIcons: icons, homeBg: bg });
+  download(backupName('json'), JSON.stringify(data, null, 2), 'application/json');
 }
 
 export function exportHtml(root, secs) {

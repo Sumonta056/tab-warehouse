@@ -687,4 +687,59 @@ export default [
       }
     },
   },
+  {
+    area,
+    name: 'backup: export carries Home links, icons, background, look and pins; import restores them on the page',
+    page: 'newtab',
+    fixture: () => base({ homeIcons: { 73: PNG }, settings: { theme: 'teal', userName: 'Sam', fontPage: 120, savePins: ['10'] } }),
+    async run(t) {
+      t.click(t.$('#settingsBtn'));
+      await t.settle();
+      t.click(t.$('.set-tab[data-tab="backup"]'));
+      await t.settle();
+      let blob;
+      const keep = t.w.URL.createObjectURL;
+      t.w.URL.createObjectURL = (b) => ((blob = b), 'blob:x');
+      t.click(t.$('#exportJson'));
+      await t.until(() => blob, 'the export');
+      t.w.URL.createObjectURL = keep;
+      const out = JSON.parse(await blob.text());
+      t.eq(
+        out.home.links.map((l) => [l.title, !!l.icon]),
+        [
+          ['GitHub', false],
+          ['Drive', false],
+          ['Example', true],
+        ],
+        'Home links with their icon',
+      );
+      t.eq([out.look.theme, out.look.userName, out.look.fontPage], ['teal', 'Sam', 120], 'look exported');
+      t.eq(out.folderPaths.savePins, [[]], 'the root pin is a path');
+      t.ok(!JSON.stringify(out).includes('"folderId"'), 'no Home folder id');
+
+      out.home.links.push({ title: 'Mail', url: 'https://mail.example.com/', icon: PNG });
+      out.home.look.perRow = 6;
+      out.home.bg = PNG;
+      Object.assign(out.look, { theme: 'purple', userName: 'Kim', fontPage: 90 });
+      const inp = t.$('#importFile');
+      const dt = new t.w.DataTransfer();
+      dt.items.add(new t.w.File([JSON.stringify(out)], 'w.json', { type: 'application/json' }));
+      inp.files = dt.files;
+      inp.dispatchEvent(new t.w.Event('change', { bubbles: true }));
+      for (let i = 0; i < 500 && !t.toast()?.textContent.startsWith('Import'); i++) await fetch(`/tests/e2e/runner.html?wait=${i}`, { cache: 'no-store' });
+      t.eq(t.toast().textContent.split('.')[0], 'Imported: 0 folders, 0 new links, 1 Home link, 9 already there', 'import toast');
+      await t.settle();
+      const s = t.settings();
+      t.eq([s.theme, s.userName, s.fontPage, s.home.perRow, s.home.folderId], ['purple', 'Kim', 90, 6, '70'], 'look restored, Home folder kept');
+      t.eq(t.$('#brandTitle').textContent, "Kim's Warehouse", 'header shows the name at once');
+      t.eq(t.d.documentElement.style.getPropertyValue('--fs-page'), '0.9', 'text size applied at once');
+      t.eq(t.store.homeBg, PNG, 'background saved');
+      const mail = homeKids(t).find((id) => t.node(id).title === 'Mail');
+      t.eq(t.store.homeIcons[mail], PNG, 'icon on the new Home link');
+      await done(t);
+      t.click(t.$('#homeBtn'));
+      await t.settle();
+      t.eq(t.$$('#home .tile[data-id]').length, 4, 'Home shows the imported link');
+    },
+  },
 ];

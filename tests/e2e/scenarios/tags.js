@@ -424,7 +424,10 @@ export default [
       await t.settle();
       t.click(t.$('.set-tab[data-tab="backup"]'));
       await t.settle();
-      t.ok(t.$('#page').textContent.includes('JSON keeps sidebar order, categories, per-folder sort, tags and link notes.'), 'backup text');
+      t.ok(
+        t.$('#page').textContent.includes('JSON keeps everything: links, notes, due dates, sidebar order, categories, colors, tags, Home links'),
+        'backup text',
+      );
     },
   },
 ];

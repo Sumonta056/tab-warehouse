@@ -1,15 +1,52 @@
 import { ENVS } from '../constants/envs.js';
 import { SORTS } from '../constants/sorts.js';
-import { IMPORT_DEPTH } from '../constants/limits.js';
+import { IMPORT_DEPTH, HOME_LIMITS, HOME_FLAGS, SIDE_LOOK_LIMITS, NAME_MAX } from '../constants/limits.js';
+import { THEMES } from '../constants/themes.js';
 import { markOf } from './marks.js';
 import { withoutDone } from './meta.js';
 import { cleanTags } from './tags.js';
+import { clampFont, clampSideWidth } from './sizes.js';
+
+const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
+
+export function importText(r) {
+  const parts = [plural(r.folders, 'folder'), plural(r.links, 'new link')];
+  if (r.homeLinks) parts.push(plural(r.homeLinks, 'Home link'));
+  if (r.skipped) parts.push(`${r.skipped} already there`);
+  return `Imported: ${parts.join(', ')}${r.bgSkipped ? '. The background was skipped: not enough storage space.' : ''}`;
+}
 
 export const backupName = (ext) => `warehouse-${new Date().toISOString().slice(0, 10)}.${ext}`;
 
 const linkOut = (l) => ({ title: l.title, url: l.url, dateAdded: l.dateAdded });
 
-export function exportData(root, secs, settings, meta) {
+export function folderPath(root, id) {
+  if (!id) return null;
+  const walk = (n, path) => {
+    if (n.id === id) return path;
+    for (const c of n.children || []) {
+      if (c.url) continue;
+      const p = walk(c, [...path, c.title]);
+      if (p) return p;
+    }
+    return null;
+  };
+  return walk(root, []);
+}
+
+export function folderAt(root, path) {
+  let n = root;
+  for (const t of path) {
+    n = (n.children || []).find((c) => !c.url && c.title === t);
+    if (!n) return null;
+  }
+  return n;
+}
+
+const homeLook = (home) => Object.fromEntries(Object.entries(home || {}).filter(([k]) => k !== 'folderId'));
+
+export function exportData(root, secs, settings, meta, { homeLinks = [], homeIcons = {}, homeBg = '' } = {}) {
+  const paths = (ids) => (ids || []).map((id) => folderPath(root, id)).filter(Boolean);
   const out = (l) => ({ ...linkOut(l), ...withoutDone(meta[l.id]) });
   const byId = Object.fromEntries(secs.map((s) => [s.id, s.title]));
   const partOut = (pt) => ({
@@ -43,6 +80,26 @@ export function exportData(root, secs, settings, meta) {
       hostMap: settings.hostMap,
       showFavicons: settings.showFavicons,
       board: { group: settings.board?.group },
+    },
+    home: {
+      links: homeLinks.map((l) => ({ title: l.title, url: l.url, ...(homeIcons[l.id] ? { icon: homeIcons[l.id] } : {}) })),
+      look: homeLook(settings.home),
+      ...(homeBg ? { bg: homeBg } : {}),
+    },
+    look: {
+      theme: settings.theme,
+      userName: settings.userName || '',
+      sideLook: settings.sideLook,
+      sideWidth: settings.sideWidth,
+      fontSide: settings.fontSide,
+      fontPage: settings.fontPage,
+      fontBoard: settings.fontBoard,
+    },
+    folderPaths: {
+      lastFolder: folderPath(root, settings.lastFolder),
+      lastSaveFolder: folderPath(root, settings.lastSaveFolder),
+      savePins: paths(settings.savePins),
+      saveRecent: paths(settings.saveRecent),
     },
     sections: secs.map((s) => ({
       title: s.title,
@@ -121,6 +178,62 @@ function cleanParts(v, depth) {
     .map((pt) => ({ title: pt.title, ...markOf(pt.color, pt.icon), links: cleanLinks(pt.links), parts: cleanParts(pt.parts, depth + 1) }));
 }
 
+const HEX = /^#[0-9a-f]{6}$/i;
+const IMG = /^data:image\/(png|jpeg|webp|gif);base64,[a-z0-9+/=]+$/i;
+const isImage = (v) => isStr(v) && IMG.test(v);
+const isIcon = (v) => isImage(v) || (isStr(v) && /^https?:\/\/\S+$/i.test(v));
+const inRange = (v, [min, max]) => (typeof v === 'number' && Number.isFinite(v) ? Math.round(Math.max(min, Math.min(max, v))) : undefined);
+const defined = (o) => Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined));
+const isPath = (v) => Array.isArray(v) && v.every(isStr);
+
+function cleanHome(h) {
+  if (!isObj(h)) return null;
+  const look = isObj(h.look) ? h.look : {};
+  return {
+    links: list(h.links)
+      .filter((l) => isObj(l) && isStr(l.url) && l.url)
+      .map((l) => ({ title: isStr(l.title) ? l.title : '', url: l.url, ...(isIcon(l.icon) ? { icon: l.icon } : {}) })),
+    look: defined({
+      color: HEX.test(look.color || '') ? look.color.toLowerCase() : undefined,
+      ...Object.fromEntries(Object.entries(HOME_LIMITS).map(([k, r]) => [k, inRange(look[k], r)])),
+      ...Object.fromEntries(HOME_FLAGS.map((k) => [k, typeof look[k] === 'boolean' ? look[k] : undefined])),
+    }),
+    ...(isImage(h.bg) ? { bg: h.bg } : {}),
+  };
+}
+
+function cleanLook(l) {
+  if (!isObj(l)) return null;
+  const side = isObj(l.sideLook) ? l.sideLook : null;
+  const num = (v, clamp) => (typeof v === 'number' && Number.isFinite(v) ? clamp(v) : undefined);
+  return defined({
+    theme: Object.hasOwn(THEMES, l.theme) ? l.theme : HEX.test(l.theme || '') ? l.theme.toLowerCase() : undefined,
+    userName: isStr(l.userName) ? l.userName.trim().slice(0, NAME_MAX) : undefined,
+    sideLook: side
+      ? defined({
+          mode: side.mode === 'solid' || side.mode === 'image' ? side.mode : undefined,
+          color: HEX.test(side.color || '') ? side.color.toLowerCase() : undefined,
+          dark: inRange(side.dark, SIDE_LOOK_LIMITS.dark),
+          blur: inRange(side.blur, SIDE_LOOK_LIMITS.blur),
+        })
+      : undefined,
+    sideWidth: num(l.sideWidth, clampSideWidth),
+    fontSide: num(l.fontSide, clampFont),
+    fontPage: num(l.fontPage, clampFont),
+    fontBoard: num(l.fontBoard, clampFont),
+  });
+}
+
+function cleanFolderPaths(f) {
+  if (!isObj(f)) return null;
+  return {
+    lastFolder: isPath(f.lastFolder) ? f.lastFolder : null,
+    lastSaveFolder: isPath(f.lastSaveFolder) ? f.lastSaveFolder : null,
+    savePins: list(f.savePins).filter(isPath),
+    saveRecent: list(f.saveRecent).filter(isPath),
+  };
+}
+
 export function cleanImport(d) {
   const sections = list(d.sections)
     .filter((s) => isObj(s) && isStr(s.title))
@@ -131,8 +244,13 @@ export function cleanImport(d) {
       links: cleanLinks(s.links),
       parts: cleanParts(s.parts, 0),
     }));
+  const extra = defined({
+    home: cleanHome(d.home) || undefined,
+    look: cleanLook(d.look) || undefined,
+    folderPaths: cleanFolderPaths(d.folderPaths) || undefined,
+  });
   const p = d.preferences;
-  if (!isObj(p)) return { sections, preferences: null };
+  if (!isObj(p)) return { sections, preferences: null, ...extra };
   const folders = {};
   for (const [t, f] of Object.entries(isObj(p.folders) ? p.folders : {})) {
     const prefs = cleanFolderPrefs(f);
@@ -142,6 +260,7 @@ export function cleanImport(d) {
   const tags = [...ENVS, ...customTags.map((t) => t.name)];
   return {
     sections,
+    ...extra,
     preferences: {
       ...(customTags.length ? { customTags } : {}),
       order: list(p.order).filter(isStr),

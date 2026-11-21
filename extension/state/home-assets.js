@@ -5,8 +5,8 @@ import { resizeImage } from '../ui/image.js';
 let icons = null;
 let bg = null;
 
-export async function loadHomeAssets() {
-  if (icons && bg !== null) return;
+export async function loadHomeAssets(fresh = false) {
+  if (!fresh && icons && bg !== null) return;
   ({ icons, bg } = await loadHomeStore());
 }
 

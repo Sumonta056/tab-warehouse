@@ -2,6 +2,7 @@ import { exportJson, exportHtml } from '../../ui/export.js';
 import { importFile } from '../../services/import.js';
 import { h } from '../../ui/dom.js';
 import { card } from './controls.js';
+import { importText } from '../../domain/transfer.js';
 
 export function backup(c) {
   const file = h('input', { type: 'file', id: 'importFile', accept: '.json,.html,.htm', class: 'sr', 'aria-label': 'Import file' });
@@ -11,9 +12,7 @@ export function backup(c) {
     try {
       const r = await importFile(f, c.root, c.settings);
       await c.reload();
-      c.toast(
-        `Imported: ${r.folders} folder${r.folders === 1 ? '' : 's'}, ${r.links} new link${r.links === 1 ? '' : 's'}${r.skipped ? `, ${r.skipped} already there` : ''}`,
-      );
+      c.toast(importText(r));
     } catch (err) {
       c.toast(`Import failed: ${err.message}`);
     }
@@ -27,7 +26,7 @@ export function backup(c) {
       { class: 'set-col' },
       card(
         'Export',
-        "JSON keeps sidebar order, categories, per-folder sort, tags and link notes. HTML is Chrome's own bookmark format.",
+        "JSON keeps everything: links, notes, due dates, sidebar order, categories, colors, tags, Home links, icons and background, the look, text sizes and pinned folders. HTML is Chrome's own bookmark format.",
         h(
           'div',
           { class: 'set-row' },

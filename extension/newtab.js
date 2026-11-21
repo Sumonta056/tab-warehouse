@@ -201,6 +201,8 @@ const settingsCtx = {
   removeLinks: async (bms) => (await load('folder')).removeLinks(bms, bms.length === 1 ? 'Deleted 1 copy' : `Deleted ${bms.length} copies`),
   async reload() {
     setState({ settings: await loadSettings() });
+    await loadHomeAssets(true);
+    setSideWidth(state.settings.sideWidth);
     applyTheme(state.settings.theme);
     sideLook();
     applyFontSize(state.settings);
@@ -388,8 +390,6 @@ function bindGlobal() {
       return;
     }
     stale = false;
-    await loadHomeAssets();
-    setSideWidth(state.settings.sideWidth);
     await settingsCtx.reload();
   });
 }

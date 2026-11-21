@@ -1,6 +1,8 @@
 import { cleanMeta } from '../domain/meta.js';
-import { parseJson, addTags } from '../domain/transfer.js';
-import { saveSettings, loadLinkMeta } from './storage.js';
+import { parseJson, addTags, folderAt } from '../domain/transfer.js';
+import { CHIP_MAX } from '../constants/limits.js';
+import { saveSettings, loadSettings, loadLinkMeta, loadHomeStore, saveHomeIcons, saveHomeBg } from './storage.js';
+import { ensureHomeFolder } from './home-folder.js';
 
 export async function importFile(file, root, settings) {
   const text = await file.text();
@@ -124,7 +126,60 @@ export async function importFile(file, root, settings) {
     for (const [id, m] of Object.entries(metaIn)) all[id] ||= m;
     await chrome.storage.local.set({ linkMeta: all });
   }
-  return { folders, links, skipped };
+  const home = parsed.home ? await importHome(parsed.home) : {};
+  if (parsed.look) await importLook(parsed.look);
+  if (parsed.folderPaths) await importFolderPaths(parsed.folderPaths, root.id);
+  return { folders, links, skipped, ...home };
+}
+
+async function importHome(home) {
+  const [tree] = await chrome.bookmarks.getTree();
+  const { settings } = await ensureHomeFolder(tree, await loadSettings());
+  const folderId = settings.home.folderId;
+  const have = new Map((await chrome.bookmarks.getChildren(folderId)).filter((k) => k.url).map((k) => [k.url, k.id]));
+  const { icons } = await loadHomeStore();
+  let homeLinks = 0;
+  for (const l of home.links) {
+    let id = have.get(l.url);
+    if (!id) {
+      id = (await chrome.bookmarks.create({ parentId: folderId, title: l.title || l.url, url: l.url })).id;
+      have.set(l.url, id);
+      homeLinks++;
+    }
+    if (l.icon) icons[id] = l.icon;
+  }
+  await saveHomeIcons(icons);
+  await saveSettings({ home: { ...settings.home, ...home.look, folderId } });
+  let bgSkipped = false;
+  if (home.bg) {
+    try {
+      await saveHomeBg(home.bg);
+    } catch {
+      bgSkipped = true;
+    }
+  }
+  return { homeLinks, bgSkipped };
+}
+
+async function importLook(look) {
+  const cur = await loadSettings();
+  await saveSettings({ ...look, ...(look.sideLook ? { sideLook: { ...cur.sideLook, ...look.sideLook } } : {}) });
+}
+
+async function importFolderPaths(f, rootId) {
+  const [root] = await chrome.bookmarks.getSubTree(rootId);
+  const idOf = (path) => (path ? folderAt(root, path)?.id || null : null);
+  const ids = (paths) => [...new Set(paths.map(idOf).filter(Boolean))].slice(0, CHIP_MAX);
+  const lastFolder = idOf(f.lastFolder);
+  const lastSaveFolder = idOf(f.lastSaveFolder);
+  const savePins = ids(f.savePins);
+  const saveRecent = ids(f.saveRecent);
+  await saveSettings({
+    ...(lastFolder ? { lastFolder } : {}),
+    ...(lastSaveFolder ? { lastSaveFolder } : {}),
+    ...(savePins.length ? { savePins } : {}),
+    ...(saveRecent.length ? { saveRecent } : {}),
+  });
 }
 
 function parseHtml(text) {

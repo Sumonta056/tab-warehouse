@@ -234,3 +234,91 @@ describe('importFile (JSON backup)', () => {
     assert.deepEqual(again, { folders: 0, links: 0, skipped: 1 });
   });
 });
+
+describe('importFile (full backup: Home, look and folder paths)', () => {
+  const PNG = 'data:image/png;base64,iVBORw0KGgo=';
+  const JPG = 'data:image/jpeg;base64,/9j/4AAQ';
+  const full = () =>
+    backup({
+      home: {
+        links: [
+          { title: 'Mail', url: 'https://mail.example.com/', icon: PNG },
+          { title: 'Have', url: 'https://have.example.com/', icon: 'https://have.example.com/i.png' },
+        ],
+        look: { clockSize: 200, h24: true, perRow: 8 },
+        bg: JPG,
+      },
+      look: { theme: 'green', userName: 'Sam', sideLook: { mode: 'image', dark: 50 }, sideWidth: 300, fontSide: 90, fontPage: 110, fontBoard: 120 },
+      folderPaths: { lastFolder: ['Shop'], lastSaveFolder: ['Shop', 'Blocked'], savePins: [['Shop', 'Blocked'], ['Gone'], []], saveRecent: [['Docs']] },
+    });
+  const withHome = () => {
+    const t = JSON.parse(JSON.stringify(TREE));
+    t.children[1].children.push({ id: '50', title: 'Home', children: [{ id: '51', title: 'Have', url: 'https://have.example.com/' }] });
+    return t;
+  };
+
+  test('adds Home links that are not there, sets every icon by URL (the backup wins) and saves the Home look and background', async () => {
+    const ch = fakeChrome({ tree: withHome(), store: { homeIcons: { 51: 'https://old.example.com/i.png' } } });
+    await saveSettings({ home: { ...(await loadSettings()).home, folderId: '50', clockSize: 100, date: false } });
+    const r = await importFile(file(full()), ch.tree.children[0].children[0], await loadSettings());
+    assert.equal(r.homeLinks, 1);
+    assert.equal(r.bgSkipped, false);
+    const home = ch.tree.children[1].children[0];
+    assert.deepEqual(titles(home), ['Have', 'Mail']);
+    assert.deepEqual(ch.data.homeIcons, { 51: 'https://have.example.com/i.png', [child(home, 'Mail').id]: PNG });
+    assert.equal(ch.data.homeBg, JPG);
+    const s = await loadSettings();
+    assert.deepEqual([s.home.folderId, s.home.clockSize, s.home.h24, s.home.perRow, s.home.date], ['50', 200, true, 8, false]);
+  });
+
+  test('creates the Home folder in Other bookmarks when it is missing', async () => {
+    const ch = fakeChrome({ tree: TREE });
+    await importFile(file(full()), ch.tree.children[0].children[0], await loadSettings());
+    const home = child(ch.tree.children[1], 'Home');
+    assert.deepEqual(titles(home), ['Mail', 'Have']);
+    assert.equal((await loadSettings()).home.folderId, home.id);
+  });
+
+  test('the backup look wins: theme, name, sidebar look, width and text sizes', async () => {
+    fakeChrome({ tree: TREE });
+    await saveSettings({ theme: 'red', userName: 'Me', sideLook: { mode: 'solid', color: '#333333', dark: 70, blur: 12 }, fontPage: 130 });
+    await importFile(file(full()), globalThis.chrome.tree.children[0].children[0], await loadSettings());
+    const s = await loadSettings();
+    assert.deepEqual(
+      [s.theme, s.userName, s.sideLook, s.sideWidth, s.fontSide, s.fontPage, s.fontBoard],
+      ['green', 'Sam', { mode: 'image', color: '#333333', dark: 50, blur: 12 }, 300, 90, 110, 120],
+    );
+  });
+
+  test('maps folder paths to the new folder ids and skips a path that is not found', async () => {
+    const ch = fakeChrome({ tree: TREE });
+    const root = ch.tree.children[0].children[0];
+    await importFile(file(full()), root, await loadSettings());
+    const s = await loadSettings();
+    const blocked = child(child(root, 'Shop'), 'Blocked').id;
+    assert.equal(s.lastFolder, '30');
+    assert.equal(s.lastSaveFolder, blocked);
+    assert.deepEqual(s.savePins, [blocked, '10']);
+    assert.deepEqual(s.saveRecent, [child(root, 'Docs').id]);
+  });
+
+  test('a full storage skips the background and imports the rest', async () => {
+    const ch = fakeChrome({ tree: TREE });
+    const set = ch.storage.local.set;
+    ch.storage.local.set = async (o) => ('homeBg' in o ? Promise.reject(new Error('QUOTA_BYTES quota exceeded')) : set(o));
+    const r = await importFile(file(full()), ch.tree.children[0].children[0], await loadSettings());
+    assert.equal(r.bgSkipped, true);
+    assert.ok(!('homeBg' in ch.data));
+    assert.equal((await loadSettings()).theme, 'green');
+  });
+
+  test('an old backup without Home, look or folder paths keeps them as they are', async () => {
+    const ch = fakeChrome({ tree: TREE });
+    await saveSettings({ theme: 'red', savePins: ['30'] });
+    const r = await importFile(file(backup()), ch.tree.children[0].children[0], await loadSettings());
+    assert.ok(!('homeLinks' in r));
+    const s = await loadSettings();
+    assert.deepEqual([s.theme, s.savePins], ['red', ['30']]);
+    assert.ok(!child(ch.tree.children[1], 'Home'));
+  });
+});
